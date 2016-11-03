@@ -67,4 +67,6 @@ Thumbs.db
 /tags
 /.htaccess
 /.htpasswd
+
+# Secrets!
 SECRETS.php
