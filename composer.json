@@ -1,0 +1,9 @@
+{
+    "require": {
+        "mediawiki/maps": "*",
+        "mediawiki/semantic-media-wiki": "*",
+        "mediawiki/semantic-forms": "*",
+        "mediawiki/semantic-maps": "*",
+        "mediawiki/semantic-result-formats": "*"
+    }
+}

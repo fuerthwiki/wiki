@@ -1,0 +1,875 @@
+[
+    {
+        "name": "composer/installers",
+        "version": "v1.0.21",
+        "version_normalized": "1.0.21.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/composer/installers.git",
+            "reference": "d64e23fce42a4063d63262b19b8e7c0f3b5e4c45"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/composer/installers/zipball/d64e23fce42a4063d63262b19b8e7c0f3b5e4c45",
+            "reference": "d64e23fce42a4063d63262b19b8e7c0f3b5e4c45",
+            "shasum": ""
+        },
+        "replace": {
+            "roundcube/plugin-installer": "*",
+            "shama/baton": "*"
+        },
+        "require-dev": {
+            "composer/composer": "1.0.*@dev",
+            "phpunit/phpunit": "4.1.*"
+        },
+        "time": "2015-02-18 17:17:01",
+        "type": "composer-installer",
+        "extra": {
+            "class": "Composer\\Installers\\Installer",
+            "branch-alias": {
+                "dev-master": "1.0-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-0": {
+                "Composer\\Installers\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "authors": [
+            {
+                "name": "Kyle Robinson Young",
+                "email": "kyle@dontkry.com",
+                "homepage": "https://github.com/shama"
+            }
+        ],
+        "description": "A multi-framework Composer library installer",
+        "homepage": "http://composer.github.com/installers/",
+        "keywords": [
+            "Craft",
+            "Dolibarr",
+            "Hurad",
+            "MODX Evo",
+            "OXID",
+            "SMF",
+            "Thelia",
+            "WolfCMS",
+            "agl",
+            "aimeos",
+            "annotatecms",
+            "bitrix",
+            "cakephp",
+            "chef",
+            "codeigniter",
+            "concrete5",
+            "croogo",
+            "dokuwiki",
+            "drupal",
+            "elgg",
+            "fuelphp",
+            "grav",
+            "installer",
+            "joomla",
+            "kohana",
+            "laravel",
+            "lithium",
+            "magento",
+            "mako",
+            "mediawiki",
+            "modulework",
+            "moodle",
+            "phpbb",
+            "piwik",
+            "ppi",
+            "puppet",
+            "roundcube",
+            "shopware",
+            "silverstripe",
+            "symfony",
+            "typo3",
+            "wordpress",
+            "zend",
+            "zikula"
+        ]
+    },
+    {
+        "name": "data-values/interfaces",
+        "version": "0.1.5",
+        "version_normalized": "0.1.5.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/DataValues/Interfaces.git",
+            "reference": "f563e6a55547046070e3d79b5662b620005558d8"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/DataValues/Interfaces/zipball/f563e6a55547046070e3d79b5662b620005558d8",
+            "reference": "f563e6a55547046070e3d79b5662b620005558d8",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0"
+        },
+        "time": "2015-02-14 02:37:02",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "Interfaces.php"
+            ],
+            "psr-0": {
+                "ValueFormatters\\": "src",
+                "ValueParsers\\": "src",
+                "ValueValidators\\": "src"
+            },
+            "classmap": [
+                "tests/ValueFormatters/ValueFormatterTestBase.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Jeroen De Dauw",
+                "email": "jeroendedauw@gmail.com",
+                "homepage": "http://jeroendedauw.com",
+                "role": "Developer"
+            }
+        ],
+        "description": "Defines interfaces for ValueParsers, ValueFormatters and ValueValidators",
+        "homepage": "https://github.com/DataValues/Interfaces",
+        "keywords": [
+            "datavalues",
+            "valueformatters",
+            "valueparsers",
+            "valuevalidators",
+            "wikidata"
+        ]
+    },
+    {
+        "name": "data-values/data-values",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/DataValues/DataValues.git",
+            "reference": "de2b9abdbc26c4c393b25aa621619dfe3fc10fdc"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/DataValues/DataValues/zipball/de2b9abdbc26c4c393b25aa621619dfe3fc10fdc",
+            "reference": "de2b9abdbc26c4c393b25aa621619dfe3fc10fdc",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.3.0"
+        },
+        "replace": {
+            "mediawiki/data-values": "*"
+        },
+        "time": "2014-09-26 07:02:27",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "DataValues.php"
+            ],
+            "classmap": [
+                "src/interfaces",
+                "tests/phpunit/DataValueTest.php"
+            ],
+            "psr-0": {
+                "DataValues\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Jeroen De Dauw",
+                "email": "jeroendedauw@gmail.com",
+                "homepage": "http://jeroendedauw.com",
+                "role": "Developer"
+            }
+        ],
+        "description": "Defines the DataValue interface and some trivial implementations",
+        "homepage": "https://github.com/DataValues/DataValues",
+        "keywords": [
+            "datavalues",
+            "wikibase",
+            "wikidata"
+        ]
+    },
+    {
+        "name": "data-values/common",
+        "version": "0.2.3",
+        "version_normalized": "0.2.3.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/DataValues/Common.git",
+            "reference": "c9f4dfd8af6337eb097d722b27fa76fa58dd441a"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/DataValues/Common/zipball/c9f4dfd8af6337eb097d722b27fa76fa58dd441a",
+            "reference": "c9f4dfd8af6337eb097d722b27fa76fa58dd441a",
+            "shasum": ""
+        },
+        "require": {
+            "data-values/data-values": "~1.0|~0.1",
+            "data-values/interfaces": "~0.1.4",
+            "php": ">=5.3.0"
+        },
+        "time": "2014-10-09 18:21:19",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "0.2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "Common.php"
+            ],
+            "psr-0": {
+                "DataValues\\": "src",
+                "ValueFormatters\\": "src",
+                "ValueParsers\\": "src"
+            },
+            "classmap": [
+                "tests/ValueParsers"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Jeroen De Dauw",
+                "email": "jeroendedauw@gmail.com",
+                "homepage": "http://jeroendedauw.com",
+                "role": "Developer"
+            }
+        ],
+        "description": "Contains common implementations of the interfaces defined by DataValuesInterfaces",
+        "homepage": "https://github.com/DataValues/Common",
+        "keywords": [
+            "datavalues",
+            "valueformatters",
+            "valueparsers",
+            "valuevalidators",
+            "wikidata"
+        ]
+    },
+    {
+        "name": "data-values/geo",
+        "version": "1.1.4",
+        "version_normalized": "1.1.4.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/DataValues/Geo.git",
+            "reference": "e7222bc743ae05bfc5213cb1e20150aa772d8668"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/DataValues/Geo/zipball/e7222bc743ae05bfc5213cb1e20150aa772d8668",
+            "reference": "e7222bc743ae05bfc5213cb1e20150aa772d8668",
+            "shasum": ""
+        },
+        "require": {
+            "data-values/common": "~0.1",
+            "data-values/data-values": "~1.0|~0.1",
+            "data-values/interfaces": "~0.1",
+            "php": ">=5.3.0"
+        },
+        "time": "2014-11-25 16:48:57",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.1.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "Geo.php"
+            ],
+            "psr-4": {
+                "DataValues\\Geo\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Jeroen De Dauw",
+                "email": "jeroendedauw@gmail.com",
+                "homepage": "http://jeroendedauw.com",
+                "role": "Developer"
+            },
+            {
+                "name": "The Wikidata team",
+                "role": "Developer"
+            }
+        ],
+        "description": "Geographical value objects, parsers and formatters",
+        "homepage": "https://github.com/DataValues/Geo",
+        "keywords": [
+            "datavalues",
+            "formatters",
+            "geo",
+            "geographical",
+            "latlong",
+            "parsers",
+            "wikidata"
+        ]
+    },
+    {
+        "name": "data-values/validators",
+        "version": "0.1.2",
+        "version_normalized": "0.1.2.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/DataValues/Validators.git",
+            "reference": "726f54fdc6bf58aa4f5405ae3d9c3f2b0f916141"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/DataValues/Validators/zipball/726f54fdc6bf58aa4f5405ae3d9c3f2b0f916141",
+            "reference": "726f54fdc6bf58aa4f5405ae3d9c3f2b0f916141",
+            "shasum": ""
+        },
+        "require": {
+            "data-values/data-values": "~1.0|~0.1",
+            "data-values/interfaces": "~0.1",
+            "php": ">=5.3.0"
+        },
+        "time": "2014-10-09 19:10:23",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "0.1.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "Validators.php"
+            ],
+            "psr-4": {
+                "ValueValidators\\": "src"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Jeroen De Dauw",
+                "email": "jeroendedauw@gmail.com",
+                "homepage": "http://jeroendedauw.com",
+                "role": "Developer"
+            },
+            {
+                "name": "The Wikidata team",
+                "role": "Developer"
+            }
+        ],
+        "description": "Common ValueValidator implementations",
+        "homepage": "https://github.com/DataValues/Validators",
+        "keywords": [
+            "datavalues",
+            "validation",
+            "validators",
+            "valueformatters",
+            "valueparsers",
+            "wikidata"
+        ]
+    },
+    {
+        "name": "param-processor/param-processor",
+        "version": "1.2.2",
+        "version_normalized": "1.2.2.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/JeroenDeDauw/ParamProcessor.git",
+            "reference": "d046926ec7e3ef33e29c0ca3e4af3a92363376aa"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/JeroenDeDauw/ParamProcessor/zipball/d046926ec7e3ef33e29c0ca3e4af3a92363376aa",
+            "reference": "d046926ec7e3ef33e29c0ca3e4af3a92363376aa",
+            "shasum": ""
+        },
+        "require": {
+            "data-values/common": "~0.2.2",
+            "data-values/data-values": "~1.0|~0.1.1",
+            "data-values/interfaces": "~0.1.4",
+            "data-values/validators": "~0.1.1",
+            "php": ">=5.3.0"
+        },
+        "time": "2014-10-24 16:04:12",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "1.2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "ParamProcessor\\": "src"
+            },
+            "classmap": [
+                "tests/phpunit/Definitions/ParamDefinitionTest.php",
+                "tests/phpunit/Definitions/NumericParamTest.php"
+            ],
+            "files": [
+                "DefaultConfig.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Jeroen De Dauw",
+                "email": "jeroendedauw@gmail.com",
+                "homepage": "http://jeroendedauw.com",
+                "role": "Developer"
+            }
+        ],
+        "description": "Parameter processing library",
+        "homepage": "https://github.com/JeroenDeDauw/ParamProcessor",
+        "keywords": [
+            "ParamProcessor",
+            "SMW",
+            "Semantic MediaWiki",
+            "mediawiki",
+            "validator"
+        ]
+    },
+    {
+        "name": "mediawiki/validator",
+        "version": "2.0.4",
+        "version_normalized": "2.0.4.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/JeroenDeDauw/Validator.git",
+            "reference": "57c6f20f8c0100865e4318b9e5277dd2c4331a0a"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/JeroenDeDauw/Validator/zipball/57c6f20f8c0100865e4318b9e5277dd2c4331a0a",
+            "reference": "57c6f20f8c0100865e4318b9e5277dd2c4331a0a",
+            "shasum": ""
+        },
+        "require": {
+            "param-processor/param-processor": "~1.1",
+            "php": ">=5.3.0"
+        },
+        "time": "2014-06-25 21:40:08",
+        "type": "mediawiki-extension",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.0.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "Validator.php"
+            ],
+            "psr-4": {
+                "ParamProcessor\\": "src/ParamProcessor/"
+            },
+            "classmap": [
+                "src/legacy/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Jeroen De Dauw",
+                "email": "jeroendedauw@gmail.com",
+                "homepage": "http://jeroendedauw.com",
+                "role": "Developer"
+            }
+        ],
+        "description": "MediaWiki wrapper for the ParamProcessor library",
+        "homepage": "https://github.com/JeroenDeDauw/Validator",
+        "keywords": [
+            "ParamProcessor",
+            "SMW",
+            "Semantic MediaWiki",
+            "mediawiki",
+            "validator"
+        ]
+    },
+    {
+        "name": "mediawiki/maps",
+        "version": "3.2.3",
+        "version_normalized": "3.2.3.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/JeroenDeDauw/Maps.git",
+            "reference": "7a5073ffad64b9e78a6ae944cce170a02808ea66"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/JeroenDeDauw/Maps/zipball/7a5073ffad64b9e78a6ae944cce170a02808ea66",
+            "reference": "7a5073ffad64b9e78a6ae944cce170a02808ea66",
+            "shasum": ""
+        },
+        "require": {
+            "composer/installers": "1.*,>=1.0.1",
+            "data-values/geo": "~1.0",
+            "mediawiki/validator": "2.*,>=2.0.2",
+            "php": ">=5.3.2"
+        },
+        "time": "2015-03-23 17:22:35",
+        "type": "mediawiki-extension",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "3.2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "Maps.php"
+            ],
+            "psr-4": {
+                "Maps\\": "src/Maps/"
+            },
+            "classmap": [
+                "includes/",
+                "Maps.hooks.php",
+                "tests/phpunit/elements/",
+                "tests/phpunit/parserhooks/ParserHookTest.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Jeroen De Dauw",
+                "email": "jeroendedauw@gmail.com",
+                "homepage": "http://jeroendedauw.com",
+                "role": "Creator and lead developer"
+            }
+        ],
+        "description": "Adds various mapping features to MediaWiki",
+        "homepage": "https://github.com/JeroenDeDauw/Maps",
+        "keywords": [
+            "OpenLayers",
+            "OpenStreetMap",
+            "Semantic MediaWiki",
+            "google maps",
+            "maps",
+            "mediawiki",
+            "osm"
+        ]
+    },
+    {
+        "name": "mediawiki/semantic-media-wiki",
+        "version": "2.1.3",
+        "version_normalized": "2.1.3.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/SemanticMediaWiki/SemanticMediaWiki.git",
+            "reference": "ad5516f54aca4829a9e9975facdc30a77c2f0119"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/SemanticMediaWiki/SemanticMediaWiki/zipball/ad5516f54aca4829a9e9975facdc30a77c2f0119",
+            "reference": "ad5516f54aca4829a9e9975facdc30a77c2f0119",
+            "shasum": ""
+        },
+        "require": {
+            "composer/installers": "1.*,>=1.0.1",
+            "mediawiki/validator": "~2.0,>=2.0.4",
+            "php": ">=5.3.0"
+        },
+        "replace": {
+            "mediawiki/semantic-mediawiki": "*"
+        },
+        "time": "2015-03-30 08:06:07",
+        "type": "mediawiki-extension",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.1.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "SemanticMediaWiki.php"
+            ],
+            "classmap": [
+                "SemanticMediaWiki.hooks.php",
+                "includes/",
+                "languages/SMW_Language.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Markus Krötzsch",
+                "homepage": "http://korrekt.org",
+                "role": "Original author"
+            },
+            {
+                "name": "Jeroen De Dauw",
+                "email": "jeroendedauw@gmail.com",
+                "homepage": "http://jeroendedauw.com",
+                "role": "Core developer"
+            },
+            {
+                "name": "James Hong Kong",
+                "homepage": "https://semantic-mediawiki.org/wiki/User:MWJames",
+                "role": "Core developer"
+            }
+        ],
+        "description": "MediaWiki extension that lets you store and query structured data within wiki pages",
+        "homepage": "https://semantic-mediawiki.org/wiki/",
+        "keywords": [
+            "SMW",
+            "Semantic MediaWiki",
+            "mediawiki",
+            "wiki"
+        ]
+    },
+    {
+        "name": "mediawiki/semantic-forms",
+        "version": "3.2",
+        "version_normalized": "3.2.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/wikimedia/mediawiki-extensions-SemanticForms.git",
+            "reference": "2a9064b69620ee314c1b75221f070847c3375550"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/wikimedia/mediawiki-extensions-SemanticForms/zipball/2a9064b69620ee314c1b75221f070847c3375550",
+            "reference": "2a9064b69620ee314c1b75221f070847c3375550",
+            "shasum": ""
+        },
+        "require": {
+            "composer/installers": "1.*,>=1.0.1",
+            "mediawiki/semantic-media-wiki": ">=1.9",
+            "php": ">=5.3.0"
+        },
+        "time": "2015-02-25 14:24:07",
+        "type": "mediawiki-extension",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.8.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "SemanticForms.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Yaron Koren",
+                "homepage": "http://yaronkoren.com/"
+            }
+        ],
+        "description": "An extension, based around Semantic MediaWiki, that allows users to create forms for adding and editing pages that use templates to store semantic data.",
+        "homepage": "https://www.mediawiki.org/wiki/Extension:Semantic_Forms",
+        "keywords": [
+            "Forms",
+            "SF",
+            "Semantic Forms",
+            "Semantic MediaWiki",
+            "mediawiki",
+            "wiki"
+        ]
+    },
+    {
+        "name": "mediawiki/semantic-maps",
+        "version": "3.1.3",
+        "version_normalized": "3.1.3.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/SemanticMediaWiki/SemanticMaps.git",
+            "reference": "a0f1992ea46ea8b06093bc3bf83a20373274166e"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/SemanticMediaWiki/SemanticMaps/zipball/a0f1992ea46ea8b06093bc3bf83a20373274166e",
+            "reference": "a0f1992ea46ea8b06093bc3bf83a20373274166e",
+            "shasum": ""
+        },
+        "require": {
+            "composer/installers": "1.*,>=1.0.1",
+            "data-values/geo": "~1.1",
+            "mediawiki/maps": "~3.2",
+            "mediawiki/semantic-media-wiki": "~2.0",
+            "mediawiki/validator": "~2.0",
+            "php": ">=5.3.0"
+        },
+        "suggest": {
+            "mediawiki/semantic-forms": "Allows entering coordinates via a form map input"
+        },
+        "time": "2014-11-11 11:25:11",
+        "type": "mediawiki-extension",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "3.2.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "SemanticMaps.php"
+            ],
+            "classmap": [
+                "src/",
+                "SemanticMaps.hooks.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Jeroen De Dauw",
+                "email": "jeroendedauw@gmail.com",
+                "homepage": "http://jeroendedauw.com",
+                "role": "Developer"
+            }
+        ],
+        "description": "Adds geographic capabilities to Semantic MediaWiki",
+        "homepage": "https://www.semantic-mediawiki.org/wiki/Semantic_Maps",
+        "keywords": [
+            "OpenLayers",
+            "SMW",
+            "Semantic Maps",
+            "Semantic MediaWiki",
+            "google maps",
+            "maps",
+            "mediawiki",
+            "wiki"
+        ]
+    },
+    {
+        "name": "mediawiki/semantic-result-formats",
+        "version": "2.1.2",
+        "version_normalized": "2.1.2.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/SemanticMediaWiki/SemanticResultFormats.git",
+            "reference": "ae710c5e578bd09d77168d3d86749969c576bdbd"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/SemanticMediaWiki/SemanticResultFormats/zipball/ae710c5e578bd09d77168d3d86749969c576bdbd",
+            "reference": "ae710c5e578bd09d77168d3d86749969c576bdbd",
+            "shasum": ""
+        },
+        "require": {
+            "composer/installers": "1.*,>=1.0.1",
+            "mediawiki/semantic-media-wiki": "~2.1",
+            "php": ">=5.3.0"
+        },
+        "require-dev": {
+            "mediawiki/semantic-media-wiki": "@dev"
+        },
+        "suggest": {
+            "mediawiki/graph-viz": "Required for 'format=graph'",
+            "phpoffice/phpexcel": "Used when exporting to excel format using 'format=excel'"
+        },
+        "time": "2015-02-26 10:34:52",
+        "type": "mediawiki-extension",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.1.x-dev"
+            }
+        },
+        "installation-source": "dist",
+        "autoload": {
+            "files": [
+                "SemanticResultFormats.php"
+            ],
+            "classmap": [
+                "formats/",
+                "SemanticResultFormats.hooks.php",
+                "SemanticResultFormats.parser.php",
+                "SemanticResultFormats.utils.php"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "GPL-2.0+"
+        ],
+        "authors": [
+            {
+                "name": "Jeroen De Dauw",
+                "email": "jeroendedauw@gmail.com",
+                "homepage": "http://jeroendedauw.com",
+                "role": "Developer"
+            },
+            {
+                "name": "James Hong Kong",
+                "homepage": "https://semantic-mediawiki.org/wiki/User:MWJames",
+                "role": "Developer"
+            },
+            {
+                "name": "Stephan Gambke",
+                "role": "Developer"
+            },
+            {
+                "name": "Yaron Koren",
+                "homepage": "http://www.yaronkoren.com/",
+                "role": "Developer"
+            }
+        ],
+        "description": "Additional result formats for Semantic MediaWiki queries",
+        "homepage": "https://www.semantic-mediawiki.org/wiki/Semantic_Result_Formats",
+        "keywords": [
+            "SMW",
+            "SRF",
+            "Semantic MediaWiki",
+            "Semantic Result Formats",
+            "mediawiki",
+            "wiki"
+        ]
+    }
+]
