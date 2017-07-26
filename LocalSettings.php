@@ -34,7 +34,7 @@ $wgScriptPath       = "/wiki";
 $wgScriptExtension  = ".php";
 
 ## The protocol and server name to use in fully-qualified URLs
-$wgServer           = "http://www.fuerthwiki.de";
+$wgServer           = $SECRET_wgServer;
 
 ## Wiki editor by default
 $wgDefaultUserOptions['usebetatoolbar'] = 1;
