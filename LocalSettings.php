@@ -81,6 +81,7 @@ $wgDBmysql5 = false;
 
 # Upload limit
 $wgMaxUploadSize = 1024*1024*1024; # Would be 1Gb, shows as 200Mb
+$wgMaxArticleSize = 1026*8;        # Would be 8 MB, big enough for any article
 
 ## Shared memory settings
 $wgMainCacheType    = CACHE_NONE;
@@ -249,7 +250,7 @@ $GLOBALS['sespSpecialProperties'] = array(
 
 # Other Hazzle Dazzle
 include_once("$IP/extensions/Arrays/Arrays.php");
-require_once("$IP/extensions/Loops/Loops.php");
+require_once("$IP/extensions/Loops/Loops.php"); # Set limit to 10000
 include_once("$IP/extensions/HeaderTabs/HeaderTabs.php");
 include_once("$IP/extensions/Widgets/Widgets.php");
 require_once("$IP/extensions/Tabs/Tabs.php");
@@ -285,6 +286,7 @@ require_once("$IP/extensions/FancyBoxThumbs/FancyBoxThumbs.php");
 #$wgUploadWizardConfig['skipTutorial'] =  true;
 
 $wgNamespaceAliases = array('Bild' => NS_FILE);
+$wgNamespacesWithSubpages[NS_TEMPLATE] = true;
 
 # Link Checker in Spezialseiten
 require_once("$IP/extensions/ExternalLinks/ExternalLinks.php");
@@ -319,3 +321,6 @@ require_once "$IP/extensions/ProofreadPage/ProofreadPage.php";
 
 # Skin
 require_once( "$IP/skins/bootstrap-mediawiki/bootstrap-mediawiki.php" );
+
+# SearchStats
+require_once "$IP/extensions/SearchStats/SearchStats.php";
