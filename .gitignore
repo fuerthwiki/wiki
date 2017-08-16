@@ -21,34 +21,15 @@ sublime-*
 sftp-config.json
 
 # MediaWiki install & usage
-/cache
-/docs/js
-/images/[0-9a-f]
-/images/archive
-/images/deleted
-/images/lockdir
-/images/temp
-/images/thumb
-## Extension:EasyTimeline
-/images/timeline
-/images/tmp
 /maintenance/.mweval_history
 /maintenance/.mwsql_history
 /maintenance/dev/data
-/AdminSettings.php
-/LocalSettings.php
-/StartProfiler.php
 
 # Building & testing
 node_modules/
 
 # Composer
 /vendor
-/composer.lock
-/composer.json
-
-# MediaWiki UI documentation
-/docs/kss/static
 
 # Operating systems
 ## Mac OS X
@@ -66,5 +47,4 @@ SECRETS.php
 /favicon.ico
 /static*
 /tags
-/.htaccess
 /.htpasswd
