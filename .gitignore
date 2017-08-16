@@ -57,6 +57,7 @@ node_modules/
 Thumbs.db
 
 # Misc
+SECRETS.php
 .buildpath
 .classpath
 .idea
@@ -67,6 +68,3 @@ Thumbs.db
 /tags
 /.htaccess
 /.htpasswd
-
-# Secrets!
-SECRETS.php
