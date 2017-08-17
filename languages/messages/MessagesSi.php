@@ -1,8 +1,7 @@
 <?php
 /** Sinhala (සිංහල)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -108,7 +107,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'මගේ_සාකච්ඡාව' ),
 	'Newimages'                 => array( 'නව_ගොනු', 'නව_රූප' ),
 	'Newpages'                  => array( 'නව_පිටුව' ),
-	'Popularpages'              => array( 'ජනප්‍රිය_පිටු' ),
+
 	'Preferences'               => array( 'අභිරුචියන්' ),
 	'Prefixindex'               => array( 'උපසර්ග_සූචිය' ),
 	'Protectedpages'            => array( 'ආරක්‍ෂිත_පිටුව' ),

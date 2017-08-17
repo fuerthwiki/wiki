@@ -70,7 +70,7 @@ class ParamDefinition implements IParamDefinition {
 	 *
 	 * @var array
 	 */
-	protected $dependencies = array();
+	protected $dependencies = [];
 
 	/**
 	 * The default value for the parameter, or null when the parameter is required.
@@ -109,7 +109,7 @@ class ParamDefinition implements IParamDefinition {
 	 *
 	 * @var array
 	 */
-	protected $aliases = array();
+	protected $aliases = [];
 
 	/**
 	 * A message that acts as description for the parameter or false when there is none.
@@ -128,7 +128,7 @@ class ParamDefinition implements IParamDefinition {
 	 *
 	 * @var array
 	 */
-	protected $options = array();
+	protected $options = [];
 
 	/**
 	 * @since 1.0
@@ -245,16 +245,16 @@ class ParamDefinition implements IParamDefinition {
 	 * @return array|boolean false
 	 */
 	public function getAllowedValues() {
-		$allowedValues = array();
-
-		// TODO: properly implement this
-		$this->validator->setOptions( $this->options );
+		$allowedValues = [];
 
 		if ( $this->validator !== null && method_exists( $this->validator, 'getWhitelistedValues' ) ) {
+			// TODO: properly implement this
+			$this->validator->setOptions( $this->options );
+
 			$allowedValues = $this->validator->getWhitelistedValues();
 
 			if ( $allowedValues === false ) {
-				$allowedValues = array();
+				$allowedValues = [];
 			}
 		}
 
@@ -468,44 +468,6 @@ class ParamDefinition implements IParamDefinition {
 	}
 
 	/**
-	 * @see IParamDefinition::validate
-	 *
-	 * @since 1.0
-	 * @deprecated
-	 *
-	 * @param $param IParam
-	 * @param $definitions array of IParamDefinition
-	 * @param $params array of IParam
-	 * @param Options $options
-	 *
-	 * @return array|true
-	 *
-	 * TODO: return error list (ie Status object)
-	 */
-	public function validate( IParam $param, array $definitions, array $params, Options $options ) {
-		if ( $this->isList() ) {
-			$valid = true;
-			$values = $param->getValue();
-
-			foreach ( $values as $value ) {
-				// TODO: restore not bailing out at one error in list but filtering on valid
-				$valid = $this->validateValue( $value, $param, $definitions, $params, $options );
-
-				if ( !$valid ) {
-					break;
-				}
-			}
-
-			return $valid && $this->validateList( $param, $definitions, $params, $options );
-		}
-		else {
-			$valid = $this->validateValue( $param->getValue(), $param, $definitions, $params, $options );
-
-			return $valid ? true : array( new ProcessingError( 'Error' ) ); // TODO
-		}
-	}
-
-	/**
 	 * @see IParamDefinition::format
 	 *
 	 * @since 1.0
@@ -516,7 +478,11 @@ class ParamDefinition implements IParamDefinition {
 	 * @param IParam[] $params
 	 */
 	public function format( IParam $param, array &$definitions, array $params ) {
-		if ( $this->isList() ) {
+		if ( $this->isList() && is_array( $param->getValue() ) ) {
+			// TODO: if isList returns true, the value should be an array.
+			// The second check here is to avoid a mysterious error.
+			// Should have logging that writes down the value whenever this occurs.
+
 			$values = $param->getValue();
 
 			foreach ( $values as &$value ) {
@@ -584,7 +550,7 @@ class ParamDefinition implements IParamDefinition {
 	 * @throws Exception
 	 */
 	public static function getCleanDefinitions( array $definitions ) {
-		$cleanList = array();
+		$cleanList = [];
 
 		foreach ( $definitions as $key => $definition ) {
 			if ( is_array( $definition ) ) {

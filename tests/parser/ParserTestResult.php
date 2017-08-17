@@ -1,10 +1,9 @@
 <?php
 /**
+ * @file
+ *
  * @copyright Copyright © 2013, Antoine Musso
  * @copyright Copyright © 2013, Wikimedia Foundation Inc.
- * @license GNU GPL v2
- *
- * @file
  */
 
 /**
@@ -27,9 +26,9 @@ class ParserTestResult {
 	public $actual;
 
 	/**
-	 * @param $description string A short text describing the parser test
-	 *        usually the text in the parser test .txt file.  The description
-	 *        is later available using the property $description.
+	 * @param string $description A short text describing the parser test
+	 *   usually the text in the parser test .txt file.  The description
+	 *   is later available using the property $description.
 	 */
 	public function __construct( $description ) {
 		$this->description = $description;

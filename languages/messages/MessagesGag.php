@@ -1,8 +1,7 @@
 <?php
 /** Gagauz (Gagauz)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -67,7 +66,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'SözleşmäkSayfam', 'SözleşmäkYapraım' ),
 	'Newimages'                 => array( 'EniDosyeler', 'EniPätretler' ),
 	'Newpages'                  => array( 'EniYazılar', 'EniSayfalar', 'EniYapraklar' ),
-	'Popularpages'              => array( 'EnAnılmışSayfalar', 'EnAnılmışYazılar' ),
+
 	'Preferences'               => array( 'Seçimner' ),
 	'Prefixindex'               => array( 'Prefiksİndeksi' ),
 	'Randompage'                => array( 'Razgele', 'RazgeleYazı', 'RazgeleSayfa', 'RazgeleYaprak' ),

@@ -3,6 +3,7 @@
 namespace ParamProcessor;
 
 use Exception;
+use ValueParsers\NullParser;
 use ValueParsers\ParseException;
 use ValueParsers\ValueParser;
 
@@ -75,7 +76,7 @@ final class Param implements IParam {
 	 *
 	 * @var array of ProcessingError
 	 */
-	protected $errors = array();
+	protected $errors = [];
 
 	/**
 	 * Indicates if the parameter was set to it's default.
@@ -235,13 +236,13 @@ final class Param implements IParam {
 	public function getValueParser( Options $options ) {
 		$parser = $this->definition->getValueParser();
 
-		if ( get_class( $parser ) === 'ValueParsers\NullParser' ) {
+		if ( get_class( $parser ) === NullParser::class ) {
 			$parserType = $options->isStringlyTyped() ? 'string-parser' : 'typed-parser';
 
 			// TODO: inject factory
 			$parserClass = ParamDefinitionFactory::singleton()->getComponentForType( $this->definition->getType(), $parserType );
 
-			if ( $parserClass !== 'ValueParsers\NullParser' ) {
+			if ( $parserClass !== NullParser::class ) {
 				$parser = new $parserClass( new \ValueParsers\ParserOptions() );
 			}
 		}
@@ -258,7 +259,7 @@ final class Param implements IParam {
 		$parser = $this->getValueParser( $options );
 
 		if ( $this->definition->isList() ) {
-			$values = array();
+			$values = [];
 
 			foreach ( $this->getValue() as $value ) {
 				$parsedValue = $this->parseAndValidateValue( $parser, $value );
@@ -268,13 +269,13 @@ final class Param implements IParam {
 				}
 			}
 
-			$this->setValue( $values );
+			$this->value = $values;
 		}
 		else {
 			$parsedValue = $this->parseAndValidateValue( $parser, $this->getValue() );
 
 			if ( is_array( $parsedValue ) ) {
-				$this->setValue( $parsedValue[0] );
+				$this->value = $parsedValue[0];
 			}
 		}
 
@@ -311,7 +312,7 @@ final class Param implements IParam {
 
 		$this->validateValue( $value );
 
-		return array( $value );
+		return [ $value ];
 	}
 
 	/**
@@ -365,7 +366,7 @@ final class Param implements IParam {
 	 * @since 1.0
 	 */
 	protected function setToDefaultIfNeeded() {
-		if ( $this->errors !== array() && !$this->hasFatalError() ) {
+		if ( $this->errors !== [] && !$this->hasFatalError() ) {
 			$this->setToDefault();
 		}
 	}

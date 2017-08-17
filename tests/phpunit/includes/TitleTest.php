@@ -1,9 +1,6 @@
 <?php
 
 /**
- * @group Database
- *        ^--- needed for language cache stuff
- *
  * @group Title
  */
 class TitleTest extends MediaWikiTestCase {
@@ -17,6 +14,7 @@ class TitleTest extends MediaWikiTestCase {
 			'wgLang' => Language::factory( 'en' ),
 			'wgAllowUserJs' => false,
 			'wgDefaultLanguageVariant' => false,
+			'wgMetaNamespace' => 'Project',
 		) );
 	}
 
@@ -29,20 +27,108 @@ class TitleTest extends MediaWikiTestCase {
 		foreach ( range( 1, 255 ) as $num ) {
 			$chr = chr( $num );
 			if ( strpos( "#[]{}<>|", $chr ) !== false || preg_match( "/[\\x00-\\x1f\\x7f]/", $chr ) ) {
-				$this->assertFalse( (bool)preg_match( "/[$titlechars]/", $chr ), "chr($num) = $chr is not a valid titlechar" );
+				$this->assertFalse(
+					(bool)preg_match( "/[$titlechars]/", $chr ),
+					"chr($num) = $chr is not a valid titlechar"
+				);
 			} else {
-				$this->assertTrue( (bool)preg_match( "/[$titlechars]/", $chr ), "chr($num) = $chr is a valid titlechar" );
+				$this->assertTrue(
+					(bool)preg_match( "/[$titlechars]/", $chr ),
+					"chr($num) = $chr is a valid titlechar"
+				);
 			}
 		}
 	}
 
-	/**
-	 * See also mediawiki.Title.test.js
-	 * @covers Title::secureAndSplit
-	 * @todo This method should be split into 2 separate tests each with a provider
-	 * @note: This mainly tests MediaWikiTitleCodec::parseTitle().
-	 */
-	public function testSecureAndSplit() {
+	public static function provideValidSecureAndSplit() {
+		return array(
+			array( 'Sandbox' ),
+			array( 'A "B"' ),
+			array( 'A \'B\'' ),
+			array( '.com' ),
+			array( '~' ),
+			array( '#' ),
+			array( '"' ),
+			array( '\'' ),
+			array( 'Talk:Sandbox' ),
+			array( 'Talk:Foo:Sandbox' ),
+			array( 'File:Example.svg' ),
+			array( 'File_talk:Example.svg' ),
+			array( 'Foo/.../Sandbox' ),
+			array( 'Sandbox/...' ),
+			array( 'A~~' ),
+			array( ':A' ),
+			// Length is 256 total, but only title part matters
+			array( 'Category:' . str_repeat( 'x', 248 ) ),
+			array( str_repeat( 'x', 252 ) ),
+			// interwiki prefix
+			array( 'localtestiw: #anchor' ),
+			array( 'localtestiw:' ),
+			array( 'localtestiw:foo' ),
+			array( 'localtestiw: foo # anchor' ),
+			array( 'localtestiw: Talk: Sandbox # anchor' ),
+			array( 'remotetestiw:' ),
+			array( 'remotetestiw: Talk: # anchor' ),
+			array( 'remotetestiw: #bar' ),
+			array( 'remotetestiw: Talk:' ),
+			array( 'remotetestiw: Talk: Foo' ),
+			array( 'localtestiw:remotetestiw:' ),
+			array( 'localtestiw:remotetestiw:foo' )
+		);
+	}
+
+	public static function provideInvalidSecureAndSplit() {
+		return array(
+			array( '' ),
+			array( ':' ),
+			array( '__  __' ),
+			array( '  __  ' ),
+			// Bad characters forbidden regardless of wgLegalTitleChars
+			array( 'A [ B' ),
+			array( 'A ] B' ),
+			array( 'A { B' ),
+			array( 'A } B' ),
+			array( 'A < B' ),
+			array( 'A > B' ),
+			array( 'A | B' ),
+			// URL encoding
+			array( 'A%20B' ),
+			array( 'A%23B' ),
+			array( 'A%2523B' ),
+			// XML/HTML character entity references
+			// Note: Commented out because they are not marked invalid by the PHP test as
+			// Title::newFromText runs Sanitizer::decodeCharReferencesAndNormalize first.
+			//'A &eacute; B',
+			//'A &#233; B',
+			//'A &#x00E9; B',
+			// Subject of NS_TALK does not roundtrip to NS_MAIN
+			array( 'Talk:File:Example.svg' ),
+			// Directory navigation
+			array( '.' ),
+			array( '..' ),
+			array( './Sandbox' ),
+			array( '../Sandbox' ),
+			array( 'Foo/./Sandbox' ),
+			array( 'Foo/../Sandbox' ),
+			array( 'Sandbox/.' ),
+			array( 'Sandbox/..' ),
+			// Tilde
+			array( 'A ~~~ Name' ),
+			array( 'A ~~~~ Signature' ),
+			array( 'A ~~~~~ Timestamp' ),
+			array( str_repeat( 'x', 256 ) ),
+			// Namespace prefix without actual title
+			array( 'Talk:' ),
+			array( 'Talk:#' ),
+			array( 'Category: ' ),
+			array( 'Category: #bar' ),
+			// interwiki prefix
+			array( 'localtestiw: Talk: # anchor' ),
+			array( 'localtestiw: Talk:' )
+		);
+	}
+
+	private function secureAndSplitGlobals() {
 		$this->setMwGlobals( array(
 			'wgLocalInterwikis' => array( 'localtestiw' ),
 			'wgHooks' => array(
@@ -58,92 +144,28 @@ class TitleTest extends MediaWikiTestCase {
 				)
 			)
 		));
-		// Valid
-		foreach ( array(
-			'Sandbox',
-			'A "B"',
-			'A \'B\'',
-			'.com',
-			'~',
-			'#',
-			'"',
-			'\'',
-			'Talk:Sandbox',
-			'Talk:Foo:Sandbox',
-			'File:Example.svg',
-			'File_talk:Example.svg',
-			'Foo/.../Sandbox',
-			'Sandbox/...',
-			'A~~',
-			// Length is 256 total, but only title part matters
-			'Category:' . str_repeat( 'x', 248 ),
-			str_repeat( 'x', 252 ),
-			// interwiki prefix
-			'localtestiw: #anchor',
-			'localtestiw:foo',
-			'localtestiw: foo # anchor',
-			'localtestiw: Talk: Sandbox # anchor',
-			'remotetestiw:',
-			'remotetestiw: Talk: # anchor',
-			'remotetestiw: #bar',
-			'remotetestiw: Talk:',
-			'remotetestiw: Talk: Foo'
-		) as $text ) {
-			$this->assertInstanceOf( 'Title', Title::newFromText( $text ), "Valid: $text" );
-		}
+	}
 
-		// Invalid
-		foreach ( array(
-			'',
-			':',
-			'__  __',
-			'  __  ',
-			// Bad characters forbidden regardless of wgLegalTitleChars
-			'A [ B',
-			'A ] B',
-			'A { B',
-			'A } B',
-			'A < B',
-			'A > B',
-			'A | B',
-			// URL encoding
-			'A%20B',
-			'A%23B',
-			'A%2523B',
-			// XML/HTML character entity references
-			// Note: Commented out because they are not marked invalid by the PHP test as
-			// Title::newFromText runs Sanitizer::decodeCharReferencesAndNormalize first.
-			//'A &eacute; B',
-			//'A &#233; B',
-			//'A &#x00E9; B',
-			// Subject of NS_TALK does not roundtrip to NS_MAIN
-			'Talk:File:Example.svg',
-			// Directory navigation
-			'.',
-			'..',
-			'./Sandbox',
-			'../Sandbox',
-			'Foo/./Sandbox',
-			'Foo/../Sandbox',
-			'Sandbox/.',
-			'Sandbox/..',
-			// Tilde
-			'A ~~~ Name',
-			'A ~~~~ Signature',
-			'A ~~~~~ Timestamp',
-			str_repeat( 'x', 256 ),
-			// Namespace prefix without actual title
-			'Talk:',
-			'Talk:#',
-			'Category: ',
-			'Category: #bar',
-			// interwiki prefix
-			'localtestiw:',
-			'localtestiw: Talk: # anchor',
-			'localtestiw: Talk:'
-		) as $text ) {
-			$this->assertNull( Title::newFromText( $text ), "Invalid: $text" );
-		}
+	/**
+	 * See also mediawiki.Title.test.js
+	 * @covers Title::secureAndSplit
+	 * @dataProvider provideValidSecureAndSplit
+	 * @note This mainly tests MediaWikiTitleCodec::parseTitle().
+	 */
+	public function testSecureAndSplitValid( $text ) {
+		$this->secureAndSplitGlobals();
+		$this->assertInstanceOf( 'Title', Title::newFromText( $text ), "Valid: $text" );
+	}
+
+	/**
+	 * See also mediawiki.Title.test.js
+	 * @covers Title::secureAndSplit
+	 * @dataProvider provideInvalidSecureAndSplit
+	 * @note This mainly tests MediaWikiTitleCodec::parseTitle().
+	 */
+	public function testSecureAndSplitInvalid( $text ) {
+		$this->secureAndSplitGlobals();
+		$this->assertNull( Title::newFromText( $text ), "Invalid: $text" );
 	}
 
 	public static function provideConvertByteClassToUnicodeClass() {
@@ -216,11 +238,10 @@ class TitleTest extends MediaWikiTestCase {
 	}
 
 	/**
-	 * @dataProvider provideBug31100
+	 * @dataProvider provideSpecialNamesWithAndWithoutParameter
 	 * @covers Title::fixSpecialName
-	 * @todo give this test a real name explaining what is being tested here
 	 */
-	public function testBug31100FixSpecialName( $text, $expectedParam ) {
+	public function testFixSpecialNameRetainsParameter( $text, $expectedParam ) {
 		$title = Title::newFromText( $text );
 		$fixed = $title->fixSpecialName();
 		$stuff = explode( '/', $fixed->getDBkey(), 2 );
@@ -229,10 +250,14 @@ class TitleTest extends MediaWikiTestCase {
 		} else {
 			$par = null;
 		}
-		$this->assertEquals( $expectedParam, $par, "Bug 31100 regression check: Title->fixSpecialName() should preserve parameter" );
+		$this->assertEquals(
+			$expectedParam,
+			$par,
+			"Bug 31100 regression check: Title->fixSpecialName() should preserve parameter"
+		);
 	}
 
-	public static function provideBug31100() {
+	public static function provideSpecialNamesWithAndWithoutParameter() {
 		return array(
 			array( 'Special:Version', null ),
 			array( 'Special:Version/', '' ),
@@ -249,8 +274,10 @@ class TitleTest extends MediaWikiTestCase {
 	 * @param array|string|bool $expected Required error
 	 * @dataProvider provideTestIsValidMoveOperation
 	 * @covers Title::isValidMoveOperation
+	 * @covers Title::validateFileMoveOperation
 	 */
 	public function testIsValidMoveOperation( $source, $target, $expected ) {
+		$this->setMwGlobals( 'wgContentHandlerUseDB', false );
 		$title = Title::newFromText( $source );
 		$nt = Title::newFromText( $target );
 		$errors = $title->isValidMoveOperation( $nt, false );
@@ -264,13 +291,17 @@ class TitleTest extends MediaWikiTestCase {
 		}
 	}
 
-	/**
-	 * Provides test parameter values for testIsValidMoveOperation()
-	 */
-	public function dataTestIsValidMoveOperation() {
+	public static function provideTestIsValidMoveOperation() {
 		return array(
+			// for Title::isValidMoveOperation
+			array( 'Some page', '', 'badtitletext' ),
 			array( 'Test', 'Test', 'selfmove' ),
-			array( 'File:Test.jpg', 'Page', 'imagenocrossnamespace' )
+			array( 'Special:FooBar', 'Test', 'immobile-source-namespace' ),
+			array( 'Test', 'Special:FooBar', 'immobile-target-namespace' ),
+			array( 'MediaWiki:Common.js', 'Help:Some wikitext page', 'bad-target-model' ),
+			array( 'Page', 'File:Test.jpg', 'nonfile-cannot-move-to-file' ),
+			// for Title::validateFileMoveOperation
+			array( 'File:Test.jpg', 'Page', 'imagenocrossnamespace' ),
 		);
 	}
 
@@ -294,43 +325,30 @@ class TitleTest extends MediaWikiTestCase {
 			$whitelistRegexp = array( $whitelistRegexp );
 		}
 
+		$this->setMwGlobals( array(
+			// So User::isEveryoneAllowed( 'read' ) === false
+			'wgGroupPermissions' => array( '*' => array( 'read' => false ) ),
+			'wgWhitelistRead' => array( 'some random non sense title' ),
+			'wgWhitelistReadRegexp' => $whitelistRegexp,
+		) );
+
 		$title = Title::newFromDBkey( $source );
 
-		global $wgGroupPermissions;
-		$oldPermissions = $wgGroupPermissions;
-		// Disallow all so we can ensure our regex works
-		$wgGroupPermissions = array();
-		$wgGroupPermissions['*']['read'] = false;
-
-		global $wgWhitelistRead;
-		$oldWhitelist = $wgWhitelistRead;
-		// Undo any LocalSettings explicite whitelists so they won't cause a
-		// failing test to succeed. Set it to some random non sense just
-		// to make sure we properly test Title::checkReadPermissions()
-		$wgWhitelistRead = array( 'some random non sense title' );
-
-		global $wgWhitelistReadRegexp;
-		$oldWhitelistRegexp = $wgWhitelistReadRegexp;
-		$wgWhitelistReadRegexp = $whitelistRegexp;
-
-		// Just use $wgUser which in test is a user object for '127.0.0.1'
-		global $wgUser;
-		// Invalidate user rights cache to take in account $wgGroupPermissions
-		// change above.
-		$wgUser->clearInstanceCache();
-		$errors = $title->userCan( $action, $wgUser );
-
-		// Restore globals
-		$wgGroupPermissions = $oldPermissions;
-		$wgWhitelistRead = $oldWhitelist;
-		$wgWhitelistReadRegexp = $oldWhitelistRegexp;
+		// New anonymous user with no rights
+		$user = new User;
+		$user->mRights = array();
+		$errors = $title->userCan( $action, $user );
 
 		if ( is_bool( $expected ) ) {
 			# Forge the assertion message depending on the assertion expectation
 			$allowableness = $expected
 				? " should be allowed"
 				: " should NOT be allowed";
-			$this->assertEquals( $expected, $errors, "User action '$action' on [[$source]] $allowableness." );
+			$this->assertEquals(
+				$expected,
+				$errors,
+				"User action '$action' on [[$source]] $allowableness."
+			);
 		} else {
 			$errors = $this->flattenErrorsArray( $errors );
 			foreach ( (array)$expected as $error ) {
@@ -387,26 +405,21 @@ class TitleTest extends MediaWikiTestCase {
 		return $result;
 	}
 
-	public static function provideTestIsValidMoveOperation() {
-		return array(
-			array( 'Test', 'Test', 'selfmove' ),
-			array( 'File:Test.jpg', 'Page', 'imagenocrossnamespace' )
-		);
-	}
-
 	/**
 	 * @dataProvider provideGetPageViewLanguage
 	 * @covers Title::getPageViewLanguage
 	 */
-	public function testGetPageViewLanguage( $expected, $titleText, $contLang, $lang, $variant, $msg = '' ) {
-		global $wgLanguageCode, $wgContLang, $wgLang, $wgDefaultLanguageVariant, $wgAllowUserJs;
-
+	public function testGetPageViewLanguage( $expected, $titleText, $contLang,
+		$lang, $variant, $msg = ''
+	) {
 		// Setup environnement for this test
-		$wgLanguageCode = $contLang;
-		$wgContLang = Language::factory( $contLang );
-		$wgLang = Language::factory( $lang );
-		$wgDefaultLanguageVariant = $variant;
-		$wgAllowUserJs = true;
+		$this->setMwGlobals( array(
+			'wgLanguageCode' => $contLang,
+			'wgContLang' => Language::factory( $contLang ),
+			'wgLang' => Language::factory( $lang ),
+			'wgDefaultLanguageVariant' => $variant,
+			'wgAllowUserJs' => true,
+		) );
 
 		$title = Title::newFromText( $titleText );
 		$this->assertInstanceOf( 'Title', $title,
@@ -518,7 +531,7 @@ class TitleTest extends MediaWikiTestCase {
 		);
 	}
 
-	public function provideNewFromTitleValue() {
+	public static function provideNewFromTitleValue() {
 		return array(
 			array( new TitleValue( NS_MAIN, 'Foo' ) ),
 			array( new TitleValue( NS_MAIN, 'Foo', 'bar' ) ),
@@ -538,7 +551,7 @@ class TitleTest extends MediaWikiTestCase {
 		$this->assertEquals( $value->getFragment(), $title->getFragment() );
 	}
 
-	public function provideGetTitleValue() {
+	public static function provideGetTitleValue() {
 		return array(
 			array( 'Foo' ),
 			array( 'Foo#bar' ),
@@ -559,7 +572,7 @@ class TitleTest extends MediaWikiTestCase {
 		$this->assertEquals( $title->getFragment(), $value->getFragment() );
 	}
 
-	public function provideGetFragment() {
+	public static function provideGetFragment() {
 		return array(
 			array( 'Foo', '' ),
 			array( 'Foo#bar', 'bar' ),
@@ -580,11 +593,42 @@ class TitleTest extends MediaWikiTestCase {
 	/**
 	 * @dataProvider provideGetFragment
 	 *
-	 * @param $full
-	 * @param $fragment
+	 * @param string $full
+	 * @param string $fragment
 	 */
 	public function testGetFragment( $full, $fragment ) {
 		$title = Title::newFromText( $full );
 		$this->assertEquals( $fragment, $title->getFragment() );
+	}
+
+	/**
+	 * @covers Title::isAlwaysKnown
+	 * @dataProvider provideIsAlwaysKnown
+	 * @param string $page
+	 * @param bool $isKnown
+	 */
+	public function testIsAlwaysKnown( $page, $isKnown ) {
+		$title = Title::newFromText( $page );
+		$this->assertEquals( $isKnown, $title->isAlwaysKnown() );
+	}
+
+	public static function provideIsAlwaysKnown() {
+		return array(
+			array( 'Some nonexistent page', false ),
+			array( 'UTPage', false ),
+			array( '#test', true ),
+			array( 'Special:BlankPage', true ),
+			array( 'Special:SomeNonexistentSpecialPage', false ),
+			array( 'MediaWiki:Parentheses', true ),
+			array( 'MediaWiki:Some nonexistent message', false ),
+		);
+	}
+
+	/**
+	 * @covers Title::isAlwaysKnown
+	 */
+	public function testIsAlwaysKnownOnInterwiki() {
+		$title = Title::makeTitle( NS_MAIN, 'Interwiki link', '', 'externalwiki' );
+		$this->assertTrue( $title->isAlwaysKnown() );
 	}
 }

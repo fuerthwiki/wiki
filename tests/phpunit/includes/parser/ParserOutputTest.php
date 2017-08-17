@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @group Database
+ *        ^--- trigger DB shadowing because we are using Title magic
+ */
 class ParserOutputTest extends MediaWikiTestCase {
 
 	public static function provideIsLinkInternal() {
@@ -56,4 +60,33 @@ class ParserOutputTest extends MediaWikiTestCase {
 		$this->assertNull( $po->getExtensionData( "one" ) );
 		$this->assertEquals( "Bar", $po->getExtensionData( "two" ) );
 	}
+
+	/**
+	 * @covers ParserOutput::setProperty
+	 * @covers ParserOutput::getProperty
+	 * @covers ParserOutput::unsetProperty
+	 * @covers ParserOutput::getProperties
+	 */
+	public function testProperties() {
+		$po = new ParserOutput();
+
+		$po->setProperty( 'foo', 'val' );
+
+		$properties = $po->getProperties();
+		$this->assertEquals( $po->getProperty( 'foo' ), 'val' );
+		$this->assertEquals( $properties['foo'], 'val' );
+
+		$po->setProperty( 'foo', 'second val' );
+
+		$properties = $po->getProperties();
+		$this->assertEquals( $po->getProperty( 'foo' ), 'second val' );
+		$this->assertEquals( $properties['foo'], 'second val' );
+
+		$po->unsetProperty( 'foo' );
+
+		$properties = $po->getProperties();
+		$this->assertEquals( $po->getProperty( 'foo' ), false );
+		$this->assertArrayNotHasKey( 'foo', $properties );
+	}
+
 }

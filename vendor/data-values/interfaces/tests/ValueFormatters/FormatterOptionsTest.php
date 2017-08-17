@@ -10,22 +10,22 @@ use ValueFormatters\FormatterOptions;
  * @group ValueFormatters
  * @group DataValueExtensions
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class FormatterOptionsTest extends \PHPUnit_Framework_TestCase {
 
 	public function testConstructor() {
-		$options = array(
+		$options = [
 			'foo' => 42,
 			'bar' => 4.2,
-			'baz' => array( 'o_O', false, null, '42' => 42, array() )
-		);
+			'baz' => [ 'o_O', false, null, '42' => 42, [] ]
+		];
 
 		$formatterOptions = new FormatterOptions( $options );
 
 		foreach ( $options as $option => $value ) {
-			$this->assertEquals(
+			$this->assertSame(
 				serialize( $value ),
 				serialize( $formatterOptions->getOption( $option ) ),
 				'Option should be set properly'
@@ -36,11 +36,11 @@ class FormatterOptionsTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	public function testConstructorFail() {
-		$options = array(
+		$options = [
 			'foo' => 42,
 			'bar' => 4.2,
-			42 => array( 'o_O', false, null, '42' => 42, array() )
-		);
+			42 => [ 'o_O', false, null, '42' => 42, [] ]
+		];
 
 		$this->setExpectedException( 'Exception' );
 
@@ -48,24 +48,20 @@ class FormatterOptionsTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	public function setOptionProvider() {
-		$argLists = array();
+		$argLists = [];
 
 		$formatterOptions = new FormatterOptions();
 
-		$argLists[] = array( $formatterOptions, 'foo', 42 );
-		$argLists[] = array( $formatterOptions, 'bar', 42 );
-		$argLists[] = array( $formatterOptions, 'foo', 'foo' );
-		$argLists[] = array( $formatterOptions, 'foo', null );
+		$argLists[] = [ $formatterOptions, 'foo', 42 ];
+		$argLists[] = [ $formatterOptions, 'bar', 42 ];
+		$argLists[] = [ $formatterOptions, 'foo', 'foo' ];
+		$argLists[] = [ $formatterOptions, 'foo', null ];
 
 		return $argLists;
 	}
 
 	/**
 	 * @dataProvider setOptionProvider
-	 *
-	 * @param FormatterOptions $options
-	 * @param $option
-	 * @param $value
 	 */
 	public function testSetAndGetOption( FormatterOptions $options, $option, $value ) {
 		$options->setOption( $option, $value );
@@ -78,11 +74,11 @@ class FormatterOptionsTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	public function testHashOption() {
-		$options = array(
+		$options = [
 			'foo' => 42,
 			'bar' => 4.2,
-			'baz' => array( 'o_O', false, null, '42' => 42, array() )
-		);
+			'baz' => [ 'o_O', false, null, '42' => 42, [] ]
+		];
 
 		$formatterOptions = new FormatterOptions( $options );
 
@@ -95,26 +91,22 @@ class FormatterOptionsTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	public function testSetOption() {
-		$formatterOptions = new FormatterOptions( array( 'foo' => 'bar' ) );
+		$formatterOptions = new FormatterOptions( [ 'foo' => 'bar' ] );
 
-		$values = array(
-			array( 'foo', 'baz' ),
-			array( 'foo', 'bar' ),
-			array( 'onoez', '' ),
-			array( 'hax', 'zor' ),
-			array( 'nyan', 9001 ),
-			array( 'cat', 4.2 ),
-			array( 'spam', array( '~=[,,_,,]:3' ) ),
-		);
+		$values = [
+			[ 'foo', 'baz' ],
+			[ 'foo', 'bar' ],
+			[ 'onoez', '' ],
+			[ 'hax', 'zor' ],
+			[ 'nyan', 9001 ],
+			[ 'cat', 4.2 ],
+			[ 'spam', [ '~=[,,_,,]:3' ] ],
+		];
 
 		foreach ( $values as $value ) {
 			$formatterOptions->setOption( $value[0], $value[1] );
-			$this->assertEquals( $value[1], $formatterOptions->getOption( $value[0] ) );
+			$this->assertSame( $value[1], $formatterOptions->getOption( $value[0] ) );
 		}
-	}
-
-	public function testForSomeReasonPhpSegfaultsIfThereIsOneMethodLess() {
-		$this->assertTrue( (bool)'This is fucking weird' );
 	}
 
 	/**
@@ -122,7 +114,7 @@ class FormatterOptionsTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testGetOption( $nonExistingOption ) {
 		$this->assertTrue( true );
-		$formatterOptions = new FormatterOptions( array( 'foo' => 'bar' ) );
+		$formatterOptions = new FormatterOptions( [ 'foo' => 'bar' ] );
 
 		$this->setExpectedException( 'OutOfBoundsException' );
 
@@ -130,23 +122,23 @@ class FormatterOptionsTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	public function nonExistingOptionsProvider() {
-		$argLists = array();
+		$argLists = [];
 
-		$argLists[] = array( 'bar' );
-		$argLists[] = array( 'Foo' );
-		$argLists[] = array( 'FOO' );
-		$argLists[] = array( 'spam' );
-		$argLists[] = array( 'onoez' );
+		$argLists[] = [ 'bar' ];
+		$argLists[] = [ 'Foo' ];
+		$argLists[] = [ 'FOO' ];
+		$argLists[] = [ 'spam' ];
+		$argLists[] = [ 'onoez' ];
 
 		return $argLists;
 	}
 
 	public function testRequireOption() {
-		$options = array(
+		$options = [
 			'foo' => 42,
 			'bar' => 4.2,
-			'baz' => array( 'o_O', false, null, '42' => 42, array() )
-		);
+			'baz' => [ 'o_O', false, null, '42' => 42, [] ]
+		];
 
 		$formatterOptions = new FormatterOptions( $options );
 
@@ -160,35 +152,35 @@ class FormatterOptionsTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	public function testDefaultOption() {
-		$options = array(
+		$options = [
 			'foo' => 42,
 			'bar' => 4.2,
-			'baz' => array( 'o_O', false, null, '42' => 42, array() )
-		);
+			'baz' => [ 'o_O', false, null, '42' => 42, [] ]
+		];
 
 		$formatterOptions = new FormatterOptions( $options );
 
 		foreach ( $options as $option => $value ) {
 			$formatterOptions->defaultOption( $option, 9001 );
 
-			$this->assertEquals(
+			$this->assertSame(
 				serialize( $value ),
 				serialize( $formatterOptions->getOption( $option ) ),
 				'Defaulting a set option should not affect its value'
 			);
 		}
 
-		$defaults = array(
+		$defaults = [
 			'N' => 42,
 			'y' => 4.2,
 			'a' => false,
-			'n' => array( '42' => 42, array( '' ) )
-		);
+			'n' => [ '42' => 42, [ '' ] ]
+		];
 
 		foreach ( $defaults as $option => $value ) {
 			$formatterOptions->defaultOption( $option, $value );
 
-			$this->assertEquals(
+			$this->assertSame(
 				serialize( $value ),
 				serialize( $formatterOptions->getOption( $option ) ),
 				'Defaulting a not set option should affect its value'

@@ -1,8 +1,7 @@
 <?php
 /** Karachay-Balkar (къарачай-малкъар)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -80,6 +79,7 @@ $specialPageAliases = array(
 	'Mostimages'                => array( 'Эм_кёб_хайырланнган_файлла' ),
 	'Movepage'                  => array( 'Бетни_атын_тюрлендириу', 'Атны_тюрлендириу', 'Атны_тюрлендир' ),
 	'Mycontributions'           => array( 'Мени_къошумум' ),
+	'MyLanguage'                => array( 'Мени_тилим' ),
 	'Mypage'                    => array( 'Мени_бетим' ),
 	'Mytalk'                    => array( 'Мени_сюзюуюм' ),
 	'Myuploads'                 => array( 'Мени_джюклегенлерим' ),
@@ -87,7 +87,7 @@ $specialPageAliases = array(
 	'Newpages'                  => array( 'Джангы_бетле' ),
 	'PasswordReset'             => array( 'Паролну_ийиу' ),
 	'PermanentLink'             => array( 'Дайым_джибериу' ),
-	'Popularpages'              => array( 'Популяр_бетле' ),
+
 	'Preferences'               => array( 'Джарашдырыула' ),
 	'Protectedpages'            => array( 'Джакъланнган_бетле' ),
 	'Protectedtitles'           => array( 'Джакъланнган_атла' ),

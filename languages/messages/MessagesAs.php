@@ -1,8 +1,7 @@
 <?php
 /** Assamese (অসমীয়া)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -99,6 +98,7 @@ $specialPageAliases = array(
 	'MIMEsearch'                => array( 'MIMEMIMEmmmgM_অনুসন্ধান' ),
 	'Movepage'                  => array( 'পৃষ্ঠা_স্থানান্তৰ' ),
 	'Mycontributions'           => array( 'মোৰ_বৰঙনি' ),
+	'MyLanguage'                => array( 'মোৰ_ভাষা' ),
 	'Mypage'                    => array( 'মোৰ_পৃষ্ঠা' ),
 	'Mytalk'                    => array( 'মোৰ_কথোপকথন' ),
 	'Myuploads'                 => array( 'মোৰ_আপল’ডসমূহ' ),
@@ -106,7 +106,7 @@ $specialPageAliases = array(
 	'Newpages'                  => array( 'পৰৱৰ্তী_পৃষ্ঠা' ),
 	'PasswordReset'             => array( 'গুপ্তশব্দ_ঘূৰাই_আনক' ),
 	'PermanentLink'             => array( 'স্থায়ী_সংযোগ' ),
-	'Popularpages'              => array( 'জনপ্ৰিয়_পৃষ্ঠাসমূহ' ),
+
 	'Preferences'               => array( 'পচন্দ' ),
 	'Protectedpages'            => array( 'সুৰক্ষিত_পৃষ্ঠাসমূহ' ),
 	'Protectedtitles'           => array( 'সুৰক্ষিত_শিৰোনামসমূহ' ),

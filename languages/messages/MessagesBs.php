@@ -1,8 +1,7 @@
 <?php
 /** Bosnian (bosanski)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -91,7 +90,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'MojRazgovor' ),
 	'Newimages'                 => array( 'Nove_datoteke', 'Nove_slike' ),
 	'Newpages'                  => array( 'NoveStranice' ),
-	'Popularpages'              => array( 'PopularneStranice' ),
+
 	'Preferences'               => array( 'Postavke' ),
 	'Prefixindex'               => array( 'IndeksPrefiksa' ),
 	'Protectedpages'            => array( 'ZasticeneStranice' ),
@@ -167,7 +166,6 @@ $magicWords = array(
 	'numberofusers'             => array( '1', 'BROJKORISNIKA', 'NUMBEROFUSERS' ),
 	'numberofactiveusers'       => array( '1', 'BROJAKTIVNIHKORISNIKA', 'NUMBEROFACTIVEUSERS' ),
 	'numberofedits'             => array( '1', 'BROJPROMJENA', 'NUMBEROFEDITS' ),
-	'numberofviews'             => array( '1', 'BROJPREGLEDA', 'NUMBEROFVIEWS' ),
 	'pagename'                  => array( '1', 'STRANICA', 'PAGENAME' ),
 	'pagenamee'                 => array( '1', 'STRANICE', 'PAGENAMEE' ),
 	'namespace'                 => array( '1', 'IMENSKIPROSTOR', 'NAMESPACE' ),

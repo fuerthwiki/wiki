@@ -61,7 +61,7 @@ class UserArrayFromResultTest extends MediaWikiTestCase {
 		$this->assertEquals( $username, $object->current->mName );
 	}
 
-	public function provideNumberOfRows() {
+	public static function provideNumberOfRows() {
 		return array(
 			array( 0 ),
 			array( 1 ),
@@ -74,7 +74,10 @@ class UserArrayFromResultTest extends MediaWikiTestCase {
 	 * @covers UserArrayFromResult::count
 	 */
 	public function testCountWithVaryingValues( $numRows ) {
-		$object = $this->getUserArrayFromResult( $this->getMockResultWrapper( $this->getRowWithUsername(), $numRows ) );
+		$object = $this->getUserArrayFromResult( $this->getMockResultWrapper(
+			$this->getRowWithUsername(),
+			$numRows
+		) );
 		$this->assertEquals( $numRows, $object->count() );
 	}
 

@@ -7,7 +7,7 @@
  *        ^--- needed, because we do need the database to test link updates
  */
 class WikitextContentTest extends TextContentTest {
-	static $sections = "Intro
+	public static $sections = "Intro
 
 == stuff ==
 hello world
@@ -150,7 +150,10 @@ just a test"
 				"2",
 				"== TEST ==\nmore fun",
 				null,
-				trim( preg_replace( '/^== test ==.*== foo ==/sm', "== TEST ==\nmore fun\n\n== foo ==", WikitextContentTest::$sections ) )
+				trim( preg_replace(
+					'/^== test ==.*== foo ==/sm', "== TEST ==\nmore fun\n\n== foo ==",
+					WikitextContentTest::$sections
+				) )
 			),
 			array( WikitextContentTest::$sections,
 				"8",
@@ -356,6 +359,52 @@ just a test"
 		$content = $this->newContent( "hello world." );
 
 		$this->assertEquals( CONTENT_MODEL_WIKITEXT, $content->getContentHandler()->getModelID() );
+	}
+
+	public function testRedirectParserOption() {
+		$title = Title::newFromText( 'testRedirectParserOption' );
+
+		// Set up hook and its reporting variables
+		$wikitext = null;
+		$redirectTarget = null;
+		$this->mergeMwGlobalArrayValue( 'wgHooks', array(
+			'InternalParseBeforeLinks' => array(
+				function ( &$parser, &$text, &$stripState ) use ( &$wikitext, &$redirectTarget ) {
+					$wikitext = $text;
+					$redirectTarget = $parser->getOptions()->getRedirectTarget();
+				}
+			)
+		) );
+
+		// Test with non-redirect page
+		$wikitext = false;
+		$redirectTarget = false;
+		$content = $this->newContent( 'hello world.' );
+		$options = $content->getContentHandler()->makeParserOptions( 'canonical' );
+		$options->setRedirectTarget( $title );
+		$content->getParserOutput( $title, null, $options );
+		$this->assertEquals( 'hello world.', $wikitext,
+			'Wikitext passed to hook was not as expected'
+		);
+		$this->assertEquals( null, $redirectTarget, 'Redirect seen in hook was not null' );
+		$this->assertEquals( $title, $options->getRedirectTarget(),
+			'ParserOptions\' redirectTarget was changed'
+		);
+
+		// Test with a redirect page
+		$wikitext = false;
+		$redirectTarget = false;
+		$content = $this->newContent( "#REDIRECT [[TestRedirectParserOption/redir]]\nhello redirect." );
+		$options = $content->getContentHandler()->makeParserOptions( 'canonical' );
+		$content->getParserOutput( $title, null, $options );
+		$this->assertEquals( 'hello redirect.', $wikitext, 'Wikitext passed to hook was not as expected' );
+		$this->assertNotEquals( null, $redirectTarget, 'Redirect seen in hook was null' );
+		$this->assertEquals( 'TestRedirectParserOption/redir', $redirectTarget->getFullText(),
+			'Redirect seen in hook was not the expected title'
+		);
+		$this->assertEquals( null, $options->getRedirectTarget(),
+			'ParserOptions\' redirectTarget was changed'
+		);
 	}
 
 	public static function dataEquals() {

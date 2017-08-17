@@ -1,4 +1,8 @@
 <?php
+
+/**
+ * @group Media
+ */
 class GIFMetadataExtractorTest extends MediaWikiTestCase {
 
 	protected function setUp() {
@@ -9,8 +13,8 @@ class GIFMetadataExtractorTest extends MediaWikiTestCase {
 
 	/**
 	 * Put in a file, and see if the metadata coming out is as expected.
-	 * @param $filename String
-	 * @param $expected Array The extracted metadata.
+	 * @param string $filename
+	 * @param array $expected The extracted metadata.
 	 * @dataProvider provideGetMetadata
 	 * @covers GIFMetadataExtractor::getMetadata
 	 */

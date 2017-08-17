@@ -1,8 +1,7 @@
 <?php
 /** Ossetic (Ирон)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -110,7 +109,7 @@ $specialPageAliases = array(
 	'Newpages'                  => array( 'НогФæрстæ' ),
 	'PasswordReset'             => array( 'ПарольНогКæнын' ),
 	'PermanentLink'             => array( 'УдгасÆрвитæн' ),
-	'Popularpages'              => array( 'АрæхФæрстæ' ),
+
 	'Preferences'               => array( 'Уагæвæрдтæ' ),
 	'Prefixindex'               => array( 'РазæфтуантыИндекс' ),
 	'Protectedpages'            => array( 'ÆхгæдФæрстæ' ),
@@ -181,5 +180,5 @@ $magicWords = array(
 );
 
 $linkTrail = '/^((?:[a-z]|а|æ|б|в|г|д|е|ё|ж|з|и|й|к|л|м|н|о|п|р|с|т|у|ф|х|ц|ч|ш|щ|ъ|ы|ь|э|ю|я|“|»)+)(.*)$/sDu';
-$fallback8bitEncoding =  'windows-1251';
+$fallback8bitEncoding = 'windows-1251';
 

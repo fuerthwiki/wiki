@@ -3,11 +3,10 @@
 namespace ValueParsers\Test;
 
 use DataValues\BooleanValue;
+use ValueParsers\BoolParser;
 
 /**
- * Unit test BoolParser class.
- *
- * @since 0.1
+ * @covers ValueParsers\BoolParser
  *
  * @group ValueParsers
  * @group DataValueExtensions
@@ -16,6 +15,15 @@ use DataValues\BooleanValue;
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class BoolParserTest extends StringValueParserTest {
+
+	/**
+	 * @see ValueParserTestBase::getInstance
+	 *
+	 * @return BoolParser
+	 */
+	protected function getInstance() {
+		return new BoolParser();
+	}
 
 	/**
 	 * @see ValueParserTestBase::validInputProvider
@@ -60,15 +68,6 @@ class BoolParserTest extends StringValueParserTest {
 		}
 
 		return $argLists;
-	}
-
-	/**
-	 * @see ValueParserTestBase::getParserClass
-	 *
-	 * @return string
-	 */
-	protected function getParserClass() {
-		return 'ValueParsers\BoolParser';
 	}
 
 }

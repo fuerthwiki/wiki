@@ -12,7 +12,6 @@
  * @copyright © 2012, Santhosh Thottingal
  * @copyright © 2012, Timo Tijhof
  *
- * @license http://www.gnu.org/copyleft/gpl.html GNU General Public License 2.0 or later
  */
 class ResourcesTest extends MediaWikiTestCase {
 
@@ -31,13 +30,21 @@ class ResourcesTest extends MediaWikiTestCase {
 	public function testStyleMedia( $moduleName, $media, $filename, $css ) {
 		$cssText = CSSMin::minify( $css->cssText );
 
-		$this->assertTrue( strpos( $cssText, '@media' ) === false, 'Stylesheets should not both specify "media" and contain @media' );
+		$this->assertTrue(
+			strpos( $cssText, '@media' ) === false,
+			'Stylesheets should not both specify "media" and contain @media'
+		);
 	}
 
-	public function testDependencies() {
+	/**
+	 * Verify that nothing explicitly depends on the 'jquery' and 'mediawiki' modules.
+	 * They are always loaded, depending on them is unsupported and leads to unexpected behaviour.
+	 */
+	public function testIllegalDependencies() {
 		$data = self::getAllModules();
 		$illegalDeps = array( 'jquery', 'mediawiki' );
 
+		/** @var ResourceLoaderModule $module */
 		foreach ( $data['modules'] as $moduleName => $module ) {
 			foreach ( $illegalDeps as $illegalDep ) {
 				$this->assertNotContains(
@@ -50,7 +57,59 @@ class ResourcesTest extends MediaWikiTestCase {
 	}
 
 	/**
+	 * Verify that all modules specified as dependencies of other modules actually exist.
+	 */
+	public function testMissingDependencies() {
+		$data = self::getAllModules();
+		$validDeps = array_keys( $data['modules'] );
+
+		/** @var ResourceLoaderModule $module */
+		foreach ( $data['modules'] as $moduleName => $module ) {
+			foreach ( $module->getDependencies() as $dep ) {
+				$this->assertContains(
+					$dep,
+					$validDeps,
+					"The module '$dep' required by '$moduleName' must exist"
+				);
+			}
+		}
+	}
+
+	/**
+	 * Verify that all dependencies of all modules are always satisfiable with the 'targets' defined
+	 * for the involved modules.
+	 *
+	 * Example: A depends on B. A has targets: mobile, desktop. B has targets: desktop. Therefore the
+	 * dependency is sometimes unsatisfiable: it's impossible to load module A on mobile.
+	 */
+	public function testUnsatisfiableDependencies() {
+		$data = self::getAllModules();
+		$validDeps = array_keys( $data['modules'] );
+
+		/** @var ResourceLoaderModule $module */
+		foreach ( $data['modules'] as $moduleName => $module ) {
+			$moduleTargets = $module->getTargets();
+			foreach ( $module->getDependencies() as $dep ) {
+				if ( !isset( $data['modules'][$dep] ) ) {
+					// Missing dependencies reported by testMissingDependencies
+					continue;
+				}
+				$targets = $data['modules'][$dep]->getTargets();
+				foreach ( $moduleTargets as $moduleTarget ) {
+					$this->assertContains(
+						$moduleTarget,
+						$targets,
+						"The module '$moduleName' must not have target '$moduleTarget' "
+							. "because its dependency '$dep' does not have it"
+					);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Get all registered modules from ResouceLoader.
+	 * @return array
 	 */
 	protected static function getAllModules() {
 		global $wgEnableJavaScriptTest;
@@ -112,7 +171,7 @@ class ResourcesTest extends MediaWikiTestCase {
 							$media,
 							$file,
 							// XXX: Wrapped in an object to keep it out of PHPUnit output
-							(object) array( 'cssText' => $readStyleFile->invoke( $module, $file, $flip ) ),
+							(object)array( 'cssText' => $readStyleFile->invoke( $module, $file, $flip ) ),
 						);
 					}
 				}
@@ -203,7 +262,7 @@ class ResourcesTest extends MediaWikiTestCase {
 				$cases[] = array(
 					$method->invoke( $module, $file ),
 					$moduleName,
-					$file,
+					( $file instanceof ResourceLoaderFilePath ? $file->getPath() : $file ),
 				);
 			}
 		}

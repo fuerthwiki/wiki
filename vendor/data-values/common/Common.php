@@ -10,17 +10,12 @@
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 
-if ( defined( 'DataValuesCommon_VERSION' ) ) {
+if ( defined( 'DATAVALUES_COMMON_VERSION' ) ) {
 	// Do not initialize more than once.
 	return 1;
 }
 
-define( 'DATAVALUES_COMMON_VERSION', '0.2.3' );
-
-/**
- * @deprecated
- */
-define( 'DataValuesCommon_VERSION', DATAVALUES_COMMON_VERSION );
+define( 'DATAVALUES_COMMON_VERSION', '0.3.1' );
 
 if ( defined( 'MEDIAWIKI' ) ) {
 	$GLOBALS['wgExtensionCredits']['datavalues'][] = array(

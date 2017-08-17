@@ -36,23 +36,33 @@
  */
 interface ITestRecorder {
 
-	/** Called at beginning of the parser test run */
+	/**
+	 * Called at beginning of the parser test run
+	 */
 	public function start();
 
-	/** Called after each test */
+	/**
+	 * Called after each test
+	 * @param string $test
+	 * @param bool $result
+	 */
 	public function record( $test, $result );
 
-	/** Called before finishing the test run */
+	/**
+	 * Called before finishing the test run
+	 */
 	public function report();
 
-	/** Called at the end of the parser test run */
+	/**
+	 * Called at the end of the parser test run
+	 */
 	public function end();
 
 }
 
 class TestRecorder implements ITestRecorder {
-	var $parent;
-	var $term;
+	public $parent;
+	public $term;
 
 	function __construct( $parent ) {
 		$this->parent = $parent;
@@ -107,6 +117,7 @@ class DbTestPreviewer extends TestRecorder {
 
 	/**
 	 * This should be called before the table prefix is changed
+	 * @param TestRecorder $parent
 	 */
 	function __construct( $parent ) {
 		parent::__construct( $parent );
@@ -220,6 +231,9 @@ class DbTestPreviewer extends TestRecorder {
 	 * Returns a string giving information about when a test last had a status change.
 	 * Could help to track down when regressions were introduced, as distinct from tests
 	 * which have never passed (which are more change requests than regressions).
+	 * @param string $testname
+	 * @param string $after
+	 * @return string
 	 */
 	private function getTestStatusInfo( $testname, $after ) {
 		// If we're looking at a test that has just been removed, then say when it first appeared.
@@ -295,7 +309,7 @@ class DbTestPreviewer extends TestRecorder {
 }
 
 class DbTestRecorder extends DbTestPreviewer {
-	var $version;
+	public $version;
 
 	/**
 	 * Set up result recording; insert a record for the run with the date
@@ -318,7 +332,7 @@ class DbTestRecorder extends DbTestPreviewer {
 			array(
 				'tr_date' => $this->db->timestamp(),
 				'tr_mw_version' => $this->version,
-				'tr_php_version' => phpversion(),
+				'tr_php_version' => PHP_VERSION,
 				'tr_db_version' => $this->db->getServerVersion(),
 				'tr_uname' => php_uname()
 			),
@@ -333,8 +347,8 @@ class DbTestRecorder extends DbTestPreviewer {
 	/**
 	 * Record an individual test item's success or failure to the db
 	 *
-	 * @param $test String
-	 * @param $result Boolean
+	 * @param string $test
+	 * @param bool $result
 	 */
 	function record( $test, $result ) {
 		parent::record( $test, $result );
@@ -352,7 +366,11 @@ class DbTestRecorder extends DbTestPreviewer {
 class TestFileIterator implements Iterator {
 	private $file;
 	private $fh;
-	private $parserTest; /* An instance of ParserTest (parserTests.php) or MediaWikiParserTest (phpunit) */
+	/**
+	 * @var ParserTest|MediaWikiParserTest An instance of ParserTest (parserTests.php)
+	 *  or MediaWikiParserTest (phpunit)
+	 */
+	private $parserTest;
 	private $index = 0;
 	private $test;
 	private $section = null;
@@ -360,6 +378,10 @@ class TestFileIterator implements Iterator {
 	private $sectionData = array();
 	private $lineNum;
 	private $eof;
+	# Create a fake parser tests which never run anything unless
+	# asked to do so. This will avoid running hooks for a disabled test
+	private $delayedParserTest;
+	private $nextSubTest = 0;
 
 	function __construct( $file, $parserTest ) {
 		$this->file = $file;
@@ -370,6 +392,7 @@ class TestFileIterator implements Iterator {
 		}
 
 		$this->parserTest = $parserTest;
+		$this->delayedParserTest = new DelayedParserTest();
 
 		$this->lineNum = $this->index = 0;
 	}
@@ -408,12 +431,73 @@ class TestFileIterator implements Iterator {
 		return $this->eof != true;
 	}
 
-	function readNextTest() {
-		$this->clearSection();
+	function setupCurrentTest() {
+		// "input" and "result" are old section names allowed
+		// for backwards-compatibility.
+		$input = $this->checkSection( array( 'wikitext', 'input' ), false );
+		$result = $this->checkSection( array( 'html/php', 'html/*', 'html', 'result' ), false );
+		// some tests have "with tidy" and "without tidy" variants
+		$tidy = $this->checkSection( array( 'html/php+tidy', 'html+tidy' ), false );
+		if ( $tidy != false ) {
+			if ( $this->nextSubTest == 0 ) {
+				if ( $result != false ) {
+					$this->nextSubTest = 1; // rerun non-tidy variant later
+				}
+				$result = $tidy;
+			} else {
+				$this->nextSubTest = 0; // go on to next test after this
+				$tidy = false;
+			}
+		}
 
-		# Create a fake parser tests which never run anything unless
-		# asked to do so. This will avoid running hooks for a disabled test
-		$delayedParserTest = new DelayedParserTest();
+		if ( !isset( $this->sectionData['options'] ) ) {
+			$this->sectionData['options'] = '';
+		}
+
+		if ( !isset( $this->sectionData['config'] ) ) {
+			$this->sectionData['config'] = '';
+		}
+
+		$isDisabled = preg_match( '/\\bdisabled\\b/i', $this->sectionData['options'] ) && !$this->parserTest->runDisabled;
+		$isParsoidOnly = preg_match( '/\\bparsoid\\b/i', $this->sectionData['options'] ) && $result == 'html' && !$this->parserTest->runParsoid;
+		$isFiltered = !preg_match( "/" . $this->parserTest->regex . "/i", $this->sectionData['test'] );
+		if ( $input == false || $result == false || $isDisabled || $isParsoidOnly || $isFiltered ) {
+			# disabled test
+			return false;
+		}
+
+		# We are really going to run the test, run pending hooks and hooks function
+		wfDebug( __METHOD__ . " unleashing delayed test for: {$this->sectionData['test']}" );
+		$hooksResult = $this->delayedParserTest->unleash( $this->parserTest );
+		if ( !$hooksResult ) {
+			# Some hook reported an issue. Abort.
+			throw new MWException( "Problem running requested parser hook from the test file" );
+		}
+
+		$this->test = array(
+			'test' => ParserTest::chomp( $this->sectionData['test'] ),
+			'input' => ParserTest::chomp( $this->sectionData[$input] ),
+			'result' => ParserTest::chomp( $this->sectionData[$result] ),
+			'options' => ParserTest::chomp( $this->sectionData['options'] ),
+			'config' => ParserTest::chomp( $this->sectionData['config'] ),
+		);
+		if ( $tidy != false ) {
+			$this->test['options'] .= " tidy";
+		}
+		return true;
+	}
+
+	function readNextTest() {
+		# Run additional subtests of previous test
+		while ( $this->nextSubTest > 0 ) {
+			if ( $this->setupCurrentTest() ) {
+				return true;
+			}
+		}
+
+		$this->clearSection();
+		# Reset hooks for the delayed test object
+		$this->delayedParserTest->reset();
 
 		while ( false !== ( $line = fgets( $this->fh ) ) ) {
 			$this->lineNum++;
@@ -426,7 +510,9 @@ class TestFileIterator implements Iterator {
 					$this->checkSection( 'text' );
 					$this->checkSection( 'article' );
 
-					$this->parserTest->addArticle( ParserTest::chomp( $this->sectionData['article'] ), $this->sectionData['text'], $this->lineNum );
+					$this->parserTest->addArticle(
+						ParserTest::chomp( $this->sectionData['article'] ),
+						$this->sectionData['text'], $this->lineNum );
 
 					$this->clearSection();
 
@@ -440,7 +526,7 @@ class TestFileIterator implements Iterator {
 						$line = trim( $line );
 
 						if ( $line ) {
-							$delayedParserTest->requireHook( $line );
+							$this->delayedParserTest->requireHook( $line );
 						}
 					}
 
@@ -456,7 +542,23 @@ class TestFileIterator implements Iterator {
 						$line = trim( $line );
 
 						if ( $line ) {
-							$delayedParserTest->requireFunctionHook( $line );
+							$this->delayedParserTest->requireFunctionHook( $line );
+						}
+					}
+
+					$this->clearSection();
+
+					continue;
+				}
+
+				if ( $this->section == 'endtransparenthooks' ) {
+					$this->checkSection( 'transparenthooks' );
+
+					foreach ( explode( "\n", $this->sectionData['transparenthooks'] ) as $line ) {
+						$line = trim( $line );
+
+						if ( $line ) {
+							$this->delayedParserTest->requireTransparentHook( $line );
 						}
 					}
 
@@ -467,54 +569,20 @@ class TestFileIterator implements Iterator {
 
 				if ( $this->section == 'end' ) {
 					$this->checkSection( 'test' );
-					// "input" and "result" are old section names allowed
-					// for backwards-compatibility.
-					$input = $this->checkSection( array( 'wikitext', 'input' ), false );
-					$result = $this->checkSection( array( 'html/php', 'html/*', 'html', 'result' ), false );
-
-					if ( !isset( $this->sectionData['options'] ) ) {
-						$this->sectionData['options'] = '';
-					}
-
-					if ( !isset( $this->sectionData['config'] ) ) {
-						$this->sectionData['config'] = '';
-					}
-
-					if ( $input == false || $result == false ||
-						( ( preg_match( '/\\bdisabled\\b/i', $this->sectionData['options'] ) && !$this->parserTest->runDisabled )
-						|| ( preg_match( '/\\bparsoid\\b/i', $this->sectionData['options'] ) && $result != 'html/php' && !$this->parserTest->runParsoid )
-						|| !preg_match( "/" . $this->parserTest->regex . "/i", $this->sectionData['test'] ) )
-					) {
-						# disabled test
-						$this->clearSection();
-
-						# Forget any pending hooks call since test is disabled
-						$delayedParserTest->reset();
-
-						continue;
-					}
-
-					# We are really going to run the test, run pending hooks and hooks function
-					wfDebug( __METHOD__ . " unleashing delayed test for: {$this->sectionData['test']}" );
-					$hooksResult = $delayedParserTest->unleash( $this->parserTest );
-					if ( !$hooksResult ) {
-						# Some hook reported an issue. Abort.
-						return false;
-					}
-
-					$this->test = array(
-						'test' => ParserTest::chomp( $this->sectionData['test'] ),
-						'input' => ParserTest::chomp( $this->sectionData[ $input ] ),
-						'result' => ParserTest::chomp( $this->sectionData[ $result ] ),
-						'options' => ParserTest::chomp( $this->sectionData['options'] ),
-						'config' => ParserTest::chomp( $this->sectionData['config'] ),
-					);
-
-					return true;
+					do {
+						if ( $this->setupCurrentTest() ) {
+							return true;
+						}
+					} while ( $this->nextSubTest > 0 );
+					# go on to next test (since this was disabled)
+					$this->clearSection();
+					$this->delayedParserTest->reset();
+					continue;
 				}
 
 				if ( isset( $this->sectionData[$this->section] ) ) {
-					throw new MWException( "duplicate section '$this->section' at line {$this->lineNum} of $this->file\n" );
+					throw new MWException( "duplicate section '$this->section' "
+						. "at line {$this->lineNum} of $this->file\n" );
 				}
 
 				$this->sectionData[$this->section] = '';
@@ -545,10 +613,12 @@ class TestFileIterator implements Iterator {
 	 * Throw an exception if it is not set, referencing current section
 	 * and adding the current file name and line number
 	 *
-	 * @param $token String|Array: expected token(s) that should have been
+	 * @param string|array $tokens Expected token(s) that should have been
 	 * mentioned before closing this section
-	 * @param $fatal Boolean: true iff an exception should be thrown if
+	 * @param bool $fatal True iff an exception should be thrown if
 	 * the section is not found.
+	 * @return bool|string
+	 * @throws MWException
 	 */
 	private function checkSection( $tokens, $fatal = true ) {
 		if ( is_null( $this->section ) ) {
@@ -563,7 +633,7 @@ class TestFileIterator implements Iterator {
 
 		$data = $this->sectionData;
 		$tokens = array_filter( $tokens, function ( $token ) use ( $data ) {
-			return isset( $data[ $token ] );
+			return isset( $data[$token] );
 		} );
 
 		if ( count( $tokens ) == 0 ) {
@@ -589,7 +659,7 @@ class TestFileIterator implements Iterator {
 		}
 
 		$tokens = array_values( $tokens );
-		return $tokens[ 0 ];
+		return $tokens[0];
 	}
 }
 
@@ -601,6 +671,7 @@ class DelayedParserTest {
 	/** Initialized on construction */
 	private $hooks;
 	private $fnHooks;
+	private $transparentHooks;
 
 	public function __construct() {
 		$this->reset();
@@ -613,15 +684,20 @@ class DelayedParserTest {
 	public function reset() {
 		$this->hooks = array();
 		$this->fnHooks = array();
+		$this->transparentHooks = array();
 	}
 
 	/**
 	 * Called whenever we actually want to run the hook.
 	 * Should be the case if we found the parserTest is not disabled
+	 * @param ParserTest|NewParserTest $parserTest
+	 * @return bool
+	 * @throws MWException
 	 */
 	public function unleash( &$parserTest ) {
 		if ( !( $parserTest instanceof ParserTest || $parserTest instanceof NewParserTest )	) {
-			throw new MWException( __METHOD__ . " must be passed an instance of ParserTest or NewParserTest classes\n" );
+			throw new MWException( __METHOD__ . " must be passed an instance of ParserTest or "
+				. "NewParserTest classes\n" );
 		}
 
 		# Trigger delayed hooks. Any failure will make us abort
@@ -640,6 +716,14 @@ class DelayedParserTest {
 			}
 		}
 
+		# Trigger delayed transparent hooks. Any failure will make us abort
+		foreach ( $this->transparentHooks as $hook ) {
+			$ret = $parserTest->requireTransparentHook( $hook );
+			if ( !$ret ) {
+				return false;
+			}
+		}
+
 		# Delayed execution was successful.
 		return true;
 	}
@@ -647,6 +731,7 @@ class DelayedParserTest {
 	/**
 	 * Similar to ParserTest object but does not run anything
 	 * Use unleash() to really execute the hook
+	 * @param string $hook
 	 */
 	public function requireHook( $hook ) {
 		$this->hooks[] = $hook;
@@ -655,9 +740,95 @@ class DelayedParserTest {
 	/**
 	 * Similar to ParserTest object but does not run anything
 	 * Use unleash() to really execute the hook function
+	 * @param string $fnHook
 	 */
 	public function requireFunctionHook( $fnHook ) {
 		$this->fnHooks[] = $fnHook;
 	}
 
+	/**
+	 * Similar to ParserTest object but does not run anything
+	 * Use unleash() to really execute the hook function
+	 * @param string $hook
+	 */
+	public function requireTransparentHook( $hook ) {
+		$this->transparentHooks[] = $hook;
+	}
+
+}
+
+/**
+ * Initialize and detect the DjVu files support
+ */
+class DjVuSupport {
+
+	/**
+	 * Initialises DjVu tools global with default values
+	 */
+	public function __construct() {
+		global $wgDjvuRenderer, $wgDjvuDump, $wgDjvuToXML, $wgFileExtensions, $wgDjvuTxt;
+
+		$wgDjvuRenderer = $wgDjvuRenderer ? $wgDjvuRenderer : '/usr/bin/ddjvu';
+		$wgDjvuDump = $wgDjvuDump ? $wgDjvuDump : '/usr/bin/djvudump';
+		$wgDjvuToXML = $wgDjvuToXML ? $wgDjvuToXML : '/usr/bin/djvutoxml';
+		$wgDjvuTxt = $wgDjvuTxt ? $wgDjvuTxt : '/usr/bin/djvutxt';
+
+		if ( !in_array( 'djvu', $wgFileExtensions ) ) {
+			$wgFileExtensions[] = 'djvu';
+		}
+	}
+
+	/**
+	 * Returns true if the DjVu tools are usable
+	 *
+	 * @return bool
+	 */
+	public function isEnabled() {
+		global $wgDjvuRenderer, $wgDjvuDump, $wgDjvuToXML, $wgDjvuTxt;
+
+		return is_executable( $wgDjvuRenderer )
+			&& is_executable( $wgDjvuDump )
+			&& is_executable( $wgDjvuToXML )
+			&& is_executable( $wgDjvuTxt );
+	}
+}
+
+/**
+ * Initialize and detect the tidy support
+ */
+class TidySupport {
+	private $internalTidy;
+	private $externalTidy;
+
+	/**
+	 * Determine if there is a usable tidy.
+	 */
+	public function __construct() {
+		global $wgTidyBin;
+
+		$this->internalTidy = extension_loaded( 'tidy' ) &&
+			class_exists( 'tidy' ) && !wfIsHHVM();
+
+		$this->externalTidy = is_executable( $wgTidyBin ) ||
+			Installer::locateExecutableInDefaultPaths( array( $wgTidyBin ) )
+			!== false;
+	}
+
+	/**
+	 * Returns true if we should use internal tidy.
+	 *
+	 * @return bool
+	 */
+	public function isInternal() {
+		return $this->internalTidy;
+	}
+
+	/**
+	 * Returns true if tidy is usable
+	 *
+	 * @return bool
+	 */
+	public function isEnabled() {
+		return $this->internalTidy || $this->externalTidy;
+	}
 }

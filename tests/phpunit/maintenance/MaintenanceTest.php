@@ -81,7 +81,7 @@ class MaintenanceFixup extends Maintenance {
 			return;
 		}
 
-		return call_user_func_array( array( "parent", __FUNCTION__ ), func_get_args() );
+		call_user_func_array( array( "parent", __FUNCTION__ ), func_get_args() );
 	}
 
 	/**
@@ -158,12 +158,12 @@ class MaintenanceTest extends MediaWikiTestCase {
 	 *
 	 * This function simulates shutdown of self::m.
 	 *
-	 * @param $preShutdownOutput string: expected output before simulating shutdown
-	 * @param $expectNLAppending bool: Whether or not shutdown simulation is expected
-	 *            to add a newline to the output. If false, $preShutdownOutput is the
-	 *            expected output after shutdown simulation. Otherwise,
-	 *            $preShutdownOutput with an appended newline is the expected output
-	 *            after shutdown simulation.
+	 * @param string $preShutdownOutput Expected output before simulating shutdown
+	 * @param bool $expectNLAppending Whether or not shutdown simulation is expected
+	 *   to add a newline to the output. If false, $preShutdownOutput is the
+	 *   expected output after shutdown simulation. Otherwise,
+	 *   $preShutdownOutput with an appended newline is the expected output
+	 *   after shutdown simulation.
 	 */
 	private function assertOutputPrePostShutdown( $preShutdownOutput, $expectNLAppending ) {
 
@@ -809,5 +809,22 @@ class MaintenanceTest extends MediaWikiTestCase {
 
 		$m2->simulateShutdown();
 		$this->assertOutputPrePostShutdown( "foobar\n\n", false );
+	}
+
+	/**
+	 * @covers Maintenance::getConfig
+	 */
+	public function testGetConfig() {
+		$this->assertInstanceOf( 'Config', $this->m->getConfig() );
+		$this->assertSame( ConfigFactory::getDefaultInstance()->makeConfig( 'main' ), $this->m->getConfig() );
+	}
+
+	/**
+	 * @covers Maintenance::setConfig
+	 */
+	public function testSetConfig() {
+		$conf = $this->getMock( 'Config' );
+		$this->m->setConfig( $conf );
+		$this->assertSame( $conf, $this->m->getConfig() );
 	}
 }

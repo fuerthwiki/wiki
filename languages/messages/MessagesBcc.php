@@ -1,8 +1,7 @@
 <?php
 /** Southern Balochi (بلوچی مکرانی)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -98,7 +97,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'منی گپ' ),
 	'Newimages'                 => array( 'نوکین عکسان' ),
 	'Newpages'                  => array( 'نوکین صفحات' ),
-	'Popularpages'              => array( 'مردمی صفحات' ),
+
 	'Preferences'               => array( 'ترجیحات' ),
 	'Prefixindex'               => array( 'ایندکس پیشوند' ),
 	'Protectedpages'            => array( 'صفحات محافظتی' ),

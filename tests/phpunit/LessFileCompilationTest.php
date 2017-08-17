@@ -6,7 +6,7 @@
  * @see https://github.com/sebastianbergmann/phpunit/blob/master/src/Extensions/PhptTestCase.php
  * @author Sam Smith <samsmith@wikimedia.org>
  */
-class LessFileCompilationTest extends MediaWikiTestCase {
+class LessFileCompilationTest extends ResourceLoaderTestCase {
 
 	/**
 	 * @var string $file
@@ -23,14 +23,8 @@ class LessFileCompilationTest extends MediaWikiTestCase {
 	 * @param string $file
 	 * @param ResourceLoaderModule $module The ResourceLoader module that
 	 *   contains the file
-	 * @throws PHPUnit_Framework_Exception When the file parameter isn't a
-	 *   string or readable file
 	 */
 	public function __construct( $file, ResourceLoaderModule $module ) {
-		if ( !is_string( $file ) || !is_file( $file ) || !is_readable( $file ) ) {
-			throw PHPUnit_Util_InvalidArgumentHelper::factory( 1, 'readable file' );
-		}
-
 		parent::__construct( 'testLessFileCompilation' );
 
 		$this->file = $file;
@@ -38,7 +32,19 @@ class LessFileCompilationTest extends MediaWikiTestCase {
 	}
 
 	public function testLessFileCompilation() {
-		$compiler = ResourceLoader::getLessCompiler();
+		$thisString = $this->toString();
+		$this->assertTrue(
+			is_string( $this->file ) && is_file( $this->file ) && is_readable( $this->file ),
+			"$thisString must refer to a readable file"
+		);
+
+		$rlContext = $this->getResourceLoaderContext();
+
+		// Bleh
+		$method = new ReflectionMethod( $this->module, 'getLessCompiler' );
+		$method->setAccessible( true );
+		$compiler = $method->invoke( $this->module, $rlContext );
+
 		$this->assertNotNull( $compiler->compileFile( $this->file ) );
 	}
 

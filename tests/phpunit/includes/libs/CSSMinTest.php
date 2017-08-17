@@ -25,7 +25,11 @@ class CSSMinTest extends MediaWikiTestCase {
 	public function testMinify( $code, $expectedOutput ) {
 		$minified = CSSMin::minify( $code );
 
-		$this->assertEquals( $expectedOutput, $minified, 'Minified output should be in the form expected.' );
+		$this->assertEquals(
+			$expectedOutput,
+			$minified,
+			'Minified output should be in the form expected.'
+		);
 	}
 
 	public static function provideMinifyCases() {
@@ -69,7 +73,8 @@ class CSSMinTest extends MediaWikiTestCase {
 	}
 
 	/**
-	 * This tests funky parameters to CSSMin::remap. testRemapRemapping tests the basic functionality.
+	 * This tests funky parameters to CSSMin::remap. testRemapRemapping tests
+	 * the basic functionality.
 	 *
 	 * @dataProvider provideRemapCases
 	 * @covers CSSMin::remap
@@ -78,7 +83,11 @@ class CSSMinTest extends MediaWikiTestCase {
 		$remapped = call_user_func_array( 'CSSMin::remap', $params );
 
 		$messageAdd = " Case: $message";
-		$this->assertEquals( $expectedOutput, $remapped, 'CSSMin::remap should return the expected url form.' . $messageAdd );
+		$this->assertEquals(
+			$expectedOutput,
+			$remapped,
+			'CSSMin::remap should return the expected url form.' . $messageAdd
+		);
 	}
 
 	public static function provideRemapCases() {
@@ -132,15 +141,57 @@ class CSSMinTest extends MediaWikiTestCase {
 		);
 	}
 
+	public static function provideIsRemoteUrl() {
+		return array(
+			array( true, 'http://localhost/w/red.gif?123' ),
+			array( true, 'https://example.org/x.png' ),
+			array( true, '//example.org/x.y.z/image.png' ),
+			array( true, '//localhost/styles.css?query=yes' ),
+			array( true, 'data:image/gif;base64,R0lGODlhAQABAIAAAP8AADAAACwAAAAAAQABAAACAkQBADs=' ),
+			array( false, 'x.gif' ),
+			array( false, '/x.gif' ),
+			array( false, './x.gif' ),
+			array( false, '../x.gif' ),
+		);
+	}
+
+	/**
+	 * @dataProvider provideIsRemoteUrl
+	 * @cover CSSMin::isRemoteUrl
+	 */
+	public function testIsRemoteUrl( $expect, $url ) {
+		$this->assertEquals( CSSMin::isRemoteUrl( $url ), $expect );
+	}
+
+	public static function provideIsLocalUrls() {
+		return array(
+			array( false, 'x.gif' ),
+			array( true, '/x.gif' ),
+			array( false, './x.gif' ),
+			array( false, '../x.gif' ),
+		);
+	}
+
+	/**
+	 * @dataProvider provideIsLocalUrls
+	 * @cover CSSMin::isLocalUrl
+	 */
+	public function testIsLocalUrl( $expect, $url ) {
+		$this->assertEquals( CSSMin::isLocalUrl( $url ), $expect );
+	}
+
 	public static function provideRemapRemappingCases() {
 		// red.gif and green.gif are one-pixel 35-byte GIFs.
 		// large.png is a 35K PNG that should be non-embeddable.
 		// Full paths start with http://localhost/w/.
 		// Timestamps in output are replaced with 'timestamp'.
 
-		// data: URIs for red.gif and green.gif
+		// data: URIs for red.gif, green.gif, circle.svg
 		$red   = 'data:image/gif;base64,R0lGODlhAQABAIAAAP8AADAAACwAAAAAAQABAAACAkQBADs=';
 		$green = 'data:image/gif;base64,R0lGODlhAQABAIAAAACAADAAACwAAAAAAQABAAACAkQBADs=';
+		$svg = 'data:image/svg+xml,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22UTF-8%22%3F%3E%0A'
+			. '%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%228%22%20height%3D'
+			. '%228%22%3E%0A%3Ccircle%20cx%3D%224%22%20cy%3D%224%22%20r%3D%222%22%2F%3E%0A%3C%2Fsvg%3E%0A';
 
 		return array(
 			array(
@@ -194,6 +245,21 @@ class CSSMinTest extends MediaWikiTestCase {
 				"foo { background: url($red); background: url(http://localhost/w/red.gif?timestamp)!ie; }",
 			),
 			array(
+				'Embedded file, other comments before the rule',
+				"foo { /* Bar. */ /* @embed */ background: url(red.gif); }",
+				"foo { /* Bar. */ background: url($red); /* Bar. */ background: url(http://localhost/w/red.gif?timestamp)!ie; }",
+			),
+			array(
+				'Can not re-embed data: URIs',
+				"foo { /* @embed */ background: url($red); }",
+				"foo { background: url($red); }",
+			),
+			array(
+				'Can not remap data: URIs',
+				"foo { background: url($red); }",
+				"foo { background: url($red); }",
+			),
+			array(
 				'Can not embed remote URLs',
 				'foo { /* @embed */ background: url(http://example.org/w/foo.png); }',
 				'foo { background: url(http://example.org/w/foo.png); }',
@@ -201,7 +267,8 @@ class CSSMinTest extends MediaWikiTestCase {
 			array(
 				'Embedded file (inline @embed)',
 				'foo { background: /* @embed */ url(red.gif); }',
-				"foo { background: url($red); background: url(http://localhost/w/red.gif?timestamp)!ie; }",
+				"foo { background: url($red); "
+					. "background: url(http://localhost/w/red.gif?timestamp)!ie; }",
 			),
 			array(
 				'Can not embed large files',
@@ -209,29 +276,42 @@ class CSSMinTest extends MediaWikiTestCase {
 				"foo { background: url(http://localhost/w/large.png?timestamp); }",
 			),
 			array(
+				'SVG files are embedded without base64 encoding and unnecessary IE 6 and 7 fallback',
+				'foo { /* @embed */ background: url(circle.svg); }',
+				"foo { background: url($svg); }",
+			),
+			array(
 				'Two regular files in one rule',
 				'foo { background: url(red.gif), url(green.gif); }',
-				'foo { background: url(http://localhost/w/red.gif?timestamp), url(http://localhost/w/green.gif?timestamp); }',
+				'foo { background: url(http://localhost/w/red.gif?timestamp), '
+					. 'url(http://localhost/w/green.gif?timestamp); }',
 			),
 			array(
 				'Two embedded files in one rule',
 				'foo { /* @embed */ background: url(red.gif), url(green.gif); }',
-				"foo { background: url($red), url($green); background: url(http://localhost/w/red.gif?timestamp), url(http://localhost/w/green.gif?timestamp)!ie; }",
+				"foo { background: url($red), url($green); "
+					. "background: url(http://localhost/w/red.gif?timestamp), "
+					. "url(http://localhost/w/green.gif?timestamp)!ie; }",
 			),
 			array(
 				'Two embedded files in one rule (inline @embed)',
 				'foo { background: /* @embed */ url(red.gif), /* @embed */ url(green.gif); }',
-				"foo { background: url($red), url($green); background: url(http://localhost/w/red.gif?timestamp), url(http://localhost/w/green.gif?timestamp)!ie; }",
+				"foo { background: url($red), url($green); "
+					. "background: url(http://localhost/w/red.gif?timestamp), "
+					. "url(http://localhost/w/green.gif?timestamp)!ie; }",
 			),
 			array(
 				'Two embedded files in one rule (inline @embed), one too large',
 				'foo { background: /* @embed */ url(red.gif), /* @embed */ url(large.png); }',
-				"foo { background: url($red), url(http://localhost/w/large.png?timestamp); background: url(http://localhost/w/red.gif?timestamp), url(http://localhost/w/large.png?timestamp)!ie; }",
+				"foo { background: url($red), url(http://localhost/w/large.png?timestamp); "
+					. "background: url(http://localhost/w/red.gif?timestamp), "
+					. "url(http://localhost/w/large.png?timestamp)!ie; }",
 			),
 			array(
 				'Practical example with some noise',
 				'foo { /* @embed */ background: #f9f9f9 url(red.gif) 0 0 no-repeat; }',
-				"foo { background: #f9f9f9 url($red) 0 0 no-repeat; background: #f9f9f9 url(http://localhost/w/red.gif?timestamp) 0 0 no-repeat!ie; }",
+				"foo { background: #f9f9f9 url($red) 0 0 no-repeat; "
+					. "background: #f9f9f9 url(http://localhost/w/red.gif?timestamp) 0 0 no-repeat!ie; }",
 			),
 			array(
 				'Does not mess with other properties',
@@ -262,6 +342,41 @@ class CSSMinTest extends MediaWikiTestCase {
 				'@import rule to URL (should we remap this?)',
 				'@import url(//localhost/styles.css?query=yes)',
 				'@import url(//localhost/styles.css?query=yes)',
+			),
+			array(
+				'Simple case with comments before url',
+				'foo { prop: /* some {funny;} comment */ url(bar.png); }',
+				'foo { prop: /* some {funny;} comment */ url(http://localhost/w/bar.png); }',
+			),
+			array(
+				'Simple case with comments after url',
+				'foo { prop: url(red.gif)/* some {funny;} comment */ ; }',
+				'foo { prop: url(http://localhost/w/red.gif?timestamp)/* some {funny;} comment */ ; }',
+			),
+			array(
+				'Embedded file with comment before url',
+				'foo { /* @embed */ background: /* some {funny;} comment */ url(red.gif); }',
+				"foo { background: /* some {funny;} comment */ url($red); background: /* some {funny;} comment */ url(http://localhost/w/red.gif?timestamp)!ie; }",
+			),
+			array(
+				'Embedded file with comments inside and outside the rule',
+				'foo { /* @embed */ background: url(red.gif) /* some {foo;} comment */; /* some {bar;} comment */ }',
+				"foo { background: url($red) /* some {foo;} comment */; background: url(http://localhost/w/red.gif?timestamp) /* some {foo;} comment */!ie; /* some {bar;} comment */ }",
+			),
+			array(
+				'Embedded file with comment outside the rule',
+				'foo { /* @embed */ background: url(red.gif); /* some {funny;} comment */ }',
+				"foo { background: url($red); background: url(http://localhost/w/red.gif?timestamp)!ie; /* some {funny;} comment */ }",
+			),
+			array(
+				'Rule with two urls, each with comments',
+				'{ background: /*asd*/ url(something.png); background: /*jkl*/ url(something.png); }',
+				'{ background: /*asd*/ url(http://localhost/w/something.png); background: /*jkl*/ url(http://localhost/w/something.png); }',
+			),
+			array(
+				'Sanity check for offending line from jquery.ui.theme.css (bug 60077)',
+				'.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { border: 1px solid #d3d3d3/*{borderColorDefault}*/; background: #e6e6e6/*{bgColorDefault}*/ url(images/ui-bg_glass_75_e6e6e6_1x400.png)/*{bgImgUrlDefault}*/ 50%/*{bgDefaultXPos}*/ 50%/*{bgDefaultYPos}*/ repeat-x/*{bgDefaultRepeat}*/; font-weight: normal/*{fwDefault}*/; color: #555555/*{fcDefault}*/; }',
+				'.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { border: 1px solid #d3d3d3/*{borderColorDefault}*/; background: #e6e6e6/*{bgColorDefault}*/ url(http://localhost/w/images/ui-bg_glass_75_e6e6e6_1x400.png)/*{bgImgUrlDefault}*/ 50%/*{bgDefaultXPos}*/ 50%/*{bgDefaultYPos}*/ repeat-x/*{bgDefaultRepeat}*/; font-weight: normal/*{fwDefault}*/; color: #555555/*{fcDefault}*/; }',
 			),
 		);
 	}
@@ -324,7 +439,10 @@ class CSSMinTest extends MediaWikiTestCase {
 			// - Using a tab in a string value (turns into a space)
 			array( "foo { content: '\t'; }", "foo{content:'\t'}" ),
 			// - Using css-like syntax in string values
-			array( 'foo::after { content: "{;}"; position: absolute; }', 'foo::after{content:"{;}";position:absolute}' ),
+			array(
+				'foo::after { content: "{;}"; position: absolute; }',
+				'foo::after{content:"{;}";position:absolute}'
+			),
 		);
 	}
 }

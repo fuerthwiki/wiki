@@ -12,10 +12,6 @@ use ParamProcessor\Options;
  */
 class OptionsTest extends \PHPUnit_Framework_TestCase {
 
-	public function testConstructor() {
-		$this->assertInstanceOf( 'ParamProcessor\Options', new Options() );
-	}
-
 	/**
 	 * @return Options
 	 */
@@ -24,22 +20,22 @@ class OptionsTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	public function testBooleanSettersAndGetters() {
-		$methods = array(
+		$methods = [
 			'setUnknownInvalid' => 'unknownIsInvalid',
 			'setLowercaseNames' => 'lowercaseNames',
 			'setRawStringInputs' => 'isStringlyTyped',
 			'setTrimNames' => 'trimNames',
 			'setTrimValues' => 'trimValues',
 			'setLowercaseValues' => 'lowercaseValues',
-		);
+		];
 
 		foreach ( $methods as $setter => $getter ) {
 			$options = $this->getInstance();
 
-			foreach ( array( false, true, false ) as $boolean ) {
-				call_user_func_array( array( $options, $setter ), array( $boolean ) );
+			foreach ( [ false, true, false ] as $boolean ) {
+				call_user_func_array( [ $options, $setter ], [ $boolean ] );
 
-				$this->assertEquals( $boolean, call_user_func( array( $options, $getter ) ) );
+				$this->assertEquals( $boolean, call_user_func( [ $options, $getter ] ) );
 			}
 		}
 	}
@@ -47,7 +43,7 @@ class OptionsTest extends \PHPUnit_Framework_TestCase {
 	public function testSetAndGetName() {
 		$options = $this->getInstance();
 
-		foreach ( array( 'foo', 'bar baz' ) as $name ) {
+		foreach ( [ 'foo', 'bar baz' ] as $name ) {
 			$options->setName( $name );
 			$this->assertEquals( $name, $options->getName() );
 		}

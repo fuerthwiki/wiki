@@ -1,8 +1,7 @@
 <?php
 /** Occitan (occitan)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -74,7 +73,7 @@ $specialPageAliases = array(
 	'Deadendpages'              => array( 'Paginas_sul_camin_d\'enlòc' ),
 	'DeletedContributions'      => array( 'Contribucions_escafadas', 'ContribucionsEscafadas' ),
 	'DoubleRedirects'           => array( 'Redireccions_doblas', 'RedireccionsDoblas' ),
-	'Emailuser'                 => array( 'Corrièr_electronic', 'Email', 'Emèl', 'Emèil' ),
+	'Emailuser'                 => array( 'Corrièr_electronic', 'Emèl', 'Emèil' ),
 	'Export'                    => array( 'Exportar', 'Exportacion' ),
 	'Fewestrevisions'           => array( 'Mens_de_revisions' ),
 	'FileDuplicateSearch'       => array( 'Recèrca_fichièr_en_doble', 'RecèrcaFichièrEnDoble' ),
@@ -107,7 +106,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'Mas_discussions', 'Masdiscussions' ),
 	'Newimages'                 => array( 'Imatges_novèls', 'ImatgesNovèls' ),
 	'Newpages'                  => array( 'Paginas_novèlas' ),
-	'Popularpages'              => array( 'Paginas_mai_visitadas', 'Paginas_las_mai_visitadas', 'Paginasmaivisitadas' ),
+
 	'Preferences'               => array( 'Preferéncias' ),
 	'Prefixindex'               => array( 'Indèx' ),
 	'Protectedpages'            => array( 'Paginas_protegidas' ),
@@ -178,7 +177,6 @@ $magicWords = array(
 	'numberofusers'             => array( '1', 'NOMBREUTILIZAIRES', 'NUMBEROFUSERS' ),
 	'numberofactiveusers'       => array( '1', 'NOMBREUTILIZAIRESACTIUS', 'NUMBEROFACTIVEUSERS' ),
 	'numberofedits'             => array( '1', 'NOMBREEDICIONS', 'NOMBREMODIFS', 'NUMBEROFEDITS' ),
-	'numberofviews'             => array( '1', 'NOMBREVISTAS', 'NUMBEROFVIEWS' ),
 	'pagename'                  => array( '1', 'NOMPAGINA', 'PAGENAME' ),
 	'pagenamee'                 => array( '1', 'NOMPAGINAX', 'PAGENAMEE' ),
 	'namespace'                 => array( '1', 'ESPACINOMENATGE', 'NAMESPACE' ),

@@ -1,8 +1,7 @@
 <?php
 /** Sassaresu (Sassaresu)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -69,7 +68,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'MéDischussioni' ),
 	'Newimages'                 => array( 'ImmaginiRizzenti' ),
 	'Newpages'                  => array( 'PàginiPiùRizzenti' ),
-	'Popularpages'              => array( 'PàginiPiùVisitaddi' ),
+
 	'Preferences'               => array( 'Prifirènzi' ),
 	'Prefixindex'               => array( 'Prefissi' ),
 	'Protectedpages'            => array( 'PàginiPrutiggiddi' ),

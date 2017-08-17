@@ -26,7 +26,6 @@
  *
  * @group Site
  *
- * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class TestSites {
@@ -72,7 +71,22 @@ class TestSites {
 		$site->setLinkPath( "http://spamzz.test/testing/" );
 		$sites[] = $site;
 
-		foreach ( array( 'en', 'de', 'nl', 'sv', 'sr', 'no', 'nn' ) as $langCode ) {
+		/**
+		 * Add at least one right-to-left language (current RTL languages in MediaWiki core are:
+		 * aeb, ar, arc, arz, azb, bcc, bqi, ckb, dv, en_rtl, fa, glk, he, khw, kk_arab, kk_cn,
+		 * ks_arab, ku_arab, lrc, mzn, pnb, ps, sd, ug_arab, ur, yi).
+		 */
+		$languageCodes = array(
+			'de',
+			'en',
+			'fa', //right-to-left
+			'nl',
+			'nn',
+			'no',
+			'sr',
+			'sv',
+		);
+		foreach ( $languageCodes as $langCode ) {
 			$site = new MediaWikiSite();
 			$site->setGlobalId( $langCode . 'wiki' );
 			$site->setGroup( 'wikipedia' );
@@ -93,7 +107,7 @@ class TestSites {
 	 * @since 0.1
 	 */
 	public static function insertIntoDb() {
-		$sitesTable = SiteSQLStore::newInstance();
+		$sitesTable = new DBSiteStore();
 		$sitesTable->clear();
 		$sitesTable->saveSites( TestSites::getSites() );
 	}

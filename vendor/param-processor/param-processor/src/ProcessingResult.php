@@ -13,18 +13,18 @@ class ProcessingResult {
 	/**
 	 * @var ProcessedParam[]
 	 */
-	protected $parameters;
+	private $parameters;
 
 	/**
 	 * @var ProcessingError[]
 	 */
-	protected $errors;
+	private $errors;
 
 	/**
 	 * @param ProcessedParam[] $parameters
 	 * @param ProcessingError[] $errors
 	 */
-	public function __construct( array $parameters, array $errors = array() ) {
+	public function __construct( array $parameters, array $errors = [] ) {
 		$this->parameters = $parameters;
 		$this->errors = $errors;
 	}

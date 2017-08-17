@@ -1,8 +1,7 @@
 <?php
 /** Limburgish (Limburgs)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -101,7 +100,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'Mien_euverlèk' ),
 	'Newimages'                 => array( 'Nuuj_plaetjes' ),
 	'Newpages'                  => array( 'Nuuj_pagina\'s' ),
-	'Popularpages'              => array( 'Populair_pagina\'s' ),
+
 	'Preferences'               => array( 'Veurkäöre' ),
 	'Prefixindex'               => array( 'Alle_artikele' ),
 	'Protectedpages'            => array( 'Beveiligde_pagina\'s' ),

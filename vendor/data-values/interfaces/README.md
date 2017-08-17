@@ -15,7 +15,7 @@ On [Packagist](https://packagist.org/packages/data-values/interfaces):
 
 ## Requirements
 
-* PHP 5.3 or later
+* PHP 5.5 or later
 
 ## Installation
 
@@ -28,11 +28,11 @@ the git repository and take care of loading yourself.
 To add this package as a local, per-project dependency to your project, simply add a
 dependency on `data-values/interfaces` to your project's `composer.json` file.
 Here is a minimal example of a `composer.json` file that just defines a dependency on
-DataValues Interfaces 1.0:
+DataValues Interfaces 0.2:
 
     {
         "require": {
-            "data-values/interfaces": "1.0.*"
+            "data-values/interfaces": "0.2.*"
         }
     }
 
@@ -56,6 +56,37 @@ as [Wikimedia Germany](https://wikimedia.de) employee for the [Wikidata project]
 
 ## Release notes
 
+### 0.2.5 (2017-08-09)
+
+* Removed MediaWiki extension credits registration
+
+### 0.2.4 (2017-08-02)
+
+* Fixed `ValueFormatterTestBase` not being installable via Composer.
+
+### 0.2.3 (2017-08-02)
+
+* Updated minimal required PHP version from 5.3 to 5.5.9.
+* Minor fixes to code documentation.
+* Added PHPCS support.
+
+### 0.2.2 (2016-07-15)
+
+* Fixed `ValueFormatterTestBase` not doing strict string comparisons.
+
+### 0.2.1 (2016-01-13)
+
+* Fixed an issue when using this component with HHVM 1.11.0 (see #21).
+
+### 0.2.0 (2015-08-11)
+
+* Dropped deprecated `ErrorObject`, use `Error` instead
+* Dropped deprecated `ResultObject`, use `Result` instead
+* Dropped deprecated constant `DataValuesInterfaces_VERSION`, use `DATAVALUES_INTERFACES_VERSION` instead
+* Dropped `ValueFormatterTestBase::getFormatterClass`
+* Made `ValueFormatterTestBase::getInstance` abstract
+* The options in `ValueFormatterTestBase::getInstance` are now optional
+
 ### 0.1.5 (2015-02-14)
 
 * The options in the `ValueFormatterBase` constructor are now optional
@@ -75,7 +106,7 @@ as [Wikimedia Germany](https://wikimedia.de) employee for the [Wikidata project]
 * Fixed link in MediaWiki credits
 * Renamed entry point from DataValuesInterfaces.php to Interfaces.php
 
-### 0.1 (2013-11-16)
+### 0.1.0 (2013-11-16)
 
 Initial release with these features:
 

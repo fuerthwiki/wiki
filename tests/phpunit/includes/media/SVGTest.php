@@ -1,6 +1,9 @@
 <?php
 
-class SvgTest extends MediaWikiTestCase {
+/**
+ * @group Media
+ */
+class SvgTest extends MediaWikiMediaTestCase {
 
 	protected function setUp() {
 		parent::setUp();
@@ -9,23 +12,12 @@ class SvgTest extends MediaWikiTestCase {
 
 		$this->setMwGlobals( 'wgShowEXIF', true );
 
-		$this->backend = new FSFileBackend( array(
-			'name' => 'localtesting',
-			'wikiId' => wfWikiId(),
-			'containerPaths' => array( 'data' => $this->filePath )
-		) );
-		$this->repo = new FSRepo( array(
-			'name' => 'temp',
-			'url' => 'http://localhost/thumbtest',
-			'backend' => $this->backend
-		) );
-
 		$this->handler = new SvgHandler;
 	}
 
 	/**
-	 * @param $filename String
-	 * @param $expected Array The expected independent metadata
+	 * @param string $filename
+	 * @param array $expected The expected independent metadata
 	 * @dataProvider providerGetIndependentMetaArray
 	 * @covers SvgHandler::getCommonMetaArray
 	 */
@@ -36,18 +28,14 @@ class SvgTest extends MediaWikiTestCase {
 		$this->assertEquals( $res, $expected );
 	}
 
-	public function providerGetIndependentMetaArray() {
+	public static function providerGetIndependentMetaArray() {
 		return array(
 			array( 'Tux.svg', array(
 				'ObjectName' => 'Tux',
-				'ImageDescription' => 'For more information see: http://commons.wikimedia.org/wiki/Image:Tux.svg',
+				'ImageDescription' =>
+					'For more information see: http://commons.wikimedia.org/wiki/Image:Tux.svg',
 			) ),
 			array( 'Wikimedia-logo.svg', array() )
 		);
-	}
-
-	private function dataFile( $name, $type ) {
-		return new UnregisteredLocalFile( false, $this->repo,
-			"mwstore://localtesting/data/$name", $type );
 	}
 }

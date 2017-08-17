@@ -1,8 +1,7 @@
 <?php
 /** Icelandic (íslenska)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -170,7 +169,7 @@ $specialPageAliases = array(
 	'Newimages'                 => array( 'Nýjar_myndir' ),
 	'Newpages'                  => array( 'Nýjustu_greinar' ),
 	'PasswordReset'             => array( 'Endursetja_lykilorð' ),
-	'Popularpages'              => array( 'Vinsælar_síður' ),
+
 	'Preferences'               => array( 'Stillingar' ),
 	'Prefixindex'               => array( 'Forskeyti' ),
 	'Protectedpages'            => array( 'Verndaðar_síður' ),

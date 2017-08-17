@@ -1,6 +1,8 @@
 <?php
+
 /**
- *@covers ::wfRemoveDotSegments
+ * @group GlobalFunctions
+ * @covers ::wfRemoveDotSegments
  */
 class WfRemoveDotSegmentsTest extends MediaWikiTestCase {
 	/**

@@ -26,31 +26,19 @@
 	 */
 
 	// When a test() indicates asynchronicity with stop(),
-	// allow 10 seconds to pass before killing the test(),
+	// allow 30 seconds to pass before killing the test(),
 	// and assuming failure.
-	QUnit.config.testTimeout = 10 * 1000;
+	QUnit.config.testTimeout = 30 * 1000;
+
+	QUnit.config.requireExpects = true;
 
 	// Add a checkbox to QUnit header to toggle MediaWiki ResourceLoader debug mode.
 	QUnit.config.urlConfig.push( {
 		id: 'debug',
 		label: 'Enable ResourceLoaderDebug',
-		tooltip: 'Enable debug mode in ResourceLoader'
+		tooltip: 'Enable debug mode in ResourceLoader',
+		value: 'true'
 	} );
-
-	QUnit.config.requireExpects = true;
-
-	/**
-	 * Load TestSwarm agent
-	 */
-	// Only if the current url indicates that there is a TestSwarm instance watching us
-	// (TestSwarm appends swarmURL to the test suites url it loads in iframes).
-	// Otherwise this is just a simple view of Special:JavaScriptTest/qunit directly,
-	// no point in loading inject.js in that case. Also, make sure that this instance
-	// of MediaWiki has actually been configured with the required url to that inject.js
-	// script. By default it is false.
-	if ( QUnit.urlParams.swarmURL && mw.config.get( 'QUnitTestSwarmInjectJSPath' ) ) {
-		jQuery.getScript( QUnit.fixurl( mw.config.get( 'QUnitTestSwarmInjectJSPath' ) ) );
-	}
 
 	/**
 	 * CompletenessTest
@@ -112,6 +100,34 @@
 		};
 	}() );
 
+	// Extend QUnit.module to provide a fixture element.
+	( function () {
+		var orgModule = QUnit.module;
+
+		QUnit.module = function ( name, localEnv ) {
+			var fixture;
+			localEnv = localEnv || {};
+			orgModule( name, {
+				setup: function () {
+					fixture = document.createElement( 'div' );
+					fixture.id = 'qunit-fixture';
+					document.body.appendChild( fixture );
+
+					if ( localEnv.setup ) {
+						localEnv.setup.call( this );
+					}
+				},
+				teardown: function () {
+					if ( localEnv.teardown ) {
+						localEnv.teardown.call( this );
+					}
+
+					fixture.parentNode.removeChild( fixture );
+				}
+			} );
+		};
+	}() );
+
 	// Initiate when enabled
 	if ( QUnit.urlParams.completenesstest ) {
 
@@ -133,6 +149,12 @@
 
 			// Don't record methods of the properties of a jQuery object
 			if ( val instanceof $ ) {
+				return true;
+			}
+
+			// Don't iterate over the module registry (the 'script' references would
+			// be listed as untested methods otherwise)
+			if ( val === mw.loader.moduleRegistry ) {
 				return true;
 			}
 
@@ -222,6 +244,7 @@
 				},
 
 				teardown: function () {
+					var timers;
 					log( 'MwEnvironment> TEARDOWN for "' + QUnit.config.current.module
 						+ ': ' + QUnit.config.current.testName + '"' );
 
@@ -234,6 +257,28 @@
 					// As a convenience feature, automatically restore warnings if they're
 					// still suppressed by the end of the test.
 					restoreWarnings();
+
+					// Check for incomplete animations/requests/etc and throw
+					// error if there are any.
+					if ( $.timers && $.timers.length !== 0 ) {
+						timers = $.timers.length;
+						// Tests shoulld use fake timers or wait for animations to complete
+						$.each( $.timers, function ( i, timer ) {
+							var node = timer.elem;
+							mw.log.warn( 'Unfinished animation #' + i + ' in ' + timer.queue + ' queue on ' +
+								mw.html.element( node.nodeName.toLowerCase(), $(node).getAttrs() )
+							);
+						} );
+						// Force animations to stop to give the next test a clean start
+						$.fx.stop();
+
+						throw new Error( 'Unfinished animations: ' + timers );
+					}
+					if ( $.active !== undefined && $.active !== 0 ) {
+						// Test may need to use fake XHR, wait for requests or
+						// call abort().
+						throw new Error( 'Unfinished AJAX requests: ' + $.active );
+					}
 				}
 			};
 		};

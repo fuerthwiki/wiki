@@ -1,8 +1,7 @@
 <?php
 /** Western Frisian (Frysk)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -95,7 +94,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'Myn oerlis' ),
 	'Newimages'                 => array( 'Nije ôfbylden', 'Nije ôfbyldings', 'Nije ôfbyldingen', 'List mei nije ôfbylden', 'Nije Ofbylden' ),
 	'Newpages'                  => array( 'Nije siden' ),
-	'Popularpages'              => array( 'Populêre siden', 'Grage siden' ),
+
 	'Preferences'               => array( 'Ynstellings', 'Ynsteld' ),
 	'Prefixindex'               => array( 'Alle siden neffens foarheaksel' ),
 	'Protectedpages'            => array( 'Befeilige siden', 'Skoattele siden' ),

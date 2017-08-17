@@ -1,8 +1,7 @@
 <?php
 /** Czech (čeština)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -99,7 +98,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'Moje_diskuse' ),
 	'Newimages'                 => array( 'Nové_obrázky', 'Galerie_nových_obrázků', 'Nove_obrazky' ),
 	'Newpages'                  => array( 'Nové_stránky', 'Nove_stranky', 'Nejnovější_stránky', 'Nejnovejsi_stranky' ),
-	'Popularpages'              => array( 'Nejnavštěvovanější_stránky', 'Nejnavstevovanejsi_stranky' ),
+
 	'Preferences'               => array( 'Nastavení', 'Nastaveni' ),
 	'Protectedpages'            => array( 'Zamčené_stránky', 'Zamcene_stranky' ),
 	'Protectedtitles'           => array( 'Zamčené_názvy', 'Zamcene_nazvy', 'Stránky_které_nelze_vytvořit' ),
@@ -262,7 +261,7 @@ $magicWords = array(
  * Date formats list for Special:Preferences
  * see $dateFormats for definitions
  */
-$datePreferences =  array(
+$datePreferences = array(
 	'ČSN basic dt',
 	'ČSN padded dt',
 	'ČSN basic td',

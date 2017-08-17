@@ -1,8 +1,7 @@
 <?php
 /** Sicilian (sicilianu)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -103,6 +102,7 @@ $specialPageAliases = array(
 	'Mostrevisions'             => array( 'PagineConPiùRevisioni' ),
 	'Movepage'                  => array( 'Sposta', 'Rinomina' ),
 	'Mycontributions'           => array( 'MieiContributi' ),
+	'MyLanguage'                => array( 'MiaLingua' ),
 	'Mypage'                    => array( 'MiaPaginaUtente', 'MiaPagina' ),
 	'Mytalk'                    => array( 'MieDiscussioni' ),
 	'Myuploads'                 => array( 'MieiUpload', 'MieiEdit' ),
@@ -110,7 +110,7 @@ $specialPageAliases = array(
 	'Newpages'                  => array( 'PaginePiùRecenti' ),
 	'PasswordReset'             => array( 'ReimpostaPassword' ),
 	'PermanentLink'             => array( 'LinkPermanente' ),
-	'Popularpages'              => array( 'PaginePiùVisitate' ),
+
 	'Preferences'               => array( 'Preferenze' ),
 	'Prefixindex'               => array( 'Prefissi' ),
 	'Protectedpages'            => array( 'PagineProtette' ),

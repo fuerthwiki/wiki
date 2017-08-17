@@ -7,37 +7,29 @@
  * @covers ApiQuery
  */
 class ApiQueryTest extends ApiTestCase {
-	/**
-	 * @var array Storage for $wgHooks
-	 */
-	protected $hooks;
-
 	protected function setUp() {
-		global $wgHooks;
-
 		parent::setUp();
 		$this->doLogin();
 
-		// Setup en: as interwiki prefix
-		$this->hooks = $wgHooks;
-		$wgHooks['InterwikiLoadPrefix'][] = function ( $prefix, &$data ) {
-			if ( $prefix == 'apiquerytestiw' ) {
-				$data = array( 'iw_url' => 'wikipedia' );
-			}
-			return false;
-		};
-	}
-
-	protected function tearDown() {
-		global $wgHooks;
-		$wgHooks = $this->hooks;
-
-		parent::tearDown();
+		// Setup apiquerytestiw: as interwiki prefix
+		$this->setMwGlobals( 'wgHooks', array(
+			'InterwikiLoadPrefix' => array(
+				function ( $prefix, &$data ) {
+					if ( $prefix == 'apiquerytestiw' ) {
+						$data = array( 'iw_url' => 'wikipedia' );
+					}
+					return false;
+				}
+			)
+		) );
 	}
 
 	public function testTitlesGetNormalized() {
-
 		global $wgMetaNamespace;
+
+		$this->setMwGlobals( array(
+			'wgCapitalLinks' => true,
+		) );
 
 		$data = $this->doApiRequest( array(
 			'action' => 'query',
@@ -93,10 +85,14 @@ class ApiQueryTest extends ApiTestCase {
 	 * @param string $titlePart
 	 * @param int $namespace
 	 * @param string $expected
-	 * @param string $description
+	 * @param string $expectException
 	 * @dataProvider provideTestTitlePartToKey
 	 */
 	function testTitlePartToKey( $titlePart, $namespace, $expected, $expectException ) {
+		$this->setMwGlobals( array(
+			'wgCapitalLinks' => true,
+		) );
+
 		$api = new MockApiQueryBase();
 		$exceptionCaught = false;
 		try {
@@ -119,5 +115,28 @@ class ApiQueryTest extends ApiTestCase {
 			array( 'template:foo', NS_MAIN, null, true ),
 			array( 'apiquerytestiw:foo', NS_MAIN, null, true ),
 		);
+	}
+
+	/**
+	 * Test if all classes in the query module manager exists
+	 */
+	public function testClassNamesInModuleManager() {
+		global $wgAutoloadLocalClasses, $wgAutoloadClasses;
+
+		// wgAutoloadLocalClasses has precedence, just like in includes/AutoLoader.php
+		$classes = $wgAutoloadLocalClasses + $wgAutoloadClasses;
+
+		$api = new ApiMain(
+			new FauxRequest( array( 'action' => 'query', 'meta' => 'siteinfo' ) )
+		);
+		$queryApi = new ApiQuery( $api, 'query' );
+		$modules = $queryApi->getModuleManager()->getNamesWithClasses();
+		foreach( $modules as $name => $class ) {
+			$this->assertArrayHasKey(
+				$class,
+				$classes,
+				'Class ' . $class . ' for api module ' . $name . ' not in autoloader (with exact case)'
+			);
+		}
 	}
 }

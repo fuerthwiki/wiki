@@ -5,7 +5,7 @@ namespace ValueValidators;
 /**
  * @since 0.1
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class Result {
@@ -22,12 +22,12 @@ class Result {
 	 *
 	 * @var Error[]
 	 */
-	protected $errors = array();
+	protected $errors = [];
 
 	/**
 	 * @since 0.1
 	 *
-	 * @return Result
+	 * @return self
 	 */
 	public static function newSuccess() {
 		return new static( true );
@@ -38,7 +38,7 @@ class Result {
 	 *
 	 * @param Error[] $errors
 	 *
-	 * @return Result
+	 * @return self
 	 */
 	public static function newError( array $errors ) {
 		return new static( false, $errors );
@@ -57,24 +57,24 @@ class Result {
 	 *
 	 * @since 0.1
 	 *
-	 * @param Result $a
-	 * @param Result $b
+	 * @param self $a
+	 * @param self $b
 	 *
-	 * @return Result
+	 * @return self
 	 */
-	public static function merge( Result $a, Result $b ) {
+	public static function merge( self $a, self $b ) {
 		$aErrors = $a->getErrors();
 		$bErrors = $b->getErrors();
 
 		if ( $a->isValid() && empty( $aErrors ) ) {
 			return $b;
-		} elseif( $b->isValid() && empty( $bErrors ) ) {
+		} elseif ( $b->isValid() && empty( $bErrors ) ) {
 			return $a;
 		} else {
 			$errors = array_merge( $aErrors, $bErrors );
 			$valid = ( $a->isValid() && $b->isValid() );
 
-			return new Result( $valid, $errors );
+			return new self( $valid, $errors );
 		}
 	}
 
@@ -84,7 +84,7 @@ class Result {
 	 * @param bool $isValid
 	 * @param Error[] $errors
 	 */
-	protected function __construct( $isValid, array $errors = array() ) {
+	protected function __construct( $isValid, array $errors = [] ) {
 		$this->isValid = $isValid;
 		$this->errors = $errors;
 	}
@@ -112,8 +112,3 @@ class Result {
 	}
 
 }
-
-/**
- * @deprecated
- */
-class ResultObject extends Result {}

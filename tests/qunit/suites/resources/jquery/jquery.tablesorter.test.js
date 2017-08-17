@@ -1,5 +1,5 @@
 ( function ( $, mw ) {
-	var config, header,
+	var header,
 
 		// Data set "simple"
 		a1 = [ 'A', '1' ],
@@ -155,16 +155,36 @@
 			['February 05 2010']
 		];
 
-	config = {
-		wgMonthNames: ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-		wgMonthNamesShort: ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-		wgDefaultDateFormat: 'dmy',
-		wgSeparatorTransformTable: ['', ''],
-		wgDigitTransformTable: ['', ''],
-		wgContentLanguage: 'en'
-	};
-
-	QUnit.module( 'jquery.tablesorter', QUnit.newMwEnvironment( { config: config } ) );
+	QUnit.module( 'jquery.tablesorter', QUnit.newMwEnvironment( {
+		setup: function () {
+			this.liveMonths = mw.language.months;
+			mw.language.months = {
+				'keys': {
+					'names': ['january', 'february', 'march', 'april', 'may_long', 'june',
+						'july', 'august', 'september', 'october', 'november', 'december'],
+					'genitive': ['january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen',
+						'july-gen', 'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen'],
+					'abbrev': ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
+						'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+				},
+				'names': ['January', 'February', 'March', 'April', 'May', 'June',
+						'July', 'August', 'September', 'October', 'November', 'December'],
+				'genitive': ['January', 'February', 'March', 'April', 'May', 'June',
+						'July', 'August', 'September', 'October', 'November', 'December'],
+				'abbrev': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+						'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+			};
+		},
+		teardown: function () {
+			mw.language.months = this.liveMonths;
+		},
+		config: {
+			wgDefaultDateFormat: 'dmy',
+			wgSeparatorTransformTable: ['', ''],
+			wgDigitTransformTable: ['', ''],
+			wgContentLanguage: 'en'
+		}
+	} ) );
 
 	/**
 	 * Create an HTML table from an array of row arrays containing text strings.
@@ -1160,13 +1180,34 @@
 				'</table>'
 		);
 		$table.tablesorter();
-		assert.equal( 0,
-			$table.find( '#A2' ).prop( 'headerIndex' ),
-			'A2 should be a sort header'
+		assert.equal( $table.find( '#A2' ).data( 'headerIndex' ),
+			undefined,
+			'A2 should not be a sort header'
 		);
-		assert.equal( 1, // should be 2
-			$table.find( '#C1' ).prop( 'headerIndex' ),
-			'C1 should be a sort header, but will sort the wrong column'
+		assert.equal( $table.find( '#C1' ).data( 'headerIndex' ),
+			2,
+			'C1 should be a sort header'
+		);
+	} );
+
+	// bug 53527
+	QUnit.test( 'td cells in thead should not be taken into account for longest row calculation', 2, function ( assert ) {
+		var $table = $(
+			'<table class="sortable">' +
+				'<thead>' +
+				'<tr><th id="A1">A1</th><th>B1</th><td id="C1">C1</td></tr>' +
+				'<tr><th id="A2">A2</th><th>B2</th><th id="C2">C2</th></tr>' +
+				'</thead>' +
+				'</table>'
+		);
+		$table.tablesorter();
+		assert.equal( $table.find( '#C2' ).data( 'headerIndex' ),
+			2,
+			'C2 should be a sort header'
+		);
+		assert.equal( $table.find( '#C1' ).data( 'headerIndex' ),
+			undefined,
+			'C1 should not be a sort header'
 		);
 	} );
 
@@ -1188,16 +1229,19 @@
 	// bug 53211 - exploding rowspans in more complex cases
 	QUnit.test(
 		'Rowspan exploding with row headers and colspans', 1, function ( assert ) {
-		var $table = $( '<table class="sortable">' +
-			'<thead><tr><th rowspan="2">n</th><th colspan="2">foo</th><th rowspan="2">baz</th></tr>' +
-			'<tr><th>foo</th><th>bar</th></tr></thead>' +
-			'<tbody>' +
-			'<tr><td>1</td><td>foo</td><td>bar</td><td>baz</td></tr>' +
-			'<tr><td>2</td><td>foo</td><td>bar</td><td>baz</td></tr>' +
-			'</tbody></table>' );
+			var $table = $( '<table class="sortable">' +
+				'<thead><tr><th rowspan="2">n</th><th colspan="2">foo</th><th rowspan="2">baz</th></tr>' +
+				'<tr><th>foo</th><th>bar</th></tr></thead>' +
+				'<tbody>' +
+				'<tr><td>1</td><td>foo</td><td>bar</td><td>baz</td></tr>' +
+				'<tr><td>2</td><td>foo</td><td>bar</td><td>baz</td></tr>' +
+				'</tbody></table>' );
 
 			$table.tablesorter();
-			assert.equal( 2, $table.find( 'tr:eq(1) th:eq(1)').prop('headerIndex'), 'Incorrect index of sort header' );
+			assert.equal( $table.find( 'tr:eq(1) th:eq(1)').data('headerIndex'),
+				2,
+				'Incorrect index of sort header'
+			);
 		}
 	);
 

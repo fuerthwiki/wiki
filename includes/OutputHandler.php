@@ -23,13 +23,15 @@
 /**
  * Standard output handler for use with ob_start
  *
- * @param $s string
+ * @param string $s
  *
  * @return string
  */
 function wfOutputHandler( $s ) {
-	global $wgDisableOutputCompression, $wgValidateAllHtml;
-	$s = wfMangleFlashPolicy( $s );
+	global $wgDisableOutputCompression, $wgValidateAllHtml, $wgMangleFlashPolicy;
+	if ( $wgMangleFlashPolicy ) {
+		$s = wfMangleFlashPolicy( $s );
+	}
 	if ( $wgValidateAllHtml ) {
 		$headers = headers_list();
 		$isHTML = false;
@@ -94,7 +96,7 @@ function wfRequestExtension() {
  * Handler that compresses data with gzip if allowed by the Accept header.
  * Unlike ob_gzhandler, it works for HEAD requests too.
  *
- * @param $s string
+ * @param string $s
  *
  * @return string
  */
@@ -127,7 +129,8 @@ function wfGzipHandler( $s ) {
 	$headers = headers_list();
 	$foundVary = false;
 	foreach ( $headers as $header ) {
-		if ( substr( $header, 0, 5 ) == 'Vary:' ) {
+		$headerName = strtolower( substr( $header, 0, 5 ) );
+		if ( $headerName == 'vary:' ) {
 			$foundVary = true;
 			break;
 		}
@@ -145,14 +148,14 @@ function wfGzipHandler( $s ) {
 /**
  * Mangle flash policy tags which open up the site to XSS attacks.
  *
- * @param $s string
+ * @param string $s
  *
  * @return string
  */
 function wfMangleFlashPolicy( $s ) {
 	# Avoid weird excessive memory usage in PCRE on big articles
-	if ( preg_match( '/\<\s*cross-domain-policy\s*\>/i', $s ) ) {
-		return preg_replace( '/\<\s*cross-domain-policy\s*\>/i', '<NOT-cross-domain-policy>', $s );
+	if ( preg_match( '/\<\s*cross-domain-policy(?=\s|\>)/i', $s ) ) {
+		return preg_replace( '/\<(\s*)(cross-domain-policy(?=\s|\>))/i', '<$1NOT-$2', $s );
 	} else {
 		return $s;
 	}
@@ -161,10 +164,13 @@ function wfMangleFlashPolicy( $s ) {
 /**
  * Add a Content-Length header if possible. This makes it cooperate with squid better.
  *
- * @param $length int
+ * @param int $length
  */
 function wfDoContentLength( $length ) {
-	if ( !headers_sent() && isset( $_SERVER['SERVER_PROTOCOL'] ) && $_SERVER['SERVER_PROTOCOL'] == 'HTTP/1.0' ) {
+	if ( !headers_sent()
+		&& isset( $_SERVER['SERVER_PROTOCOL'] )
+		&& $_SERVER['SERVER_PROTOCOL'] == 'HTTP/1.0'
+	) {
 		header( "Content-Length: $length" );
 	}
 }
@@ -172,7 +178,7 @@ function wfDoContentLength( $length ) {
 /**
  * Replace the output with an error if the HTML is not valid
  *
- * @param $s string
+ * @param string $s
  *
  * @return string
  */

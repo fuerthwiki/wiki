@@ -1,8 +1,7 @@
 <?php
 /** Armenian (Հայերեն)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -224,7 +223,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'Իմքննարկումները' ),
 	'Newimages'                 => array( 'Նորպատկերներ' ),
 	'Newpages'                  => array( 'Նորէջերը' ),
-	'Popularpages'              => array( 'Հանրաճանաչէջերը' ),
+
 	'Preferences'               => array( 'Նախընտրությունները' ),
 	'Prefixindex'               => array( 'Որոնումնախածանցով' ),
 	'Randompage'                => array( 'Պատահականէջ' ),

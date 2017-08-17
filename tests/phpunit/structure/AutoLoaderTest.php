@@ -2,23 +2,22 @@
 
 class AutoLoaderTest extends MediaWikiTestCase {
 	protected function setUp() {
-		global $wgAutoloadLocalClasses, $wgAutoloadClasses;
-
 		parent::setUp();
 
 		// Fancy dance to trigger a rebuild of AutoLoader::$autoloadLocalClassesLower
-		$this->testLocalClasses = array(
-			'TestAutoloadedLocalClass' => __DIR__ . '/../data/autoloader/TestAutoloadedLocalClass.php',
-			'TestAutoloadedCamlClass' => __DIR__ . '/../data/autoloader/TestAutoloadedCamlClass.php',
-			'TestAutoloadedSerializedClass' => __DIR__ . '/../data/autoloader/TestAutoloadedSerializedClass.php',
-		);
-		$this->setMwGlobals( 'wgAutoloadLocalClasses', $this->testLocalClasses + $wgAutoloadLocalClasses );
+		$this->mergeMwGlobalArrayValue( 'wgAutoloadLocalClasses', array(
+			'TestAutoloadedLocalClass' =>
+				__DIR__ . '/../data/autoloader/TestAutoloadedLocalClass.php',
+			'TestAutoloadedCamlClass' =>
+				__DIR__ . '/../data/autoloader/TestAutoloadedCamlClass.php',
+			'TestAutoloadedSerializedClass' =>
+				__DIR__ . '/../data/autoloader/TestAutoloadedSerializedClass.php',
+		) );
 		AutoLoader::resetAutoloadLocalClassesLower();
 
-		$this->testExtensionClasses = array(
+		$this->mergeMwGlobalArrayValue( 'wgAutoloadClasses', array(
 			'TestAutoloadedClass' => __DIR__ . '/../data/autoloader/TestAutoloadedClass.php',
-		);
-		$this->setMwGlobals( 'wgAutoloadClasses', $this->testExtensionClasses + $wgAutoloadClasses );
+		) );
 	}
 
 	/**
@@ -45,7 +44,7 @@ class AutoLoaderTest extends MediaWikiTestCase {
 
 		$files = array_unique( $expected );
 
-		foreach ( $files as $file ) {
+		foreach ( $files as $class => $file ) {
 			// Only prefix $IP if it doesn't have it already.
 			// Generally local classes don't have it, and those from extensions and test suites do.
 			if ( substr( $file, 0, 1 ) != '/' && substr( $file, 1, 1 ) != ':' ) {
@@ -54,7 +53,19 @@ class AutoLoaderTest extends MediaWikiTestCase {
 				$filePath = $file;
 			}
 
+			if ( !file_exists( $filePath ) ) {
+				$actual[$class] = "[file '$filePath' does not exist]";
+				continue;
+			}
+
+			wfSuppressWarnings();
 			$contents = file_get_contents( $filePath );
+			wfRestoreWarnings();
+
+			if ( $contents === false ) {
+				$actual[$class] = "[couldn't read file '$filePath']";
+				continue;
+			}
 
 			// We could use token_get_all() here, but this is faster
 			$matches = array();
@@ -70,13 +81,23 @@ class AutoLoaderTest extends MediaWikiTestCase {
 				)
 			/imx', $contents, $matches, PREG_SET_ORDER );
 
+			$namespaceMatch = array();
+			preg_match( '/
+				^ [\t ]*
+					namespace \s+
+						([a-zA-Z0-9_]+(\\\\[a-zA-Z0-9_]+)*)
+					\s* ;
+			/imx', $contents, $namespaceMatch );
+			$fileNamespace = $namespaceMatch ? $namespaceMatch[1] . '\\' : '';
+
 			$classesInFile = array();
 			$aliasesInFile = array();
 
 			foreach ( $matches as $match ) {
 				if ( !empty( $match['class'] ) ) {
-					$actual[$match['class']] = $file;
-					$classesInFile[$match['class']] = true;
+					$class = $fileNamespace . $match['class'];
+					$actual[$class] = $file;
+					$classesInFile[$class] = true;
 				} else {
 					$aliasesInFile[$match['alias']] = $match['original'];
 				}
@@ -109,10 +130,14 @@ class AutoLoaderTest extends MediaWikiTestCase {
 	}
 
 	function testWrongCaseClass() {
+		$this->setMwGlobals( 'wgAutoloadAttemptLowercase', true );
+
 		$this->assertTrue( class_exists( 'testautoLoadedcamlCLASS' ) );
 	}
 
 	function testWrongCaseSerializedClass() {
+		$this->setMwGlobals( 'wgAutoloadAttemptLowercase', true );
+
 		$dummyCereal = 'O:29:"testautoloadedserializedclass":0:{}';
 		$uncerealized = unserialize( $dummyCereal );
 		$this->assertFalse( $uncerealized instanceof __PHP_Incomplete_Class,

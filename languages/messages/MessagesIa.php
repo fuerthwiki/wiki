@@ -1,8 +1,7 @@
 <?php
 /** Interlingua (interlingua)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -86,6 +85,7 @@ $specialPageAliases = array(
 	'Mostrevisions'             => array( 'Le_plus_versiones' ),
 	'Movepage'                  => array( 'Renominar_pagina' ),
 	'Mycontributions'           => array( 'Mi_contributiones' ),
+	'MyLanguage'                => array( 'Mi_lingua' ),
 	'Mypage'                    => array( 'Mi_pagina' ),
 	'Mytalk'                    => array( 'Mi_discussion' ),
 	'Myuploads'                 => array( 'Mi_files_incargate' ),
@@ -93,7 +93,7 @@ $specialPageAliases = array(
 	'Newpages'                  => array( 'Paginas_nove', 'Nove_paginas' ),
 	'PasswordReset'             => array( 'Reinitialisar_contrasigno' ),
 	'PermanentLink'             => array( 'Ligamine_permanente' ),
-	'Popularpages'              => array( 'Paginas_popular' ),
+
 	'Preferences'               => array( 'Preferentias' ),
 	'Prefixindex'               => array( 'Indice_de_prefixos' ),
 	'Protectedpages'            => array( 'Paginas_protegite' ),

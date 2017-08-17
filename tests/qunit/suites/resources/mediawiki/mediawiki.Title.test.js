@@ -1,60 +1,6 @@
 /*jshint -W024 */
 ( function ( mw, $ ) {
-	// mw.Title relies on these three config vars
-	// Restore them after each test run
-	var config = {
-		wgFormattedNamespaces: {
-			'-2': 'Media',
-			'-1': 'Special',
-			0: '',
-			1: 'Talk',
-			2: 'User',
-			3: 'User talk',
-			4: 'Wikipedia',
-			5: 'Wikipedia talk',
-			6: 'File',
-			7: 'File talk',
-			8: 'MediaWiki',
-			9: 'MediaWiki talk',
-			10: 'Template',
-			11: 'Template talk',
-			12: 'Help',
-			13: 'Help talk',
-			14: 'Category',
-			15: 'Category talk',
-			// testing custom / localized namespace
-			100: 'Penguins'
-		},
-		wgNamespaceIds: {
-			'media': -2,
-			'special': -1,
-			'': 0,
-			'talk': 1,
-			'user': 2,
-			'user_talk': 3,
-			'wikipedia': 4,
-			'wikipedia_talk': 5,
-			'file': 6,
-			'file_talk': 7,
-			'mediawiki': 8,
-			'mediawiki_talk': 9,
-			'template': 10,
-			'template_talk': 11,
-			'help': 12,
-			'help_talk': 13,
-			'category': 14,
-			'category_talk': 15,
-			'image': 6,
-			'image_talk': 7,
-			'project': 4,
-			'project_talk': 5,
-			// Testing custom namespaces and aliases
-			'penguins': 100,
-			'antarctic_waterfowl': 100
-		},
-		wgCaseSensitiveNamespaces: []
-	},
-	repeat = function ( input, multiplier ) {
+	var repeat = function ( input, multiplier ) {
 		return new Array( multiplier + 1 ).join( input );
 	},
 	cases = {
@@ -74,6 +20,7 @@
 			'Foo/.../Sandbox',
 			'Sandbox/...',
 			'A~~',
+			':A',
 			// Length is 256 total, but only title part matters
 			'Category:' + repeat( 'x', 248 ),
 			repeat( 'x', 252 )
@@ -99,8 +46,8 @@
 			// Note: The ones with # are commented out as those are interpreted as fragment and
 			// as such end up being valid.
 			'A &eacute; B',
-			//'A &#233; B',
-			//'A &#x00E9; B',
+			// 'A &#233; B',
+			// 'A &#x00E9; B',
 			// Subject of NS_TALK does not roundtrip to NS_MAIN
 			'Talk:File:Example.svg',
 			// Directory navigation
@@ -127,7 +74,62 @@
 		]
 	};
 
-	QUnit.module( 'mediawiki.Title', QUnit.newMwEnvironment( { config: config } ) );
+	QUnit.module( 'mediawiki.Title', QUnit.newMwEnvironment( {
+		// mw.Title relies on these three config vars
+		// Restore them after each test run
+		config: {
+			wgFormattedNamespaces: {
+				'-2': 'Media',
+				'-1': 'Special',
+				0: '',
+				1: 'Talk',
+				2: 'User',
+				3: 'User talk',
+				4: 'Wikipedia',
+				5: 'Wikipedia talk',
+				6: 'File',
+				7: 'File talk',
+				8: 'MediaWiki',
+				9: 'MediaWiki talk',
+				10: 'Template',
+				11: 'Template talk',
+				12: 'Help',
+				13: 'Help talk',
+				14: 'Category',
+				15: 'Category talk',
+				// testing custom / localized namespace
+				100: 'Penguins'
+			},
+			wgNamespaceIds: {
+				'media': -2,
+				'special': -1,
+				'': 0,
+				'talk': 1,
+				'user': 2,
+				'user_talk': 3,
+				'wikipedia': 4,
+				'wikipedia_talk': 5,
+				'file': 6,
+				'file_talk': 7,
+				'mediawiki': 8,
+				'mediawiki_talk': 9,
+				'template': 10,
+				'template_talk': 11,
+				'help': 12,
+				'help_talk': 13,
+				'category': 14,
+				'category_talk': 15,
+				'image': 6,
+				'image_talk': 7,
+				'project': 4,
+				'project_talk': 5,
+				// Testing custom namespaces and aliases
+				'penguins': 100,
+				'antarctic_waterfowl': 100
+			},
+			wgCaseSensitiveNamespaces: []
+		}
+	} ) );
 
 	QUnit.test( 'constructor', cases.invalid.length, function ( assert ) {
 		var i, title;
@@ -430,6 +432,218 @@
 				assert.equal( title.getNamespaceId(), 6, prefix + 'Namespace ID matches File namespace' );
 			} else {
 				assert.strictEqual( title, null, thisCase.typeOfUrl + ', should not produce an mw.Title object' );
+			}
+		}
+	} );
+
+	QUnit.test( 'getRelativeText', 5, function ( assert ) {
+		var i, thisCase, title,
+			cases = [
+				{
+					text: 'asd',
+					relativeTo: 123,
+					expectedResult: ':Asd'
+				},
+				{
+					text: 'dfg',
+					relativeTo: 0,
+					expectedResult: 'Dfg'
+				},
+				{
+					text: 'Template:Ghj',
+					relativeTo: 0,
+					expectedResult: 'Template:Ghj'
+				},
+				{
+					text: 'Template:1',
+					relativeTo: 10,
+					expectedResult: '1'
+				},
+				{
+					text: 'User:Hi',
+					relativeTo: 10,
+					expectedResult: 'User:Hi'
+				}
+			];
+
+		for ( i = 0; i < cases.length; i++ ) {
+			thisCase = cases[i];
+
+			title = mw.Title.newFromText( thisCase.text );
+			assert.equal( title.getRelativeText( thisCase.relativeTo ), thisCase.expectedResult );
+		}
+	} );
+
+	QUnit.test( 'newFromUserInput', 8, function ( assert ) {
+		var title, i, thisCase, prefix,
+			cases = [
+				{
+					title: 'DCS0001557854455.JPG',
+					defaultNamespace: 0,
+					options: {
+						fileExtension: 'PNG'
+					},
+					expected: 'DCS0001557854455.JPG',
+					description: 'Title in normal namespace without anything invalid but with "file extension"'
+				},
+				{
+					title: 'MediaWiki:Msg-awesome',
+					defaultNamespace: undefined,
+					expected: 'MediaWiki:Msg-awesome',
+					description: 'Full title (page in MediaWiki namespace) supplied as string'
+				},
+				{
+					title: 'The/Mw/Sound.flac',
+					defaultNamespace: -2,
+					expected: 'Media:The-Mw-Sound.flac',
+					description: 'Page in Media-namespace without explicit options'
+				},
+				{
+					title: 'File:The/Mw/Sound.kml',
+					defaultNamespace: 6,
+					options: {
+						forUploading: false
+					},
+					expected: 'File:The/Mw/Sound.kml',
+					description: 'Page in File-namespace without explicit options'
+				}
+			];
+
+		for ( i = 0; i < cases.length; i++ ) {
+			thisCase = cases[i];
+			title = mw.Title.newFromUserInput( thisCase.title, thisCase.defaultNamespace, thisCase.options );
+
+			if ( thisCase.expected !== undefined ) {
+				prefix = '[' + thisCase.description + '] ';
+
+				assert.notStrictEqual( title, null, prefix + 'Parses successfully' );
+				assert.equal( title.toText(), thisCase.expected, prefix + 'Title as expected' );
+			} else {
+				assert.strictEqual( title, null, thisCase.description + ', should not produce an mw.Title object' );
+			}
+		}
+	} );
+
+	QUnit.test( 'newFromFileName', 62, function ( assert ) {
+		var title, i, thisCase, prefix,
+			cases = [
+				{
+					fileName: 'DCS0001557854455.JPG',
+					typeOfName: 'Standard camera output',
+					nameText: 'DCS0001557854455',
+					prefixedText: 'File:DCS0001557854455.JPG',
+					extensionDesired: 'jpg'
+				},
+				{
+					fileName: 'File:Sample.png',
+					typeOfName: 'Carrying namespace',
+					nameText: 'File-Sample',
+					prefixedText: 'File:File-Sample.png'
+				},
+				{
+					fileName: 'Treppe 2222 Test upload.jpg',
+					typeOfName: 'File name with spaces in it and lower case file extension',
+					nameText: 'Treppe 2222 Test upload',
+					prefixedText: 'File:Treppe 2222 Test upload.jpg',
+					extensionDesired: 'JPG'
+				},
+				{
+					fileName: 'I contain a \ttab.jpg',
+					typeOfName: 'Name containing a tab character',
+					nameText: 'I contain a tab',
+					prefixedText: 'File:I contain a tab.jpg'
+				},
+				{
+					fileName: 'I_contain multiple__ ___ _underscores.jpg',
+					typeOfName: 'Name containing multiple underscores',
+					nameText: 'I contain multiple underscores',
+					prefixedText: 'File:I contain multiple underscores.jpg'
+				},
+				{
+					fileName: 'I like ~~~~~~~~es.jpg',
+					typeOfName: 'Name containing more than three consecutive tilde characters',
+					nameText: 'I like ~~es',
+					prefixedText: 'File:I like ~~es.jpg'
+				},
+				{
+					fileName: 'BI\u200EDI.jpg',
+					typeOfName: 'Name containing BIDI overrides',
+					nameText: 'BIDI',
+					prefixedText: 'File:BIDI.jpg'
+				},
+				{
+					fileName: '100%ab progress.jpg',
+					typeOfName: 'File name with URL encoding',
+					nameText: '100% ab progress',
+					prefixedText: 'File:100% ab progress.jpg'
+				},
+				{
+					fileName: '<([>]):/#.jpg',
+					typeOfName: 'File name with characters not permitted in titles that are replaced',
+					nameText: '((()))---',
+					prefixedText: 'File:((()))---.jpg'
+				},
+				{
+					fileName: 'spaces\u0009\u2000\u200A\u200Bx.djvu',
+					typeOfName: 'File name with different kind of spaces',
+					nameText: 'Spaces \u200Bx',
+					prefixedText: 'File:Spaces \u200Bx.djvu'
+				},
+				{
+					fileName: 'dot.dot.dot.dot.dotdot',
+					typeOfName: 'File name with a lot of dots',
+					nameText: 'Dot.dot.dot.dot',
+					prefixedText: 'File:Dot.dot.dot.dot.dotdot'
+				},
+				{
+					fileName: 'dot. dot ._dot',
+					typeOfName: 'File name with multiple dots and spaces',
+					nameText: 'Dot. dot',
+					prefixedText: 'File:Dot. dot. dot'
+				},
+				{
+					fileName: 'dot. dot ._dot',
+					typeOfName: 'File name with different file extension desired',
+					nameText: 'Dot. dot . dot',
+					prefixedText: 'File:Dot. dot . dot.png',
+					extensionDesired: 'png'
+				},
+				{
+					fileName: 'fileWOExt',
+					typeOfName: 'File W/O extension with extension desired',
+					nameText: 'FileWOExt',
+					prefixedText: 'File:FileWOExt.png',
+					extensionDesired: 'png'
+				},
+				{
+					fileName: '𠜎𠜱𠝹𠱓𠱸𠲖𠳏𠳕𠴕𠵼𠵿𠸎𠸏𠹷𠺝𠺢𠻗𠻹𠻺𠼭𠼮𠽌𠾴𠾼𠿪𡁜𡁯𡁵𡁶𡁻𡃁𡃉𡇙𢃇𢞵𢫕𢭃𢯊𢱑𢱕𢳂𠻹𠻺𠼭𠼮𠽌𠾴𠾼𠿪𡁜𡁯𡁵𡁶𡁻𡃁𡃉𡇙𢃇𢞵𢫕𢭃𢯊𢱑𢱕𢳂.png',
+					typeOfName: 'File name longer than 240 bytes',
+					nameText: '𠜎𠜱𠝹𠱓𠱸𠲖𠳏𠳕𠴕𠵼𠵿𠸎𠸏𠹷𠺝𠺢𠻗𠻹𠻺𠼭𠼮𠽌𠾴𠾼𠿪𡁜𡁯𡁵𡁶𡁻𡃁𡃉𡇙𢃇𢞵𢫕𢭃𢯊𢱑𢱕𢳂𠻹𠻺𠼭𠼮𠽌𠾴𠾼𠿪𡁜𡁯𡁵𡁶𡁻𡃁𡃉𡇙𢃇𢞵',
+					prefixedText: 'File:𠜎𠜱𠝹𠱓𠱸𠲖𠳏𠳕𠴕𠵼𠵿𠸎𠸏𠹷𠺝𠺢𠻗𠻹𠻺𠼭𠼮𠽌𠾴𠾼𠿪𡁜𡁯𡁵𡁶𡁻𡃁𡃉𡇙𢃇𢞵𢫕𢭃𢯊𢱑𢱕𢳂𠻹𠻺𠼭𠼮𠽌𠾴𠾼𠿪𡁜𡁯𡁵𡁶𡁻𡃁𡃉𡇙𢃇𢞵.png'
+				},
+				{
+					fileName: '',
+					typeOfName: 'Empty string'
+				},
+				{
+					fileName: 'foo',
+					typeOfName: 'String with only alphabet characters'
+				}
+			];
+
+		for ( i = 0; i < cases.length; i++ ) {
+			thisCase = cases[i];
+			title = mw.Title.newFromFileName( thisCase.fileName, thisCase.extensionDesired );
+
+			if ( thisCase.nameText !== undefined ) {
+				prefix = '[' + thisCase.typeOfName + '] ';
+
+				assert.notStrictEqual( title, null, prefix + 'Parses successfully' );
+				assert.equal( title.getNameText(), thisCase.nameText, prefix + 'Filename matches original' );
+				assert.equal( title.getPrefixedText(), thisCase.prefixedText, prefix + 'File page title matches original' );
+				assert.equal( title.getNamespaceId(), 6, prefix + 'Namespace ID matches File namespace' );
+			} else {
+				assert.strictEqual( title, null, thisCase.typeOfName + ', should not produce an mw.Title object' );
 			}
 		}
 	} );

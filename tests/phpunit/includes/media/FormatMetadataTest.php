@@ -1,28 +1,14 @@
 <?php
 
-class FormatMetadataTest extends MediaWikiTestCase {
-
-	/** @var FSFileBackend */
-	protected $backend;
-	/** @var FSRepo */
-	protected $repo;
+/**
+ * @group Media
+ */
+class FormatMetadataTest extends MediaWikiMediaTestCase {
 
 	protected function setUp() {
 		parent::setUp();
 
 		$this->checkPHPExtension( 'exif' );
-		$filePath = __DIR__ . '/../../data/media';
-		$this->backend = new FSFileBackend( array(
-			'name' => 'localtesting',
-			'wikiId' => wfWikiId(),
-			'containerPaths' => array( 'data' => $filePath )
-		) );
-		$this->repo = new FSRepo( array(
-			'name' => 'temp',
-			'url' => 'http://localhost/thumbtest',
-			'backend' => $this->backend
-		) );
-
 		$this->setMwGlobals( 'wgShowEXIF', true );
 	}
 
@@ -51,8 +37,8 @@ class FormatMetadataTest extends MediaWikiTestCase {
 	}
 
 	/**
-	 * @param $filename String
-	 * @param $expected Integer Total image area
+	 * @param string $filename
+	 * @param int $expected Total image area
 	 * @dataProvider provideFlattenArray
 	 * @covers FormatMetadata::flattenArray
 	 */
@@ -83,8 +69,35 @@ class FormatMetadataTest extends MediaWikiTestCase {
 		);
 	}
 
-	private function dataFile( $name, $type ) {
-		return new UnregisteredLocalFile( false, $this->repo,
-			"mwstore://localtesting/data/$name", $type );
+	/**
+	 * @param mixed $input
+	 * @param mixed $output
+	 * @dataProvider provideResolveMultivalueValue
+	 * @covers FormatMetadata::resolveMultivalueValue
+	 */
+	public function testResolveMultivalueValue( $input, $output ) {
+		$formatMetadata = new FormatMetadata();
+		$class = new ReflectionClass( 'FormatMetadata' );
+		$method = $class->getMethod( 'resolveMultivalueValue' );
+		$method->setAccessible( true );
+		$actualInput = $method->invoke( $formatMetadata, $input );
+		$this->assertEquals( $output, $actualInput );
+	}
+
+	public function provideResolveMultivalueValue() {
+		return array(
+			'nonArray' => array( 'foo', 'foo' ),
+			'multiValue' => array( array( 'first', 'second', 'third', '_type' => 'ol' ), 'first' ),
+			'noType' => array( array( 'first', 'second', 'third' ), 'first' ),
+			'typeFirst' => array( array( '_type' => 'ol', 'first', 'second', 'third' ), 'first' ),
+			'multilang' => array(
+				array( 'en' => 'first', 'de' => 'Erste', '_type' => 'lang' ),
+				array( 'en' => 'first', 'de' => 'Erste', '_type' => 'lang' ),
+			),
+			'multilang-multivalue' => array(
+				array( 'en' => array( 'first', 'second' ), 'de' => array( 'Erste', 'Zweite' ), '_type' => 'lang' ),
+				array( 'en' => 'first', 'de' => 'Erste', '_type' => 'lang' ),
+			),
+		);
 	}
 }

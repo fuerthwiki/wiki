@@ -65,9 +65,14 @@ class ParserTest {
 	private $dbClone;
 
 	/**
-	 * @var string $oldTablePrefix Original table prefix
+	 * @var DjVuSupport
 	 */
-	private $oldTablePrefix;
+	private $djVuSupport;
+
+	/**
+	 * @var TidySupport
+	 */
+	private $tidySupport;
 
 	private $maxFuzzTestLength = 300;
 	private $fuzzSeed = 0;
@@ -80,6 +85,7 @@ class ParserTest {
 	/**
 	 * Sets terminal colorization and diff/quick modes depending on OS and
 	 * command-line options (--color and --quick).
+	 * @param array $options
 	 */
 	public function __construct( $options = array() ) {
 		# Only colorize output if stdout is a terminal.
@@ -135,8 +141,15 @@ class ParserTest {
 		$this->runDisabled = isset( $options['run-disabled'] );
 		$this->runParsoid = isset( $options['run-parsoid'] );
 
+		$this->djVuSupport = new DjVuSupport();
+		$this->tidySupport = new TidySupport();
+		if ( !$this->tidySupport->isEnabled() ) {
+			echo "Warning: tidy is not installed, skipping some tests\n";
+		}
+
 		$this->hooks = array();
 		$this->functionHooks = array();
+		$this->transparentHooks = array();
 		self::setUp();
 	}
 
@@ -144,6 +157,7 @@ class ParserTest {
 		global $wgParser, $wgParserConf, $IP, $messageMemc, $wgMemc,
 			$wgUser, $wgLang, $wgOut, $wgRequest, $wgStyleDirectory, $wgEnableParserCache,
 			$wgExtraNamespaces, $wgNamespaceAliases, $wgNamespaceProtection, $wgLocalFileRepo,
+			$wgExtraInterlanguageLinkPrefixes, $wgLocalInterwikis,
 			$parserMemc, $wgThumbnailScriptPath, $wgScriptPath,
 			$wgArticlePath, $wgScript, $wgStylePath, $wgExtensionAssetsPath,
 			$wgMainCacheType, $wgMessageCacheType, $wgParserCacheType, $wgLockManagers;
@@ -203,7 +217,6 @@ class ParserTest {
 		$messageMemc = wfGetMessageCacheStorage();
 		$parserMemc = wfGetParserCacheStorage();
 
-		// $wgContLang = new StubContLang;
 		$wgUser = new User;
 		$context = new RequestContext;
 		$wgLang = $context->getLanguage();
@@ -216,6 +229,10 @@ class ParserTest {
 		}
 
 		self::setupInterwikis();
+		$wgLocalInterwikis = array( 'local', 'mi' );
+		// "extra language links"
+		// see https://gerrit.wikimedia.org/r/111390
+		array_push( $wgExtraInterlanguageLinkPrefixes, 'mul' );
 	}
 
 	/**
@@ -232,6 +249,11 @@ class ParserTest {
 		# for testing inter-language links
 		Hooks::register( 'InterwikiLoadPrefix', function ( $prefix, &$iwData ) {
 			static $testInterwikis = array(
+				'local' => array(
+					'iw_url' => 'http://doesnt.matter.org/$1',
+					'iw_api' => '',
+					'iw_wikiid' => '',
+					'iw_local' => 0 ),
 				'wikipedia' => array(
 					'iw_url' => 'http://en.wikipedia.org/wiki/$1',
 					'iw_api' => '',
@@ -267,6 +289,16 @@ class ParserTest {
 					'iw_api' => '',
 					'iw_wikiid' => '',
 					'iw_local' => 1 ),
+				'mi' => array(
+					'iw_url' => 'http://mi.wikipedia.org/wiki/$1',
+					'iw_api' => '',
+					'iw_wikiid' => '',
+					'iw_local' => 1 ),
+				'mul' => array(
+					'iw_url' => 'http://wikisource.org/wiki/$1',
+					'iw_api' => '',
+					'iw_wikiid' => '',
+					'iw_local' => 1 ),
 			);
 			if ( array_key_exists( $prefix, $testInterwikis ) ) {
 				$iwData = $testInterwikis[$prefix];
@@ -299,6 +331,8 @@ class ParserTest {
 	/**
 	 * Remove last character if it is a newline
 	 * @group utility
+	 * @param string $s
+	 * @return string
 	 */
 	public static function chomp( $s ) {
 		if ( substr( $s, -1 ) === "\n" ) {
@@ -311,6 +345,7 @@ class ParserTest {
 	/**
 	 * Run a fuzz test series
 	 * Draw input from a set of test files
+	 * @param array $filenames
 	 */
 	function fuzzTest( $filenames ) {
 		$GLOBALS['wgContLang'] = Language::factory( 'en' );
@@ -381,13 +416,19 @@ class ParserTest {
 
 	/**
 	 * Get an input dictionary from a set of parser test files
+	 * @param array $filenames
+	 * @return string
 	 */
 	function getFuzzInput( $filenames ) {
 		$dict = '';
 
 		foreach ( $filenames as $filename ) {
 			$contents = file_get_contents( $filename );
-			preg_match_all( '/!!\s*(input|wikitext)\n(.*?)\n!!\s*(result|html|html\/\*|html\/php)/s', $contents, $matches );
+			preg_match_all(
+				'/!!\s*(input|wikitext)\n(.*?)\n!!\s*(result|html|html\/\*|html\/php)/s',
+				$contents,
+				$matches
+			);
 
 			foreach ( $matches[1] as $match ) {
 				$dict .= $match . "\n";
@@ -399,6 +440,7 @@ class ParserTest {
 
 	/**
 	 * Get a memory usage breakdown
+	 * @return array
 	 */
 	function getMemoryBreakdown() {
 		$memStats = array();
@@ -444,8 +486,8 @@ class ParserTest {
 	 * Prints status updates on stdout and counts up the total
 	 * number and percentage of passed tests.
 	 *
-	 * @param $filenames Array of strings
-	 * @return Boolean: true if passed all tests, false if any tests failed.
+	 * @param array $filenames Array of strings
+	 * @return bool True if passed all tests, false if any tests failed.
 	 */
 	public function runTestsFromFiles( $filenames ) {
 		$ok = false;
@@ -513,7 +555,11 @@ class ParserTest {
 			$parser->setFunctionHook( $tag, $callback, $flags );
 		}
 
-		wfRunHooks( 'ParserTestParser', array( &$parser ) );
+		foreach ( $this->transparentHooks as $tag => $callback ) {
+			$parser->setTransparentTagHook( $tag, $callback );
+		}
+
+		Hooks::run( 'ParserTestParser', array( &$parser ) );
 
 		return $parser;
 	}
@@ -523,12 +569,12 @@ class ParserTest {
 	 * and compare the output against the expected results.
 	 * Prints status and explanatory messages to stdout.
 	 *
-	 * @param $desc String: test's description
-	 * @param $input String: wikitext to try rendering
-	 * @param $result String: result to output
-	 * @param $opts Array: test's options
-	 * @param $config String: overrides for global variables, one per line
-	 * @return Boolean
+	 * @param string $desc Test's description
+	 * @param string $input Wikitext to try rendering
+	 * @param string $result Result to output
+	 * @param array $opts Test's options
+	 * @param string $config Overrides for global variables, one per line
+	 * @return bool
 	 */
 	public function runTest( $desc, $input, $result, $opts, $config ) {
 		if ( $this->showProgress ) {
@@ -540,6 +586,20 @@ class ParserTest {
 
 		$user = $context->getUser();
 		$options = ParserOptions::newFromContext( $context );
+
+		if ( isset( $opts['djvu'] ) ) {
+			if ( !$this->djVuSupport->isEnabled() ) {
+				return $this->showSkipped();
+			}
+		}
+
+		if ( isset( $opts['tidy'] ) ) {
+			if ( !$this->tidySupport->isEnabled() ) {
+				return $this->showSkipped();
+			} else {
+				$options->setTidy( true );
+			}
+		}
 
 		if ( isset( $opts['title'] ) ) {
 			$titleText = $opts['title'];
@@ -571,6 +631,9 @@ class ParserTest {
 			$output = $parser->parse( $input, $title, $options, true, true, 1337 );
 			$output->setTOCEnabled( !isset( $opts['notoc'] ) );
 			$out = $output->getText();
+			if ( isset( $opts['tidy'] ) ) {
+				$out = preg_replace( '/\s+$/', '', $out );
+			}
 
 			if ( isset( $opts['showtitle'] ) ) {
 				if ( $output->getTitleText() ) {
@@ -580,21 +643,27 @@ class ParserTest {
 				$out = "$title\n$out";
 			}
 
+			if ( isset( $opts['showindicators'] ) ) {
+				$indicators = '';
+				foreach ( $output->getIndicators() as $id => $content ) {
+					$indicators .= "$id=$content\n";
+				}
+				$out = $indicators . $out;
+			}
+
 			if ( isset( $opts['ill'] ) ) {
-				$out = $this->tidy( implode( ' ', $output->getLanguageLinks() ) );
+				$out = implode( ' ', $output->getLanguageLinks() );
 			} elseif ( isset( $opts['cat'] ) ) {
 				$outputPage = $context->getOutput();
 				$outputPage->addCategoryLinks( $output->getCategories() );
 				$cats = $outputPage->getCategoryLinks();
 
 				if ( isset( $cats['normal'] ) ) {
-					$out = $this->tidy( implode( ' ', $cats['normal'] ) );
+					$out = implode( ' ', $cats['normal'] );
 				} else {
 					$out = '';
 				}
 			}
-
-			$result = $this->tidy( $result );
 		}
 
 		$this->teardownGlobals();
@@ -608,6 +677,8 @@ class ParserTest {
 
 	/**
 	 * Refactored in 1.22 to use ParserTestResult
+	 * @param ParserTestResult $testResult
+	 * @return bool
 	 */
 	function showTestResult( ParserTestResult $testResult ) {
 		if ( $testResult->isSuccess() ) {
@@ -621,9 +692,10 @@ class ParserTest {
 
 	/**
 	 * Use a regex to find out the value of an option
-	 * @param $key String: name of option val to retrieve
-	 * @param $opts array: Options array to look in
-	 * @param $default Mixed: default value returned if not found
+	 * @param string $key Name of option val to retrieve
+	 * @param array $opts Options array to look in
+	 * @param mixed $default Default value returned if not found
+	 * @return mixed
 	 */
 	private static function getOptionValue( $key, $opts, $default ) {
 		$key = strtolower( $key );
@@ -692,11 +764,11 @@ class ParserTest {
 
 		if ( preg_match_all( $regex, $instring, $matches, PREG_SET_ORDER ) ) {
 			foreach ( $matches as $bits ) {
-				$key = strtolower( $bits[ 'k' ] );
-				if ( !isset( $bits[ 'v' ] ) ) {
+				$key = strtolower( $bits['k'] );
+				if ( !isset( $bits['v'] ) ) {
 					$opts[$key] = true;
 				} else {
-					preg_match_all( $valueregex, $bits[ 'v' ], $vmatches );
+					preg_match_all( $valueregex, $bits['v'], $vmatches );
 					$opts[$key] = array_map( array( $this, 'cleanupOption' ), $vmatches[0] );
 					if ( count( $opts[$key] ) == 1 ) {
 						$opts[$key] = $opts[$key][0];
@@ -725,8 +797,13 @@ class ParserTest {
 	/**
 	 * Set up the global variables for a consistent environment for each test.
 	 * Ideally this should replace the global configuration entirely.
+	 * @param string $opts
+	 * @param string $config
+	 * @return RequestContext
 	 */
 	private function setupGlobals( $opts = '', $config = '' ) {
+		global $IP;
+
 		# Find out values for some special options.
 		$lang =
 			self::getOptionValue( 'language', $opts, 'en' );
@@ -739,6 +816,7 @@ class ParserTest {
 
 		$settings = array(
 			'wgServer' => 'http://example.org',
+			'wgServerName' => 'example.org',
 			'wgScript' => '/index.php',
 			'wgScriptPath' => '/',
 			'wgArticlePath' => '/wiki/$1',
@@ -769,6 +847,7 @@ class ParserTest {
 				) )
 			),
 			'wgEnableUploads' => self::getOptionValue( 'wgEnableUploads', $opts, true ),
+			'wgUploadNavigationUrl' => false,
 			'wgStylePath' => '/skins',
 			'wgSitename' => 'MediaWiki',
 			'wgLanguageCode' => $lang,
@@ -788,7 +867,6 @@ class ParserTest {
 			'wgLocaltimezone' => 'UTC',
 			'wgAllowExternalImages' => self::getOptionValue( 'wgAllowExternalImages', $opts, true ),
 			'wgThumbLimits' => array( self::getOptionValue( 'thumbsize', $opts, 180 ) ),
-			'wgUseTidy' => false,
 			'wgDefaultLanguageVariant' => $variant,
 			'wgVariantArticlePath' => false,
 			'wgGroupPermissions' => array( '*' => array(
@@ -804,13 +882,19 @@ class ParserTest {
 			'wgLinkHolderBatchSize' => $linkHolderBatchSize,
 			'wgExperimentalHtmlIds' => false,
 			'wgExternalLinkTarget' => false,
-			'wgAlwaysUseTidy' => false,
 			'wgHtml5' => true,
 			'wgWellFormedXml' => true,
 			'wgAllowMicrodataAttributes' => true,
 			'wgAdaptiveMessageCache' => true,
 			'wgDisableLangConversion' => false,
 			'wgDisableTitleConversion' => false,
+			// Tidy options.
+			'wgUseTidy' => isset( $opts['tidy'] ),
+			'wgAlwaysUseTidy' => false,
+			'wgDebugTidy' => false,
+			'wgTidyConf' => $IP . '/includes/tidy.conf',
+			'wgTidyOpts' => '',
+			'wgTidyInternal' => $this->tidySupport->isInternal(),
 		);
 
 		if ( $config ) {
@@ -826,7 +910,7 @@ class ParserTest {
 		$this->savedGlobals = array();
 
 		/** @since 1.20 */
-		wfRunHooks( 'ParserTestGlobals', array( &$settings ) );
+		Hooks::run( 'ParserTestGlobals', array( &$settings ) );
 
 		foreach ( $settings as $var => $val ) {
 			if ( array_key_exists( $var, $GLOBALS ) ) {
@@ -860,12 +944,13 @@ class ParserTest {
 	/**
 	 * List of temporary tables to create, without prefix.
 	 * Some of these probably aren't necessary.
+	 * @return array
 	 */
 	private function listTables() {
 		$tables = array( 'user', 'user_properties', 'user_former_groups', 'page', 'page_restrictions',
 			'protected_titles', 'revision', 'text', 'pagelinks', 'imagelinks',
 			'categorylinks', 'templatelinks', 'externallinks', 'langlinks', 'iwlinks',
-			'site_stats', 'hitcounter', 'ipblocks', 'image', 'oldimage',
+			'site_stats', 'ipblocks', 'image', 'oldimage',
 			'recentchanges', 'watchlist', 'interwiki', 'logging',
 			'querycache', 'objectcache', 'job', 'l10n_cache', 'redirect', 'querycachetwo',
 			'archive', 'user_groups', 'page_props', 'category', 'msg_resource', 'msg_resource_links'
@@ -878,7 +963,7 @@ class ParserTest {
 		// Allow extensions to add to the list of tables to duplicate;
 		// may be necessary if they hook into page save or other code
 		// which will require them while running tests.
-		wfRunHooks( 'ParserTestTables', array( &$tables ) );
+		Hooks::run( 'ParserTestTables', array( &$tables ) );
 
 		return $tables;
 	}
@@ -903,7 +988,6 @@ class ParserTest {
 		}
 
 		$this->databaseSetupDone = true;
-		$this->oldTablePrefix = $wgDBprefix;
 
 		# SqlBagOStuff broke when using temporary tables on r40209 (bug 15892).
 		# It seems to have been fixed since (r55079?), but regressed at some point before r85701.
@@ -982,7 +1066,7 @@ class ParserTest {
 				'size'        => 12345,
 				'width'       => 240,
 				'height'      => 180,
-				'bits'        => 24,
+				'bits'        => 0,
 				'media_type'  => MEDIATYPE_DRAWING,
 				'mime'        => 'image/svg+xml',
 				'metadata'    => serialize( array() ),
@@ -1003,6 +1087,45 @@ class ParserTest {
 			'sha1' => wfBaseConvert( '3', 16, 36, 31 ),
 			'fileExists' => true
 		), $this->db->timestamp( '20010115123500' ), $user );
+
+		# A DjVu file
+		$image = wfLocalFile( Title::makeTitle( NS_FILE, 'LoremIpsum.djvu' ) );
+		$image->recordUpload2( '', 'Upload a DjVu', 'A DjVu', array(
+			'size' => 3249,
+			'width' => 2480,
+			'height' => 3508,
+			'bits' => 0,
+			'media_type' => MEDIATYPE_BITMAP,
+			'mime' => 'image/vnd.djvu',
+			'metadata' => '<?xml version="1.0" ?>
+<!DOCTYPE DjVuXML PUBLIC "-//W3C//DTD DjVuXML 1.1//EN" "pubtext/DjVuXML-s.dtd">
+<DjVuXML>
+<HEAD></HEAD>
+<BODY><OBJECT height="3508" width="2480">
+<PARAM name="DPI" value="300" />
+<PARAM name="GAMMA" value="2.2" />
+</OBJECT>
+<OBJECT height="3508" width="2480">
+<PARAM name="DPI" value="300" />
+<PARAM name="GAMMA" value="2.2" />
+</OBJECT>
+<OBJECT height="3508" width="2480">
+<PARAM name="DPI" value="300" />
+<PARAM name="GAMMA" value="2.2" />
+</OBJECT>
+<OBJECT height="3508" width="2480">
+<PARAM name="DPI" value="300" />
+<PARAM name="GAMMA" value="2.2" />
+</OBJECT>
+<OBJECT height="3508" width="2480">
+<PARAM name="DPI" value="300" />
+<PARAM name="GAMMA" value="2.2" />
+</OBJECT>
+</BODY>
+</DjVuXML>',
+			'sha1' => wfBaseConvert( '', 16, 36, 31 ),
+			'fileExists' => true
+		), $this->db->timestamp( '20010115123600' ), $user );
 	}
 
 	public function teardownDatabase() {
@@ -1049,7 +1172,7 @@ class ParserTest {
 	 * Create a dummy uploads directory which will contain a couple
 	 * of files in order to pass existence tests.
 	 *
-	 * @return String: the directory
+	 * @return string The directory
 	 */
 	private function setupUploadDir() {
 		global $IP;
@@ -1071,16 +1194,19 @@ class ParserTest {
 		}
 
 		wfMkdirParents( $dir . '/3/3a', null, __METHOD__ );
-		copy( "$IP/skins/monobook/headbg.jpg", "$dir/3/3a/Foobar.jpg" );
+		copy( "$IP/tests/phpunit/data/parser/headbg.jpg", "$dir/3/3a/Foobar.jpg" );
 		wfMkdirParents( $dir . '/e/ea', null, __METHOD__ );
-		copy( "$IP/skins/monobook/wiki.png", "$dir/e/ea/Thumb.png" );
+		copy( "$IP/tests/phpunit/data/parser/wiki.png", "$dir/e/ea/Thumb.png" );
 		wfMkdirParents( $dir . '/0/09', null, __METHOD__ );
-		copy( "$IP/skins/monobook/headbg.jpg", "$dir/0/09/Bad.jpg" );
+		copy( "$IP/tests/phpunit/data/parser/headbg.jpg", "$dir/0/09/Bad.jpg" );
 		wfMkdirParents( $dir . '/f/ff', null, __METHOD__ );
 		file_put_contents( "$dir/f/ff/Foobar.svg",
 			'<?xml version="1.0" encoding="utf-8"?>' .
 			'<svg xmlns="http://www.w3.org/2000/svg"' .
 			' version="1.1" width="240" height="180"/>' );
+		wfMkdirParents( $dir . '/5/5f', null, __METHOD__ );
+		copy( "$IP/tests/phpunit/data/parser/LoremIpsum.djvu", "$dir/5/5f/LoremIpsum.djvu" );
+
 		return $dir;
 	}
 
@@ -1101,6 +1227,7 @@ class ParserTest {
 
 	/**
 	 * Remove the dummy uploads directory
+	 * @param string $dir
 	 */
 	private function teardownUploadDir( $dir ) {
 		if ( $this->keepUploads ) {
@@ -1147,6 +1274,11 @@ class ParserTest {
 
 				"$dir/0/09/Bad.jpg",
 
+				"$dir/5/5f/LoremIpsum.djvu",
+				"$dir/thumb/5/5f/LoremIpsum.djvu/page2-2480px-LoremIpsum.djvu.jpg",
+				"$dir/thumb/5/5f/LoremIpsum.djvu/page2-3720px-LoremIpsum.djvu.jpg",
+				"$dir/thumb/5/5f/LoremIpsum.djvu/page2-4960px-LoremIpsum.djvu.jpg",
+
 				"$dir/f/ff/Foobar.svg",
 				"$dir/thumb/f/ff/Foobar.svg/180px-Foobar.svg.png",
 				"$dir/thumb/f/ff/Foobar.svg/2000px-Foobar.svg.png",
@@ -1178,6 +1310,11 @@ class ParserTest {
 				"$dir/thumb/f/",
 				"$dir/0/09/",
 				"$dir/0/",
+				"$dir/5/5f",
+				"$dir/5",
+				"$dir/thumb/5/5f/LoremIpsum.djvu",
+				"$dir/thumb/5/5f",
+				"$dir/thumb/5",
 				"$dir/thumb",
 				"$dir/math/f/a/5",
 				"$dir/math/f/a",
@@ -1190,7 +1327,7 @@ class ParserTest {
 
 	/**
 	 * Delete the specified files, if they exist.
-	 * @param $files Array: full paths to files to delete.
+	 * @param array $files Full paths to files to delete.
 	 */
 	private static function deleteFiles( $files ) {
 		foreach ( $files as $file ) {
@@ -1202,7 +1339,7 @@ class ParserTest {
 
 	/**
 	 * Delete the specified directories, if they exist. Must be empty.
-	 * @param $dirs Array: full paths to directories to delete.
+	 * @param array $dirs Full paths to directories to delete.
 	 */
 	private static function deleteDirs( $dirs ) {
 		foreach ( $dirs as $dir ) {
@@ -1214,6 +1351,7 @@ class ParserTest {
 
 	/**
 	 * "Running test $desc..."
+	 * @param string $desc
 	 */
 	protected function showTesting( $desc ) {
 		print "Running test $desc... ";
@@ -1224,8 +1362,8 @@ class ParserTest {
 	 *
 	 * Refactored in 1.22 to use ParserTestResult
 	 *
-	 * @param $testResult ParserTestResult
-	 * @return Boolean
+	 * @param ParserTestResult $testResult
+	 * @return bool
 	 */
 	protected function showSuccess( ParserTestResult $testResult ) {
 		if ( $this->showProgress ) {
@@ -1241,8 +1379,8 @@ class ParserTest {
 	 *
 	 * Refactored in 1.22 to use ParserTestResult
 	 *
-	 * @param $testResult ParserTestResult
-	 * @return Boolean
+	 * @param ParserTestResult $testResult
+	 * @return bool
 	 */
 	protected function showFailure( ParserTestResult $testResult ) {
 		if ( $this->showFailure ) {
@@ -1271,14 +1409,27 @@ class ParserTest {
 	}
 
 	/**
+	 * Print a skipped message.
+	 *
+	 * @return bool
+	 */
+	protected function showSkipped() {
+		if ( $this->showProgress ) {
+			print $this->term->color( '1;33' ) . 'SKIPPED' . $this->term->reset() . "\n";
+		}
+
+		return true;
+	}
+
+	/**
 	 * Run given strings through a diff and return the (colorized) output.
 	 * Requires writable /tmp directory and a 'diff' command in the PATH.
 	 *
-	 * @param $input String
-	 * @param $output String
-	 * @param $inFileTail String: tailing for the input file name
-	 * @param $outFileTail String: tailing for the output file name
-	 * @return String
+	 * @param string $input
+	 * @param string $output
+	 * @param string $inFileTail Tailing for the input file name
+	 * @param string $outFileTail Tailing for the output file name
+	 * @return string
 	 */
 	protected function quickDiff( $input, $output,
 		$inFileTail = 'expected', $outFileTail = 'actual'
@@ -1311,8 +1462,8 @@ class ParserTest {
 	/**
 	 * Write the given string to a file, adding a final newline.
 	 *
-	 * @param $data String
-	 * @param $filename String
+	 * @param string $data
+	 * @param string $filename
 	 */
 	private function dumpToFile( $data, $filename ) {
 		$file = fopen( $filename, "wt" );
@@ -1324,8 +1475,8 @@ class ParserTest {
 	 * Colorize unified diff output if set for ANSI color output.
 	 * Subtractions are colored blue, additions red.
 	 *
-	 * @param $text String
-	 * @return String
+	 * @param string $text
+	 * @return string
 	 */
 	protected function colorDiff( $text ) {
 		return preg_replace(
@@ -1338,7 +1489,7 @@ class ParserTest {
 	/**
 	 * Show "Reading tests from ..."
 	 *
-	 * @param $path String
+	 * @param string $path
 	 */
 	public function showRunFile( $path ) {
 		print $this->term->color( 1 ) .
@@ -1349,10 +1500,12 @@ class ParserTest {
 
 	/**
 	 * Insert a temporary test article
-	 * @param $name String: the title, including any prefix
-	 * @param $text String: the article text
-	 * @param $line Integer: the input line number, for reporting errors
-	 * @param $ignoreDuplicate Boolean: whether to silently ignore duplicate pages
+	 * @param string $name The title, including any prefix
+	 * @param string $text The article text
+	 * @param int|string $line The input line number, for reporting errors
+	 * @param bool|string $ignoreDuplicate Whether to silently ignore duplicate pages
+	 * @throws Exception
+	 * @throws MWException
 	 */
 	public static function addArticle( $name, $text, $line = 'unknown', $ignoreDuplicate = '' ) {
 		global $wgCapitalLinks;
@@ -1390,8 +1543,8 @@ class ParserTest {
 	 * application to our scary parser. If the hook is not installed,
 	 * abort processing of this file.
 	 *
-	 * @param $name String
-	 * @return Bool true if tag hook is present
+	 * @param string $name
+	 * @return bool True if tag hook is present
 	 */
 	public function requireHook( $name ) {
 		global $wgParser;
@@ -1413,8 +1566,8 @@ class ParserTest {
 	 * application to our scary parser. If the hook is not installed,
 	 * abort processing of this file.
 	 *
-	 * @param $name String
-	 * @return Bool true if function hook is present
+	 * @param string $name
+	 * @return bool True if function hook is present
 	 */
 	public function requireFunctionHook( $name ) {
 		global $wgParser;
@@ -1432,20 +1585,26 @@ class ParserTest {
 	}
 
 	/**
-	 * Run the "tidy" command on text if the $wgUseTidy
-	 * global is true
+	 * Steal a callback function from the primary parser, save it for
+	 * application to our scary parser. If the hook is not installed,
+	 * abort processing of this file.
 	 *
-	 * @param $text String: the text to tidy
-	 * @return String
+	 * @param string $name
+	 * @return bool True if function hook is present
 	 */
-	private function tidy( $text ) {
-		global $wgUseTidy;
+	public function requireTransparentHook( $name ) {
+		global $wgParser;
 
-		if ( $wgUseTidy ) {
-			$text = MWTidy::tidy( $text );
+		$wgParser->firstCallInit(); // make sure hooks are loaded.
+
+		if ( isset( $wgParser->mTransparentTagHooks[$name] ) ) {
+			$this->transparentHooks[$name] = $wgParser->mTransparentTagHooks[$name];
+		} else {
+			echo "   This test suite requires the '$name' transparent hook extension, skipping.\n";
+			return false;
 		}
 
-		return $text;
+		return true;
 	}
 
 	private function wellFormed( $text ) {

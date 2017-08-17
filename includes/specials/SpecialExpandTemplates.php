@@ -29,19 +29,19 @@
  */
 class SpecialExpandTemplates extends SpecialPage {
 
-	/** @var boolean whether or not to show the XML parse tree */
+	/** @var bool Whether or not to show the XML parse tree */
 	protected $generateXML;
 
-	/** @var boolean whether or not to show the raw HTML code */
+	/** @var bool Whether or not to show the raw HTML code */
 	protected $generateRawHtml;
 
-	/** @var boolean whether or not to remove comments in the expanded wikitext */
+	/** @var bool Whether or not to remove comments in the expanded wikitext */
 	protected $removeComments;
 
-	/** @var boolean whether or not to remove <nowiki> tags in the expanded wikitext */
+	/** @var bool Whether or not to remove <nowiki> tags in the expanded wikitext */
 	protected $removeNowiki;
 
-	/** @var maximum size in bytes to include. 50MB allows fixing those huge pages */
+	/** @var int Maximum size in bytes to include. 50MB allows fixing those huge pages */
 	const MAX_INCLUDE_SIZE = 50000000;
 
 	function __construct() {
@@ -50,9 +50,10 @@ class SpecialExpandTemplates extends SpecialPage {
 
 	/**
 	 * Show the special page
+	 * @param string|null $subpage
 	 */
 	function execute( $subpage ) {
-		global $wgParser, $wgUseTidy, $wgAlwaysUseTidy;
+		global $wgParser;
 
 		$this->setHeaders();
 
@@ -76,7 +77,7 @@ class SpecialExpandTemplates extends SpecialPage {
 			$options->setMaxIncludeSize( self::MAX_INCLUDE_SIZE );
 
 			if ( $this->generateXML ) {
-				$wgParser->startExternalParse( $title, $options, OT_PREPROCESS );
+				$wgParser->startExternalParse( $title, $options, Parser::OT_PREPROCESS );
 				$dom = $wgParser->preprocessToDom( $input );
 
 				if ( method_exists( $dom, 'saveXML' ) ) {
@@ -112,19 +113,20 @@ class SpecialExpandTemplates extends SpecialPage {
 				);
 			}
 
-			if ( ( $wgUseTidy && $options->getTidy() ) || $wgAlwaysUseTidy ) {
+			$config = $this->getConfig();
+			if ( ( $config->get( 'UseTidy' ) && $options->getTidy() ) || $config->get( 'AlwaysUseTidy' ) ) {
 				$tmp = MWTidy::tidy( $tmp );
 			}
 
 			$out->addHTML( $tmp );
 
-			$rawhtml = $this->generateHtml( $title, $output );
-
+			$pout = $this->generateHtml( $title, $output );
+			$rawhtml = $pout->getText();
 			if ( $this->generateRawHtml && strlen( $rawhtml ) > 0 ) {
 				$out->addHTML( $this->makeOutput( $rawhtml, 'expand_templates_html_output' ) );
 			}
 
-			$this->showHtmlPreview( $title, $rawhtml, $out );
+			$this->showHtmlPreview( $title, $pout, $out );
 		}
 	}
 
@@ -137,6 +139,9 @@ class SpecialExpandTemplates extends SpecialPage {
 	 */
 	private function makeForm( $title, $input ) {
 		$self = $this->getPageTitle();
+		$request = $this->getRequest();
+		$user = $this->getUser();
+
 		$form = Xml::openElement(
 			'form',
 			array( 'method' => 'post', 'action' => $self->getLocalUrl() )
@@ -149,7 +154,7 @@ class SpecialExpandTemplates extends SpecialPage {
 			'contexttitle',
 			60,
 			$title,
-			array( 'autofocus' => true )
+			array( 'autofocus' => '', 'class' => 'mw-ui-input-inline' )
 		) . '</p>';
 		$form .= '<p>' . Xml::label(
 			$this->msg( 'expand_templates_input' )->text(),
@@ -192,6 +197,7 @@ class SpecialExpandTemplates extends SpecialPage {
 			array( 'accesskey' => 's' )
 		) . '</p>';
 		$form .= "</fieldset>\n";
+		$form .= Html::hidden( 'wpEditToken', $user->getEditToken( '', $request ) );
 		$form .= Xml::closeElement( 'form' );
 
 		return $form;
@@ -222,35 +228,57 @@ class SpecialExpandTemplates extends SpecialPage {
 	 *
 	 * @param Title $title
 	 * @param string $text
-	 * @return string
+	 * @return ParserOutput
 	 */
 	private function generateHtml( Title $title, $text ) {
 		global $wgParser;
 
 		$popts = ParserOptions::newFromContext( $this->getContext() );
 		$popts->setTargetLanguage( $title->getPageLanguage() );
-		$pout = $wgParser->parse( $text, $title, $popts );
-
-		return $pout->getText();
+		return $wgParser->parse( $text, $title, $popts );
 	}
 
 	/**
 	 * Wraps the provided html code in a div and outputs it to the page
 	 *
 	 * @param Title $title
-	 * @param string $html
+	 * @param ParserOutput $pout
 	 * @param OutputPage $out
 	 */
-	private function showHtmlPreview( Title $title, $html, OutputPage $out ) {
+	private function showHtmlPreview( Title $title, ParserOutput $pout, OutputPage $out ) {
 		$lang = $title->getPageViewLanguage();
 		$out->addHTML( "<h2>" . $this->msg( 'expand_templates_preview' )->escaped() . "</h2>\n" );
+
+		if ( $this->getConfig()->get( 'RawHtml' ) ) {
+			$request = $this->getRequest();
+			$user = $this->getUser();
+
+			// To prevent cross-site scripting attacks, don't show the preview if raw HTML is
+			// allowed and a valid edit token is not provided (bug 71111). However, MediaWiki
+			// does not currently provide logged-out users with CSRF protection; in that case,
+			// do not show the preview unless anonymous editing is allowed.
+			if ( $user->isAnon() && !$user->isAllowed( 'edit' ) ) {
+				$error = array( 'expand_templates_preview_fail_html_anon' );
+			} elseif ( !$user->matchEditToken( $request->getVal( 'wpEditToken' ), '', $request ) ) {
+				$error = array( 'expand_templates_preview_fail_html' );
+			} else {
+				$error = false;
+			}
+
+			if ( $error ) {
+				$out->wrapWikiMsg( "<div class='previewnote'>\n$1\n</div>", $error );
+				return;
+			}
+		}
+
 		$out->addHTML( Html::openElement( 'div', array(
 			'class' => 'mw-content-' . $lang->getDir(),
 			'dir' => $lang->getDir(),
 			'lang' => $lang->getHtmlCode(),
 		) ) );
-		$out->addHTML( $html );
+		$out->addParserOutputContent( $pout );
 		$out->addHTML( Html::closeElement( 'div' ) );
+		$out->setCategoryLinks( $pout->getCategories() );
 	}
 
 	protected function getGroupName() {

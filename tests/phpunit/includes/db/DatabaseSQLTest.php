@@ -101,7 +101,11 @@ class DatabaseSQLTest extends MediaWikiTestCase {
 					'tables' => array( 'table', 't2' => 'table2' ),
 					'fields' => array( 'tid', 'field', 'alias' => 'field2', 't2.id' ),
 					'conds' => array( 'alias' => 'text' ),
-					'options' => array( 'LIMIT' => 1, 'GROUP BY' => array( 'field', 'field2' ), 'HAVING' => array( 'COUNT(*) > 1', 'field' => 1 ) ),
+					'options' => array(
+						'LIMIT' => 1,
+						'GROUP BY' => array( 'field', 'field2' ),
+						'HAVING' => array( 'COUNT(*) > 1', 'field' => 1 )
+					),
 					'join_conds' => array( 't2' => array(
 						'LEFT JOIN', 'tid = t2.id'
 					) ),
@@ -716,6 +720,86 @@ class DatabaseSQLTest extends MediaWikiTestCase {
 	public function testDropNonExistingTable() {
 		$this->assertFalse(
 			$this->database->dropTable( 'non_existing', __METHOD__ )
+		);
+	}
+
+	/**
+	 * @dataProvider provideMakeList
+	 * @covers DatabaseBase::makeList
+	 */
+	public function testMakeList( $list, $mode, $sqlText ) {
+		$this->assertEquals( trim( $this->database->makeList(
+			$list, $mode
+		) ), $sqlText );
+	}
+
+	public static function provideMakeList() {
+		return array(
+			array(
+				array( 'value', 'value2' ),
+				LIST_COMMA,
+				"'value','value2'"
+			),
+			array(
+				array( 'field', 'field2' ),
+				LIST_NAMES,
+				"field,field2"
+			),
+			array(
+				array( 'field' => 'value', 'field2' => 'value2' ),
+				LIST_AND,
+				"field = 'value' AND field2 = 'value2'"
+			),
+			array(
+				array( 'field' => null, "field2 != 'value2'" ),
+				LIST_AND,
+				"field IS NULL AND (field2 != 'value2')"
+			),
+			array(
+				array( 'field' => array( 'value', null, 'value2' ), 'field2' => 'value2' ),
+				LIST_AND,
+				"(field IN ('value','value2')  OR field IS NULL) AND field2 = 'value2'"
+			),
+			array(
+				array( 'field' => array( null ), 'field2' => null ),
+				LIST_AND,
+				"field IS NULL AND field2 IS NULL"
+			),
+			array(
+				array( 'field' => 'value', 'field2' => 'value2' ),
+				LIST_OR,
+				"field = 'value' OR field2 = 'value2'"
+			),
+			array(
+				array( 'field' => 'value', 'field2' => null ),
+				LIST_OR,
+				"field = 'value' OR field2 IS NULL"
+			),
+			array(
+				array( 'field' => array( 'value', 'value2' ), 'field2' => array( 'value' ) ),
+				LIST_OR,
+				"field IN ('value','value2')  OR field2 = 'value'"
+			),
+			array(
+				array( 'field' => array( null, 'value', null, 'value2' ), "field2 != 'value2'" ),
+				LIST_OR,
+				"(field IN ('value','value2')  OR field IS NULL) OR (field2 != 'value2')"
+			),
+			array(
+				array( 'field' => 'value', 'field2' => 'value2' ),
+				LIST_SET,
+				"field = 'value',field2 = 'value2'"
+			),
+			array(
+				array( 'field' => 'value', 'field2' => null ),
+				LIST_SET,
+				"field = 'value',field2 = NULL"
+			),
+			array(
+				array( 'field' => 'value', "field2 != 'value2'" ),
+				LIST_SET,
+				"field = 'value',field2 != 'value2'"
+			),
 		);
 	}
 }

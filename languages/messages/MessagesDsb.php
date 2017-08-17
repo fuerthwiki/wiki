@@ -1,8 +1,7 @@
 <?php
 /** Lower Sorbian (dolnoserbski)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -36,8 +35,8 @@ $namespaceAliases = array(
 );
 
 $namespaceGenderAliases = array(
-        NS_USER => array( 'male' => 'Wužywaŕ', 'female' => 'Wužywarka' ),
-        NS_USER_TALK => array( 'male' => 'Diskusija_wužywarja', 'female' => 'Diskusija_wužywarki' ),
+	NS_USER => array( 'male' => 'Wužywaŕ', 'female' => 'Wužywarka' ),
+	NS_USER_TALK => array( 'male' => 'Diskusija_wužywarja', 'female' => 'Diskusija_wužywarki' ),
 );
 
 $specialPageAliases = array(
@@ -90,7 +89,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'Mója_diskusija' ),
 	'Newimages'                 => array( 'Nowe_dataje' ),
 	'Newpages'                  => array( 'Nowe_boki' ),
-	'Popularpages'              => array( 'Woblubowane_boki' ),
+
 	'Preferences'               => array( 'Nastajenja' ),
 	'Prefixindex'               => array( 'Indeks_prefiksow' ),
 	'Protectedpages'            => array( 'Šćitane_boki' ),

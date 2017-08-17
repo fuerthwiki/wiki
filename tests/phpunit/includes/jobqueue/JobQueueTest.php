@@ -21,8 +21,8 @@ class JobQueueTest extends MediaWikiTestCase {
 
 		$this->setMwGlobals( 'wgMemc', new HashBagOStuff() );
 
-		if ( $this->getCliArg( 'use-jobqueue=' ) ) {
-			$name = $this->getCliArg( 'use-jobqueue=' );
+		if ( $this->getCliArg( 'use-jobqueue' ) ) {
+			$name = $this->getCliArg( 'use-jobqueue' );
 			if ( !isset( $wgJobTypeConf[$name] ) ) {
 				throw new MWException( "No \$wgJobTypeConf entry for '$name'." );
 			}
@@ -108,8 +108,8 @@ class JobQueueTest extends MediaWikiTestCase {
 		$this->assertEquals( 0, $queue->getSize(), "Queue is empty ($desc)" );
 		$this->assertEquals( 0, $queue->getAcquiredCount(), "Queue is empty ($desc)" );
 
-		$this->assertTrue( $queue->push( $this->newJob() ), "Push worked ($desc)" );
-		$this->assertTrue( $queue->batchPush( array( $this->newJob() ) ), "Push worked ($desc)" );
+		$this->assertNull( $queue->push( $this->newJob() ), "Push worked ($desc)" );
+		$this->assertNull( $queue->batchPush( array( $this->newJob() ) ), "Push worked ($desc)" );
 
 		$this->assertFalse( $queue->isEmpty(), "Queue is not empty ($desc)" );
 
@@ -157,7 +157,7 @@ class JobQueueTest extends MediaWikiTestCase {
 		$queue->flushCaches();
 		$this->assertEquals( 0, $queue->getAcquiredCount(), "Active job count ($desc)" );
 
-		$this->assertTrue( $queue->batchPush( array( $this->newJob(), $this->newJob() ) ),
+		$this->assertNull( $queue->batchPush( array( $this->newJob(), $this->newJob() ) ),
 			"Push worked ($desc)" );
 		$this->assertFalse( $queue->isEmpty(), "Queue is not empty ($desc)" );
 
@@ -183,7 +183,7 @@ class JobQueueTest extends MediaWikiTestCase {
 		$this->assertEquals( 0, $queue->getSize(), "Queue is empty ($desc)" );
 		$this->assertEquals( 0, $queue->getAcquiredCount(), "Queue is empty ($desc)" );
 
-		$this->assertTrue(
+		$this->assertNull(
 			$queue->batchPush(
 				array( $this->newDedupedJob(), $this->newDedupedJob(), $this->newDedupedJob() )
 			),
@@ -195,7 +195,7 @@ class JobQueueTest extends MediaWikiTestCase {
 		$this->assertEquals( 1, $queue->getSize(), "Queue size is correct ($desc)" );
 		$this->assertEquals( 0, $queue->getAcquiredCount(), "No jobs active ($desc)" );
 
-		$this->assertTrue(
+		$this->assertNull(
 			$queue->batchPush(
 				array( $this->newDedupedJob(), $this->newDedupedJob(), $this->newDedupedJob() )
 			),
@@ -244,15 +244,20 @@ class JobQueueTest extends MediaWikiTestCase {
 		$id = wfRandomString( 32 );
 		$root1 = Job::newRootJobParams( "nulljobspam:$id" ); // task ID/timestamp
 		for ( $i = 0; $i < 5; ++$i ) {
-			$this->assertTrue( $queue->push( $this->newJob( 0, $root1 ) ), "Push worked ($desc)" );
+			$this->assertNull( $queue->push( $this->newJob( 0, $root1 ) ), "Push worked ($desc)" );
 		}
 		$queue->deduplicateRootJob( $this->newJob( 0, $root1 ) );
-		sleep( 1 ); // roo job timestamp will increase
-		$root2 = Job::newRootJobParams( "nulljobspam:$id" ); // task ID/timestamp
+
+		$root2 = $root1;
+		# Add a second to UNIX epoch and format back to TS_MW
+		$root2_ts = strtotime( $root2['rootJobTimestamp'] );
+		$root2_ts++;
+		$root2['rootJobTimestamp'] = wfTimestamp( TS_MW, $root2_ts );
+
 		$this->assertNotEquals( $root1['rootJobTimestamp'], $root2['rootJobTimestamp'],
 			"Root job signatures have different timestamps." );
 		for ( $i = 0; $i < 5; ++$i ) {
-			$this->assertTrue( $queue->push( $this->newJob( 0, $root2 ) ), "Push worked ($desc)" );
+			$this->assertNull( $queue->push( $this->newJob( 0, $root2 ) ), "Push worked ($desc)" );
 		}
 		$queue->deduplicateRootJob( $this->newJob( 0, $root2 ) );
 
@@ -296,7 +301,7 @@ class JobQueueTest extends MediaWikiTestCase {
 		$this->assertEquals( 0, $queue->getAcquiredCount(), "Queue is empty ($desc)" );
 
 		for ( $i = 0; $i < 10; ++$i ) {
-			$this->assertTrue( $queue->push( $this->newJob( $i ) ), "Push worked ($desc)" );
+			$this->assertNull( $queue->push( $this->newJob( $i ) ), "Push worked ($desc)" );
 		}
 
 		for ( $i = 0; $i < 10; ++$i ) {

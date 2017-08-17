@@ -1,8 +1,7 @@
 <?php
 /** Latin (Latina)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -121,7 +120,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'Disputatio_mea' ),
 	'Newimages'                 => array( 'Fasciculi_novi', 'Imagines_novae' ),
 	'Newpages'                  => array( 'Paginae_novae' ),
-	'Popularpages'              => array( 'Paginae_saepe_monstratae' ),
+
 	'Preferences'               => array( 'Praeferentiae' ),
 	'Prefixindex'               => array( 'Praefixa', 'Quaerere_per_praefixa' ),
 	'Protectedpages'            => array( 'Paginae_protectae' ),

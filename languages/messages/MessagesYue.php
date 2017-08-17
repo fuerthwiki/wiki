@@ -1,8 +1,7 @@
 <?php
 /** Cantonese (粵語)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -144,6 +143,7 @@ $specialPageAliases = array(
 	'Mostrevisions'             => array( '最多版本' ),
 	'Movepage'                  => array( '搬頁' ),
 	'Mycontributions'           => array( '我嘅貢獻' ),
+	'MyLanguage'                => array( '我個話' ),
 	'Mypage'                    => array( '我嘅頁面' ),
 	'Mytalk'                    => array( '我嘅傾偈' ),
 	'Myuploads'                 => array( '我嘅上傳' ),
@@ -151,7 +151,7 @@ $specialPageAliases = array(
 	'Newpages'                  => array( '新版' ),
 	'PasswordReset'             => array( '重設密碼' ),
 	'PermanentLink'             => array( '永久鏈' ),
-	'Popularpages'              => array( '最歡迎頁' ),
+
 	'Preferences'               => array( '喜好設定' ),
 	'Prefixindex'               => array( '全部頁嘅前綴' ),
 	'Protectedpages'            => array( '保護頁' ),
@@ -193,7 +193,6 @@ $specialPageAliases = array(
 
 $bookstoreList = array(
 	'AddALL' => 'http://www.addall.com/New/Partner.cgi?query=$1&type=ISBN',
-	'PriceSCAN' => 'http://www.pricescan.com/books/bookDetail.asp?isbn=$1',
 	'Barnes & Noble' => 'http://search.barnesandnoble.com/bookSearch/isbnInquiry.asp?isbn=$1',
 	'亞馬遜' => 'http://www.amazon.com/exec/obidos/ISBN=$1',
 	'博客來書店' => 'http://www.books.com.tw/exep/prod/booksfile.php?item=$1',
@@ -229,7 +228,4 @@ $dateFormats = array(
 	'yue ymd date' => 'Y-n-j',
 	'yue ymd both' => 'Y-n-j H:i',
 );
-
-
-$linkTrail = '/^([a-z]+)(.*)$/sD';
 

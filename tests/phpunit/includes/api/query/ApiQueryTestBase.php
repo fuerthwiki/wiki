@@ -34,7 +34,7 @@ STR;
 
 	/**
 	 * Merges all requests parameter + expected values into one
-	 * @param ... list of arrays, each of which contains exactly two
+	 * @param array $v,... List of arrays, each of which contains exactly two
 	 * @return array
 	 */
 	protected function merge( /*...*/ ) {
@@ -52,6 +52,8 @@ STR;
 	/**
 	 * Check that the parameter is a valid two element array,
 	 * with the first element being API request and the second - expected result
+	 * @param array $v
+	 * @return array
 	 */
 	private function validateRequestExpectedPair( $v ) {
 		$this->assertType( 'array', $v, self::PARAM_ASSERT );
@@ -66,6 +68,8 @@ STR;
 
 	/**
 	 * Recursively merges the expected values in the $item into the $all
+	 * @param array &$all
+	 * @param array $item
 	 */
 	private function mergeExpected( &$all, $item ) {
 		foreach ( $item as $k => $v ) {
@@ -83,20 +87,27 @@ STR;
 
 	/**
 	 * Checks that the request's result matches the expected results.
-	 * @param $values array is a two element array( request, expected_results )
-	 * @throws Exception
+	 * @param array $values Array is a two element array( request, expected_results )
+	 * @param array $session
+	 * @param bool $appendModule
+	 * @param User $user
 	 */
-	protected function check( $values ) {
+	protected function check( $values, array $session = null,
+		$appendModule = false, User $user = null
+	) {
 		list( $req, $exp ) = $this->validateRequestExpectedPair( $values );
 		if ( !array_key_exists( 'action', $req ) ) {
 			$req['action'] = 'query';
+		}
+		if ( !array_key_exists( 'continue', $req ) ) {
+			$req['rawcontinue'] = '1';
 		}
 		foreach ( $req as &$val ) {
 			if ( is_array( $val ) ) {
 				$val = implode( '|', array_unique( $val ) );
 			}
 		}
-		$result = $this->doApiRequest( $req );
+		$result = $this->doApiRequest( $req, $session, $appendModule, $user );
 		$this->assertResult( array( 'query' => $exp ), $result[0], $req );
 	}
 
@@ -109,9 +120,16 @@ STR;
 			if ( is_array( $message ) ) {
 				$message = http_build_query( $message );
 			}
+
+			// FIXME: once we migrate to phpunit 4.1+, hardcode ComparisonFailure exception use
+			$compEx = 'SebastianBergmann\Comparator\ComparisonFailure';
+			if ( !class_exists( $compEx ) ) {
+				$compEx = 'PHPUnit_Framework_ComparisonFailure';
+			}
+
 			throw new PHPUnit_Framework_ExpectationFailedException(
 				$e->getMessage() . "\nRequest: $message",
-				new PHPUnit_Framework_ComparisonFailure(
+				new $compEx(
 					$exp,
 					$result,
 					print_r( $exp, true ),

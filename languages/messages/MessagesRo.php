@@ -1,8 +1,7 @@
 <?php
 /** Romanian (română)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -67,7 +66,6 @@ $magicWords = array(
 	'numberofusers'             => array( '1', 'NUMARDEUTILIZATORI', 'NUMBEROFUSERS' ),
 	'numberofactiveusers'       => array( '1', 'NUMARDEUTILIZATORIACTIVI', 'NUMBEROFACTIVEUSERS' ),
 	'numberofedits'             => array( '1', 'NUMARDEMODIFICARI', 'NUMBEROFEDITS' ),
-	'numberofviews'             => array( '1', 'NUMARDEVIZUALIZARI', 'NUMBEROFVIEWS' ),
 	'pagename'                  => array( '1', 'NUMEPAGINA', 'PAGENAME' ),
 	'pagenamee'                 => array( '1', 'NUMEEPAGINA', 'PAGENAMEE' ),
 	'namespace'                 => array( '1', 'SPATIUDENUME', 'NAMESPACE' ),
@@ -245,7 +243,7 @@ $specialPageAliases = array(
 	'Newimages'                 => array( 'Imagini_noi' ),
 	'Newpages'                  => array( 'Pagini_noi' ),
 	'PasswordReset'             => array( 'Resetare_parolă' ),
-	'Popularpages'              => array( 'Pagini_populare' ),
+
 	'Preferences'               => array( 'Preferințe' ),
 	'Prefixindex'               => array( 'Index' ),
 	'Protectedpages'            => array( 'Pagini_protejate' ),

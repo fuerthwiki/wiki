@@ -67,14 +67,17 @@ abstract class RedirectSpecialPage extends UnlistedSpecialPage {
 	 * Return part of the request string for a special redirect page
 	 * This allows passing, e.g. action=history to Special:Mypage, etc.
 	 *
-	 * @return String
+	 * @return string
 	 */
 	public function getRedirectQuery() {
 		$params = array();
+		$request = $this->getRequest();
 
 		foreach ( $this->mAllowedRedirectParams as $arg ) {
-			if ( $this->getRequest()->getVal( $arg, null ) !== null ) {
-				$params[$arg] = $this->getRequest()->getVal( $arg );
+			if ( $request->getVal( $arg, null ) !== null ) {
+				$params[$arg] = $request->getVal( $arg );
+			} elseif ( $request->getArray( $arg, null ) !== null ) {
+				$params[$arg] = $request->getArray( $arg );
 			}
 		}
 
@@ -85,6 +88,18 @@ abstract class RedirectSpecialPage extends UnlistedSpecialPage {
 		return count( $params )
 			? $params
 			: false;
+	}
+
+	/**
+	 * Indicate if the target of this redirect can be used to identify
+	 * a particular user of this wiki (e.g., if the redirect is to the
+	 * user page of a User). See T109724.
+	 *
+	 * @since 1.27
+	 * @return bool
+	 */
+	public function personallyIdentifiableTarget() {
+		return false;
 	}
 }
 
@@ -153,10 +168,6 @@ abstract class SpecialRedirectToSpecial extends RedirectSpecialPage {
  * preference, useful for preloaded edits where you know preview wouldn't be
  * useful.
  *
- * - internaledit, externaledit, mode: Allows forcing the use of the
- * internal/external editor, e.g. to force the internal editor for
- * short/simple preloaded edits.
- *
  * - redlink: Affects the message the user sees if their talk page/user talk
  * page does not currently exist. Avoids confusion for newbies with no user
  * pages over why they got a "permission error" following this link:
@@ -192,9 +203,9 @@ abstract class RedirectSpecialArticle extends RedirectSpecialPage {
 			'action',
 			'redirect', 'rdfrom',
 			# Options for preloaded edits
-			'preload', 'editintro', 'preloadtitle', 'summary', 'nosummary',
+			'preload', 'preloadparams', 'editintro', 'preloadtitle', 'summary', 'nosummary',
 			# Options for overriding user settings
-			'preview', 'internaledit', 'externaledit', 'mode', 'minor', 'watchthis',
+			'preview', 'minor', 'watchthis',
 			# Options for history/diffs
 			'section', 'oldid', 'diff', 'dir',
 			'limit', 'offset', 'feed',
@@ -204,7 +215,7 @@ abstract class RedirectSpecialArticle extends RedirectSpecialPage {
 			'ctype', 'maxage', 'smaxage',
 		);
 
-		wfRunHooks( "RedirectSpecialArticleRedirectParams", array( &$redirectParams ) );
+		Hooks::run( "RedirectSpecialArticleRedirectParams", array( &$redirectParams ) );
 		$this->mAllowedRedirectParams = $redirectParams;
 	}
 }

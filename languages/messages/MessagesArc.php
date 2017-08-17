@@ -1,8 +1,7 @@
 <?php
 /** Aramaic (ܐܪܡܝܐ)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -14,7 +13,6 @@ $rtl = true;
 $namespaceNames = array(
 	NS_MEDIA            => 'ܡܝܕܝܐ',
 	NS_SPECIAL          => 'ܕܝܠܢܝܐ',
-	NS_MAIN             => '',
 	NS_TALK             => 'ܡܡܠܠܐ',
 	NS_USER             => 'ܡܦܠܚܢܐ',
 	NS_USER_TALK        => 'ܡܡܠܠܐ_ܕܡܦܠܚܢܐ',
@@ -65,13 +63,14 @@ $specialPageAliases = array(
 	'Mostrevisions'             => array( 'ܬܢܝ̈ܬܐ_ܝܬܝܪ_ܡܢ_ܟܠ' ),
 	'Movepage'                  => array( 'ܫܢܝ_ܦܐܬܐ' ),
 	'Mycontributions'           => array( 'ܫܘܬܦܘ̈ܬܝ' ),
+	'MyLanguage'                => array( 'ܠܫܢܐ_ܕܝܠܝ' ),
 	'Mypage'                    => array( 'ܦܐܬܐ_ܕܝܠܝ' ),
 	'Mytalk'                    => array( 'ܡܡܠܠܐ_ܕܝܠܝ' ),
 	'Myuploads'                 => array( 'ܐܣܩ̈ܬܐ_ܕܝܠܝ' ),
 	'Newimages'                 => array( 'ܠܦܦ̈ܐ_ܚܕ̈ܬܐ', 'ܨܘܪ̈ܬܐ_ܚܕ̈ܬܬܐ' ),
 	'Newpages'                  => array( 'ܦܐܬܬ̈ܐ_ܚܕ̈ܬܬܐ' ),
 	'PermanentLink'             => array( 'ܐܣܘܪܐ_ܦܝܘܫܐ' ),
-	'Popularpages'              => array( 'ܦܐܬܬ̈ܐ_ܡܫܡܗ̈ܐ' ),
+
 	'Preferences'               => array( 'ܨܒܝܢܝܘ̈ܬܐ' ),
 	'Protectedpages'            => array( 'ܦܐܬܬ̈ܐ_ܢܛܝܪ̈ܬܐ' ),
 	'Protectedtitles'           => array( 'ܟܘܢܝ̈ܐ_ܢܛܝܪ̈ܐ' ),

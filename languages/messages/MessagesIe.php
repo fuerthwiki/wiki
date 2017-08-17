@@ -1,8 +1,7 @@
 <?php
 /** Interlingue (Interlingue)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -82,7 +81,7 @@ $specialPageAliases = array(
 	'Newpages'                  => array( 'Nov_págines' ),
 	'PasswordReset'             => array( 'Recomensar_parol-clave' ),
 	'PermanentLink'             => array( 'Catenun_permanen' ),
-	'Popularpages'              => array( 'Págines_populari' ),
+
 	'Preferences'               => array( 'Preferenties' ),
 	'Prefixindex'               => array( 'Index_de_prefixe' ),
 	'Protectedpages'            => array( 'Págines_gardat' ),

@@ -1,8 +1,7 @@
 <?php
 /** Kazakh (Latin script) (qazaqşa (latın)‎)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -73,8 +72,8 @@ $namespaceAliases = array(
 
 	# Aliases to renamed kk-arab namespaces
 	'مەدياۋيكي'        => NS_MEDIAWIKI,
-	'مەدياۋيكي_تالقىلاۋى'  => NS_MEDIAWIKI_TALK ,
-	'ٷلگٸ'        => NS_TEMPLATE ,
+	'مەدياۋيكي_تالقىلاۋى'  => NS_MEDIAWIKI_TALK,
+	'ٷلگٸ'        => NS_TEMPLATE,
 	'ٷلگٸ_تالقىلاۋى'    => NS_TEMPLATE_TALK,
 	'ٴۇلگٴى'              => NS_TEMPLATE,
 	'ٴۇلگٴى_تالقىلاۋى'    => NS_TEMPLATE_TALK,
@@ -317,7 +316,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'Talqılawım' ),
 	'Newimages'                 => array( 'Jaña_swretter' ),
 	'Newpages'                  => array( 'Jaña_better' ),
-	'Popularpages'              => array( 'Eñ_köp_qaralğan_better', 'Äýgili_better' ),
+
 	'Preferences'               => array( 'Baptalımdar', 'Baptaw' ),
 	'Prefixindex'               => array( 'Bastawış_tizimi' ),
 	'Protectedpages'            => array( 'Qorğalğan_better' ),

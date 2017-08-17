@@ -1,5 +1,6 @@
 <?php
 /**
+ * @group GlobalFunctions
  * @covers ::wfBaseConvert
  */
 class WfBaseConvertTest extends MediaWikiTestCase {
@@ -176,7 +177,19 @@ class WfBaseConvertTest extends MediaWikiTestCase {
 
 	public function testPadding() {
 		$number = "10101010101";
-		$this->assertSame( strlen( $number ) + 5, strlen( wfBaseConvert( $number, 2, 2, strlen( $number ) + 5 ) ) );
-		$this->assertSame( strlen( $number ), strlen( wfBaseConvert( $number, 2, 2, strlen( $number ) - 5 ) ) );
+		$this->assertSame(
+			strlen( $number ) + 5,
+			strlen( wfBaseConvert( $number, 2, 2, strlen( $number ) + 5 ) )
+		);
+		$this->assertSame(
+			strlen( $number ),
+			strlen( wfBaseConvert( $number, 2, 2, strlen( $number ) - 5 ) )
+		);
+	}
+
+	public function testLeadingZero() {
+		$this->assertSame( '24', wfBaseConvert( '010', 36, 16 ) );
+		$this->assertSame( '37d4', wfBaseConvert( '0b10', 36, 16 ) );
+		$this->assertSame( 'a734', wfBaseConvert( '0x10', 36, 16 ) );
 	}
 }

@@ -13,7 +13,7 @@ use ValueFormatters\ValueFormatter;
  * @group ValueFormatters
  * @group DataValueExtensions
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 abstract class ValueFormatterTestBase extends \PHPUnit_Framework_TestCase {
@@ -25,28 +25,16 @@ abstract class ValueFormatterTestBase extends \PHPUnit_Framework_TestCase {
 	 *
 	 * @return array[]
 	 */
-	public abstract function validProvider();
-
-	/**
-	 * Returns the name of the ValueFormatter implementing class.
-	 *
-	 * @since 0.1
-	 *
-	 * @return string
-	 */
-	protected abstract function getFormatterClass();
+	abstract public function validProvider();
 
 	/**
 	 * @since 0.1
 	 *
-	 * @param FormatterOptions $options
+	 * @param FormatterOptions|null $options
 	 *
 	 * @return ValueFormatter
 	 */
-	protected function getInstance( FormatterOptions $options ) {
-		$class = $this->getFormatterClass();
-		return new $class( $options );
-	}
+	abstract protected function getInstance( FormatterOptions $options = null );
 
 	/**
 	 * @dataProvider validProvider
@@ -58,16 +46,17 @@ abstract class ValueFormatterTestBase extends \PHPUnit_Framework_TestCase {
 	 * @param FormatterOptions|null $options
 	 * @param ValueFormatter|null $formatter
 	 */
-	public function testValidFormat( $value, $expected, FormatterOptions $options = null, ValueFormatter $formatter = null ) {
-		if ( $options === null ) {
-			$options = new FormatterOptions();
-		}
-
-		if ( is_null( $formatter ) ) {
+	public function testValidFormat(
+		$value,
+		$expected,
+		FormatterOptions $options = null,
+		ValueFormatter $formatter = null
+	) {
+		if ( $formatter === null ) {
 			$formatter = $this->getInstance( $options );
 		}
 
-		$this->assertEquals( $expected, $formatter->format( $value ) );
+		$this->assertSame( $expected, $formatter->format( $value ) );
 	}
 
 }

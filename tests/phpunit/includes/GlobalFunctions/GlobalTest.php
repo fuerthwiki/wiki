@@ -1,10 +1,13 @@
 <?php
 
+/**
+ * @group GlobalFunctions
+ */
 class GlobalTest extends MediaWikiTestCase {
 	protected function setUp() {
 		parent::setUp();
 
-		$readOnlyFile = tempnam( wfTempDir(), "mwtest_readonly" );
+		$readOnlyFile = $this->getNewTempFile();
 		unlink( $readOnlyFile );
 
 		$this->setMwGlobals( array(
@@ -17,16 +20,6 @@ class GlobalTest extends MediaWikiTestCase {
 				'file://', # Non-default
 			),
 		) );
-	}
-
-	protected function tearDown() {
-		global $wgReadOnlyFile;
-
-		if ( file_exists( $wgReadOnlyFile ) ) {
-			unlink( $wgReadOnlyFile );
-		}
-
-		parent::tearDown();
 	}
 
 	/**
@@ -56,13 +49,33 @@ class GlobalTest extends MediaWikiTestCase {
 		);
 	}
 
+	/*
+	 * Test cases for random functions could hypothetically fail,
+	 * even though they shouldn't.
+	 */
+
 	/**
 	 * @covers ::wfRandom
 	 */
 	public function testRandom() {
-		# This could hypothetically fail, but it shouldn't ;)
 		$this->assertFalse(
-			wfRandom() == wfRandom() );
+			wfRandom() == wfRandom()
+		);
+	}
+
+	/**
+	 * @covers ::wfRandomString
+	 */
+	public function testRandomString() {
+		$this->assertFalse(
+			wfRandomString() == wfRandomString()
+		);
+		$this->assertEquals(
+			strlen( wfRandomString( 10 ) ), 10
+		);
+		$this->assertTrue(
+			preg_match( '/^[0-9a-f]+$/i', wfRandomString() ) === 1
+		);
 	}
 
 	/**
@@ -80,7 +93,11 @@ class GlobalTest extends MediaWikiTestCase {
 	public function testExpandIRI() {
 		$this->assertEquals(
 			"https://te.wikibooks.org/wiki/ఉబుంటు_వాడుకరి_మార్గదర్శని",
-			wfExpandIRI( "https://te.wikibooks.org/wiki/%E0%B0%89%E0%B0%AC%E0%B1%81%E0%B0%82%E0%B0%9F%E0%B1%81_%E0%B0%B5%E0%B0%BE%E0%B0%A1%E0%B1%81%E0%B0%95%E0%B0%B0%E0%B0%BF_%E0%B0%AE%E0%B0%BE%E0%B0%B0%E0%B1%8D%E0%B0%97%E0%B0%A6%E0%B0%B0%E0%B1%8D%E0%B0%B6%E0%B0%A8%E0%B0%BF" ) );
+			wfExpandIRI( "https://te.wikibooks.org/wiki/"
+				. "%E0%B0%89%E0%B0%AC%E0%B1%81%E0%B0%82%E0%B0%9F%E0%B1%81_"
+				. "%E0%B0%B5%E0%B0%BE%E0%B0%A1%E0%B1%81%E0%B0%95%E0%B0%B0%E0%B0%BF_"
+				. "%E0%B0%AE%E0%B0%BE%E0%B0%B0%E0%B1%8D%E0%B0%97%E0%B0%A6%E0%B0%B0"
+				. "%E0%B1%8D%E0%B0%B6%E0%B0%A8%E0%B0%BF" ) );
 	}
 
 	/**
@@ -125,11 +142,20 @@ class GlobalTest extends MediaWikiTestCase {
 			array( array( 'foo' => false ), '' ), // false test
 			array( array( 'foo' => null ), '' ), // null test
 			array( array( 'foo' => 'A&B=5+6@!"\'' ), 'foo=A%26B%3D5%2B6%40%21%22%27' ), // urlencoding test
-			array( array( 'foo' => 'bar', 'baz' => 'is', 'asdf' => 'qwerty' ), 'foo=bar&baz=is&asdf=qwerty' ), // multi-item test
+			array(
+				array( 'foo' => 'bar', 'baz' => 'is', 'asdf' => 'qwerty' ),
+				'foo=bar&baz=is&asdf=qwerty'
+			), // multi-item test
 			array( array( 'foo' => array( 'bar' => 'baz' ) ), 'foo%5Bbar%5D=baz' ),
-			array( array( 'foo' => array( 'bar' => 'baz', 'qwerty' => 'asdf' ) ), 'foo%5Bbar%5D=baz&foo%5Bqwerty%5D=asdf' ),
+			array(
+				array( 'foo' => array( 'bar' => 'baz', 'qwerty' => 'asdf' ) ),
+				'foo%5Bbar%5D=baz&foo%5Bqwerty%5D=asdf'
+			),
 			array( array( 'foo' => array( 'bar', 'baz' ) ), 'foo%5B0%5D=bar&foo%5B1%5D=baz' ),
-			array( array( 'foo' => array( 'bar' => array( 'bar' => 'baz' ) ) ), 'foo%5Bbar%5D%5Bbar%5D=baz' ),
+			array(
+				array( 'foo' => array( 'bar' => array( 'bar' => 'baz' ) ) ),
+				'foo%5Bbar%5D%5Bbar%5D=baz'
+			),
 		);
 	}
 
@@ -161,9 +187,15 @@ class GlobalTest extends MediaWikiTestCase {
 			array( 'foo=bar&qwerty=asdf', array( 'foo' => 'bar', 'qwerty' => 'asdf' ) ), // multiple value
 			array( 'foo=A%26B%3D5%2B6%40%21%22%27', array( 'foo' => 'A&B=5+6@!"\'' ) ), // urldecoding test
 			array( 'foo%5Bbar%5D=baz', array( 'foo' => array( 'bar' => 'baz' ) ) ),
-			array( 'foo%5Bbar%5D=baz&foo%5Bqwerty%5D=asdf', array( 'foo' => array( 'bar' => 'baz', 'qwerty' => 'asdf' ) ) ),
+			array(
+				'foo%5Bbar%5D=baz&foo%5Bqwerty%5D=asdf',
+				array( 'foo' => array( 'bar' => 'baz', 'qwerty' => 'asdf' ) )
+			),
 			array( 'foo%5B0%5D=bar&foo%5B1%5D=baz', array( 'foo' => array( 0 => 'bar', 1 => 'baz' ) ) ),
-			array( 'foo%5Bbar%5D%5Bbar%5D=baz', array( 'foo' => array( 'bar' => array( 'bar' => 'baz' ) ) ) ),
+			array(
+				'foo%5Bbar%5D%5Bbar%5D=baz',
+				array( 'foo' => array( 'bar' => array( 'bar' => 'baz' ) ) )
+			),
 		);
 	}
 
@@ -270,37 +302,42 @@ class GlobalTest extends MediaWikiTestCase {
 	 * @covers ::wfDebugMem
 	 */
 	public function testDebugFunctionTest() {
+		$debugLogFile = $this->getNewTempFile();
 
-		global $wgDebugLogFile, $wgDebugTimestamps;
-
-		$old_log_file = $wgDebugLogFile;
-		$wgDebugLogFile = tempnam( wfTempDir(), 'mw-' );
-		# @todo FIXME: $wgDebugTimestamps should be tested
-		$old_wgDebugTimestamps = $wgDebugTimestamps;
-		$wgDebugTimestamps = false;
+		$this->setMwGlobals( array(
+			'wgDebugLogFile' => $debugLogFile,
+			# @todo FIXME: $wgDebugTimestamps should be tested
+			'wgDebugTimestamps' => false
+		) );
 
 		wfDebug( "This is a normal string" );
-		$this->assertEquals( "This is a normal string", file_get_contents( $wgDebugLogFile ) );
-		unlink( $wgDebugLogFile );
+		$this->assertEquals( "This is a normal string\n", file_get_contents( $debugLogFile ) );
+		unlink( $debugLogFile );
 
 		wfDebug( "This is nöt an ASCII string" );
-		$this->assertEquals( "This is nöt an ASCII string", file_get_contents( $wgDebugLogFile ) );
-		unlink( $wgDebugLogFile );
+		$this->assertEquals( "This is nöt an ASCII string\n", file_get_contents( $debugLogFile ) );
+		unlink( $debugLogFile );
 
 		wfDebug( "\00305This has böth UTF and control chars\003" );
-		$this->assertEquals( " 05This has böth UTF and control chars ", file_get_contents( $wgDebugLogFile ) );
-		unlink( $wgDebugLogFile );
+		$this->assertEquals(
+			" 05This has böth UTF and control chars \n",
+			file_get_contents( $debugLogFile )
+		);
+		unlink( $debugLogFile );
 
 		wfDebugMem();
-		$this->assertGreaterThan( 1000, preg_replace( '/\D/', '', file_get_contents( $wgDebugLogFile ) ) );
-		unlink( $wgDebugLogFile );
+		$this->assertGreaterThan(
+			1000,
+			preg_replace( '/\D/', '', file_get_contents( $debugLogFile ) )
+		);
+		unlink( $debugLogFile );
 
 		wfDebugMem( true );
-		$this->assertGreaterThan( 1000000, preg_replace( '/\D/', '', file_get_contents( $wgDebugLogFile ) ) );
-		unlink( $wgDebugLogFile );
-
-		$wgDebugLogFile = $old_log_file;
-		$wgDebugTimestamps = $old_wgDebugTimestamps;
+		$this->assertGreaterThan(
+			1000000,
+			preg_replace( '/\D/', '', file_get_contents( $debugLogFile ) )
+		);
+		unlink( $debugLogFile );
 	}
 
 	/**
@@ -335,22 +372,6 @@ class GlobalTest extends MediaWikiTestCase {
 		if ( isset( $old_server_setting ) ) {
 			$_SERVER['HTTP_ACCEPT_ENCODING'] = $old_server_setting;
 		}
-	}
-
-	/**
-	 * @covers ::swap
-	 */
-	public function testSwapVarsTest() {
-		$var1 = 1;
-		$var2 = 2;
-
-		$this->assertEquals( $var1, 1, 'var1 is set originally' );
-		$this->assertEquals( $var2, 2, 'var1 is set originally' );
-
-		swap( $var1, $var2 );
-
-		$this->assertEquals( $var1, 2, 'var1 is swapped' );
-		$this->assertEquals( $var2, 1, 'var2 is swapped' );
 	}
 
 	/**
@@ -591,13 +612,48 @@ class GlobalTest extends MediaWikiTestCase {
 		$protocols = array( 'HTTP' => 'http:', 'HTTPS' => 'https:', 'protocol-relative' => '' );
 		foreach ( $protocols as $pDesc => $p ) {
 			$a = array_merge( $a, array(
-				array( "$p//www.example.com", array(), false, "No matches for empty domains array, $pDesc URL" ),
-				array( "$p//www.example.com", array( 'www.example.com' ), true, "Exact match in domains array, $pDesc URL" ),
-				array( "$p//www.example.com", array( 'example.com' ), true, "Match without subdomain in domains array, $pDesc URL" ),
-				array( "$p//www.example2.com", array( 'www.example.com', 'www.example2.com', 'www.example3.com' ), true, "Exact match with other domains in array, $pDesc URL" ),
-				array( "$p//www.example2.com", array( 'example.com', 'example2.com', 'example3,com' ), true, "Match without subdomain with other domains in array, $pDesc URL" ),
-				array( "$p//www.example4.com", array( 'example.com', 'example2.com', 'example3,com' ), false, "Domain not in array, $pDesc URL" ),
-				array( "$p//nds-nl.wikipedia.org", array( 'nl.wikipedia.org' ), false, "Non-matching substring of domain, $pDesc URL" ),
+				array(
+					"$p//www.example.com",
+					array(),
+					false,
+					"No matches for empty domains array, $pDesc URL"
+				),
+				array(
+					"$p//www.example.com",
+					array( 'www.example.com' ),
+					true,
+					"Exact match in domains array, $pDesc URL"
+				),
+				array(
+					"$p//www.example.com",
+					array( 'example.com' ),
+					true,
+					"Match without subdomain in domains array, $pDesc URL"
+				),
+				array(
+					"$p//www.example2.com",
+					array( 'www.example.com', 'www.example2.com', 'www.example3.com' ),
+					true,
+					"Exact match with other domains in array, $pDesc URL"
+				),
+				array(
+					"$p//www.example2.com",
+					array( 'example.com', 'example2.com', 'example3,com' ),
+					true,
+					"Match without subdomain with other domains in array, $pDesc URL"
+				),
+				array(
+					"$p//www.example4.com",
+					array( 'example.com', 'example2.com', 'example3,com' ),
+					false,
+					"Domain not in array, $pDesc URL"
+				),
+				array(
+					"$p//nds-nl.wikipedia.org",
+					array( 'nl.wikipedia.org' ),
+					false,
+					"Non-matching substring of domain, $pDesc URL"
+				),
 			) );
 		}
 
@@ -617,19 +673,21 @@ class GlobalTest extends MediaWikiTestCase {
 	}
 
 	/**
-	 * @dataProvider provideWfShellMaintenanceCmdList
-	 * @covers ::wfShellMaintenanceCmd
+	 * @dataProvider provideWfShellWikiCmdList
+	 * @covers ::wfShellWikiCmd
 	 */
-	public function testWfShellMaintenanceCmd( $script, $parameters, $options, $expected, $description ) {
+	public function testWfShellWikiCmd( $script, $parameters, $options,
+		$expected, $description
+	) {
 		if ( wfIsWindows() ) {
 			// Approximation that's good enough for our purposes just now
 			$expected = str_replace( "'", '"', $expected );
 		}
-		$actual = wfShellMaintenanceCmd( $script, $parameters, $options );
+		$actual = wfShellWikiCmd( $script, $parameters, $options );
 		$this->assertEquals( $expected, $actual, $description );
 	}
 
-	public static function provideWfShellMaintenanceCmdList() {
+	public static function provideWfShellWikiCmdList() {
 		global $wgPhpCli;
 
 		return array(
@@ -642,10 +700,14 @@ class GlobalTest extends MediaWikiTestCase {
 			array( 'eval.php', array( '--help', '--test', 'X' ), array( 'wrapper' => 'MWScript.php' ),
 				"'$wgPhpCli' 'MWScript.php' 'eval.php' '--help' '--test' 'X'",
 				"Called eval.php --help --test with wrapper option" ),
-			array( 'eval.php', array( '--help', '--test', 'y' ), array( 'php' => 'php5', 'wrapper' => 'MWScript.php' ),
+			array(
+				'eval.php',
+				array( '--help', '--test', 'y' ),
+				array( 'php' => 'php5', 'wrapper' => 'MWScript.php' ),
 				"'php5' 'MWScript.php' 'eval.php' '--help' '--test' 'y'",
-				"Called eval.php --help --test with wrapper and php option" ),
+				"Called eval.php --help --test with wrapper and php option"
+			),
 		);
 	}
-	/* @TODO many more! */
+	/* @todo many more! */
 }

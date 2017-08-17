@@ -1,5 +1,6 @@
 <?php
 /**
+ * @group GlobalFunctions
  * @covers ::wfBaseName
  */
 class WfBaseNameTest extends MediaWikiTestCase {
@@ -27,8 +28,11 @@ class WfBaseNameTest extends MediaWikiTestCase {
 			array( '/aaaa/', 'aaaa' ),
 			array( '\\aaaa\\', 'aaaa' ),
 			array( '\\aaaa\\', 'aaaa' ),
-			array( '/mnt/upload3/wikipedia/en/thumb/8/8b/Zork_Grand_Inquisitor_box_cover.jpg/93px-Zork_Grand_Inquisitor_box_cover.jpg',
-				'93px-Zork_Grand_Inquisitor_box_cover.jpg' ),
+			array(
+				'/mnt/upload3/wikipedia/en/thumb/8/8b/'
+					. 'Zork_Grand_Inquisitor_box_cover.jpg/93px-Zork_Grand_Inquisitor_box_cover.jpg',
+				'93px-Zork_Grand_Inquisitor_box_cover.jpg'
+			),
 			array( 'C:\\Progra~1\\Wikime~1\\Wikipe~1\\VIEWER.EXE', 'VIEWER.EXE' ),
 			array( 'Östergötland_coat_of_arms.png', 'Östergötland_coat_of_arms.png' ),
 		);

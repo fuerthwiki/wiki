@@ -1,8 +1,7 @@
 <?php
 /** Pashto (پښتو)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -65,7 +64,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'زما_خبرې_اترې' ),
 	'Newimages'                 => array( 'نوي_انځورونه' ),
 	'Newpages'                  => array( 'نوي_مخونه' ),
-	'Popularpages'              => array( 'نامتومخونه' ),
+
 	'Preferences'               => array( 'غوره_توبونه' ),
 	'Prefixindex'               => array( 'د_مختاړيو_ليکلړ' ),
 	'Protectedpages'            => array( 'ژغورلي_مخونه' ),

@@ -10,25 +10,25 @@ use ValueValidators\Error;
  * @group ValueValidators
  * @group DataValueExtensions
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class ErrorTest extends \PHPUnit_Framework_TestCase {
 
 	public function newErrorProvider() {
-		$argLists = array();
+		$argLists = [];
 
-		$argLists[] = array();
+		$argLists[] = [];
 
-		$argLists[] = array( '' );
-		$argLists[] = array( 'foo' );
-		$argLists[] = array( ' foo bar baz.' );
+		$argLists[] = [ '' ];
+		$argLists[] = [ 'foo' ];
+		$argLists[] = [ ' foo bar baz.' ];
 
-		$argLists[] = array( ' foo bar ', null );
-		$argLists[] = array( ' foo bar ', 'length' );
+		$argLists[] = [ ' foo bar ', null ];
+		$argLists[] = [ ' foo bar ', 'length' ];
 
-		$argLists[] = array( ' foo bar ', null, 'something-went-wrong' );
-		$argLists[] = array( ' foo bar ', null, 'something-went-wrong', array( 'foo', 'bar' ) );
+		$argLists[] = [ ' foo bar ', null, 'something-went-wrong' ];
+		$argLists[] = [ ' foo bar ', null, 'something-went-wrong', [ 'foo', 'bar' ] ];
 
 		return $argLists;
 	}
@@ -39,7 +39,7 @@ class ErrorTest extends \PHPUnit_Framework_TestCase {
 	public function testNewError() {
 		$args = func_get_args();
 
-		$error = call_user_func_array( 'ValueValidators\Error::newError', $args );
+		$error = call_user_func_array( [ Error::class, 'newError' ], $args );
 
 		/**
 		 * @var Error $error
@@ -53,19 +53,19 @@ class ErrorTest extends \PHPUnit_Framework_TestCase {
 		$this->assertInternalType( 'array', $error->getParameters() );
 
 		if ( count( $args ) > 0 ) {
-			$this->assertEquals( $args[0], $error->getText() );
+			$this->assertSame( $args[0], $error->getText() );
 		}
 
 		if ( count( $args ) > 1 ) {
-			$this->assertEquals( $args[1], $error->getProperty() );
+			$this->assertSame( $args[1], $error->getProperty() );
 		}
 
 		if ( count( $args ) > 2 ) {
-			$this->assertEquals( $args[2], $error->getCode() );
+			$this->assertSame( $args[2], $error->getCode() );
 		}
 
 		if ( count( $args ) > 3 ) {
-			$this->assertEquals( $args[3], $error->getParameters() );
+			$this->assertSame( $args[3], $error->getParameters() );
 		}
 	}
 

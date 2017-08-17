@@ -24,7 +24,8 @@
  * @ingroup Testing
  */
 
-$otions = array( 'quick', 'color', 'quiet', 'help', 'show-output', 'record', 'run-disabled', 'run-parsoid' );
+$otions = array( 'quick', 'color', 'quiet', 'help', 'show-output',
+	'record', 'run-disabled', 'run-parsoid' );
 $optionsWithArgs = array( 'regex', 'filter', 'seed', 'setversion' );
 
 require_once __DIR__ . '/../maintenance/commandLine.inc';
@@ -69,10 +70,6 @@ if ( $wgDBtype == 'sqlite' ) {
 	}
 }
 
-# There is a convention that the parser should never
-# refer to $wgTitle directly, but instead use the title
-# passed to it.
-$wgTitle = Title::newFromText( 'Parser test script do not use' );
 $tester = new ParserTest( $options );
 
 if ( isset( $options['file'] ) ) {

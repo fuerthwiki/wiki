@@ -16,7 +16,6 @@
  * http://www.gnu.org/copyleft/gpl.html
  *
  * @file
- * @license GPL 2+
  * @author Daniel Kinzler
  */
 
@@ -39,7 +38,9 @@ class MediaWikiTitleCodecTest extends MediaWikiTestCase {
 			'wgLang' => Language::factory( 'en' ),
 			'wgAllowUserJs' => false,
 			'wgDefaultLanguageVariant' => false,
+			'wgMetaNamespace' => 'Project',
 			'wgLocalInterwikis' => array( 'localtestiw' ),
+			'wgCapitalLinks' => true,
 
 			// NOTE: this is why global state is evil.
 			// TODO: refactor access to the interwiki codes so it can be injected.
@@ -71,7 +72,7 @@ class MediaWikiTitleCodecTest extends MediaWikiTestCase {
 
 		$genderCache->expects( $this->any() )
 			->method( 'getGenderOf' )
-			->will( $this->returnCallback( function( $userName ) {
+			->will( $this->returnCallback( function ( $userName ) {
 				return preg_match( '/^[^- _]+a( |_|$)/u', $userName ) ? 'female' : 'male';
 			} ) );
 
@@ -81,15 +82,24 @@ class MediaWikiTitleCodecTest extends MediaWikiTestCase {
 	protected function makeCodec( $lang ) {
 		$gender = $this->getGenderCache();
 		$lang = Language::factory( $lang );
+		// language object can came from cache, which does not respect test settings
+		$lang->resetNamespaces();
 		return new MediaWikiTitleCodec( $lang, $gender );
 	}
 
-	public function provideFormat() {
+	public static function provideFormat() {
 		return array(
 			array( NS_MAIN, 'Foo_Bar', '', 'en', 'Foo Bar' ),
 			array( NS_USER, 'Hansi_Maier', 'stuff_and_so_on', 'en', 'User:Hansi Maier#stuff and so on' ),
 			array( false, 'Hansi_Maier', '', 'en', 'Hansi Maier' ),
-			array( NS_USER_TALK, 'hansi__maier', '', 'en', 'User talk:hansi  maier', 'User talk:Hansi maier' ),
+			array(
+				NS_USER_TALK,
+				'hansi__maier',
+				'',
+				'en',
+				'User talk:hansi  maier',
+				'User talk:Hansi maier'
+			),
 
 			// getGenderCache() provides a mock that considers first
 			// names ending in "a" to be female.
@@ -112,12 +122,16 @@ class MediaWikiTitleCodecTest extends MediaWikiTestCase {
 
 		// test round trip
 		$parsed = $codec->parseTitle( $actual, NS_MAIN );
-		$actual2 = $codec->formatTitle( $parsed->getNamespace(), $parsed->getText(), $parsed->getFragment() );
+		$actual2 = $codec->formatTitle(
+			$parsed->getNamespace(),
+			$parsed->getText(),
+			$parsed->getFragment()
+		);
 
 		$this->assertEquals( $normalized, $actual2, 'normalized after round trip' );
 	}
 
-	public function provideGetText() {
+	public static function provideGetText() {
 		return array(
 			array( NS_MAIN, 'Foo_Bar', '', 'en', 'Foo Bar' ),
 			array( NS_USER, 'Hansi_Maier', 'stuff_and_so_on', 'en', 'Hansi Maier' ),
@@ -136,7 +150,7 @@ class MediaWikiTitleCodecTest extends MediaWikiTestCase {
 		$this->assertEquals( $expected, $actual );
 	}
 
-	public function provideGetPrefixedText() {
+	public static function provideGetPrefixedText() {
 		return array(
 			array( NS_MAIN, 'Foo_Bar', '', 'en', 'Foo Bar' ),
 			array( NS_USER, 'Hansi_Maier', 'stuff_and_so_on', 'en', 'User:Hansi Maier' ),
@@ -162,7 +176,7 @@ class MediaWikiTitleCodecTest extends MediaWikiTestCase {
 		$this->assertEquals( $expected, $actual );
 	}
 
-	public function provideGetFullText() {
+	public static function provideGetFullText() {
 		return array(
 			array( NS_MAIN, 'Foo_Bar', '', 'en', 'Foo Bar' ),
 			array( NS_USER, 'Hansi_Maier', 'stuff_and_so_on', 'en', 'User:Hansi Maier#stuff and so on' ),
@@ -184,7 +198,7 @@ class MediaWikiTitleCodecTest extends MediaWikiTestCase {
 		$this->assertEquals( $expected, $actual );
 	}
 
-	public function provideParseTitle() {
+	public static function provideParseTitle() {
 		//TODO: test capitalization and trimming
 		//TODO: test unicode normalization
 
@@ -269,7 +283,7 @@ class MediaWikiTitleCodecTest extends MediaWikiTestCase {
 		$this->assertEquals( $title, $actual );
 	}
 
-	public function provideParseTitle_invalid() {
+	public static function provideParseTitle_invalid() {
 		//TODO: test unicode errors
 
 		return array(
@@ -341,7 +355,7 @@ class MediaWikiTitleCodecTest extends MediaWikiTestCase {
 		$codec->parseTitle( $text, NS_MAIN );
 	}
 
-	public function provideGetNamespaceName() {
+	public static function provideGetNamespaceName() {
 		return array(
 			array( NS_MAIN, 'Foo', 'en', '' ),
 			array( NS_USER, 'Foo', 'en', 'User' ),
@@ -355,13 +369,6 @@ class MediaWikiTitleCodecTest extends MediaWikiTestCase {
 
 	/**
 	 * @dataProvider provideGetNamespaceName
-	 *
-	 * @param $namespace
-	 * @param $text
-	 * @param $lang
-	 * @param $expected
-	 *
-	 * @internal param \TitleValue $title
 	 */
 	public function testGetNamespaceName( $namespace, $text, $lang, $expected ) {
 		$codec = $this->makeCodec( $lang );

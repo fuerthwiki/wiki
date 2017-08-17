@@ -1,8 +1,7 @@
 <?php
 /** Banjar (Bahasa Banjar)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -93,13 +92,14 @@ $specialPageAliases = array(
 	'Mostrevisions'             => array( 'Paubahan_pambanyaknya' ),
 	'Movepage'                  => array( 'Pindahakan_tungkaran' ),
 	'Mycontributions'           => array( 'Sumbangan_ulun' ),
+	'MyLanguage'                => array( 'Bahasa_ulun' ),
 	'Mypage'                    => array( 'Tungkaran_ulun' ),
 	'Mytalk'                    => array( 'Pamandiran_ulun' ),
 	'Myuploads'                 => array( 'Unggahan_ulun' ),
 	'Newimages'                 => array( 'Barakas_hanyar' ),
 	'Newpages'                  => array( 'Tungkaran_hanyar' ),
 	'PermanentLink'             => array( 'Tautan_tatap' ),
-	'Popularpages'              => array( 'Tungkaran_popular' ),
+
 	'Preferences'               => array( 'Kakatujuan' ),
 	'Protectedpages'            => array( 'Tungkaran_nang_dilindungi' ),
 	'Protectedtitles'           => array( 'Judul_nang_dilindungi' ),

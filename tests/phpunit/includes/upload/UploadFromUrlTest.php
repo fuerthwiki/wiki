@@ -23,7 +23,9 @@ class UploadFromUrlTest extends ApiTestCase {
 		}
 	}
 
-	protected function doApiRequest( array $params, array $unused = null, $appendModule = false, User $user = null ) {
+	protected function doApiRequest( array $params, array $unused = null,
+		$appendModule = false, User $user = null
+	) {
 		$sessionId = session_id();
 		session_write_close();
 
@@ -33,7 +35,10 @@ class UploadFromUrlTest extends ApiTestCase {
 
 		wfSetupSession( $sessionId );
 
-		return array( $module->getResultData(), $req );
+		return array(
+			$module->getResult()->getResultData( null, array( 'Strip' => 'all' ) ),
+			$req
+		);
 	}
 
 	/**
@@ -108,7 +113,7 @@ class UploadFromUrlTest extends ApiTestCase {
 		$this->user->addGroup( 'sysop' );
 		$data = $this->doApiRequest( array(
 			'action' => 'upload',
-			'url' => 'http://bits.wikimedia.org/skins-1.5/common/images/poweredby_mediawiki_88x31.png',
+			'url' => 'http://upload.wikimedia.org/wikipedia/mediawiki/b/bc/Wiki.png',
 			'asyncdownload' => 1,
 			'filename' => 'UploadFromUrlTest.png',
 			'token' => $token,
@@ -180,7 +185,7 @@ class UploadFromUrlTest extends ApiTestCase {
 		$data = $this->doApiRequest( array(
 			'action' => 'upload',
 			'filename' => 'UploadFromUrlTest.png',
-			'url' => 'http://bits.wikimedia.org/skins-1.5/common/images/poweredby_mediawiki_88x31.png',
+			'url' => 'http://upload.wikimedia.org/wikipedia/mediawiki/b/bc/Wiki.png',
 			'ignorewarnings' => true,
 			'token' => $token,
 		), $data );
@@ -203,12 +208,15 @@ class UploadFromUrlTest extends ApiTestCase {
 			$page->doDeleteArticle( '' );
 		}
 
-		$this->assertFalse( (bool)$talk->getArticleID( Title::GAID_FOR_UPDATE ), 'User talk does not exist' );
+		$this->assertFalse(
+			(bool)$talk->getArticleID( Title::GAID_FOR_UPDATE ),
+			'User talk does not exist'
+		);
 
 		$this->doApiRequest( array(
 			'action' => 'upload',
 			'filename' => 'UploadFromUrlTest.png',
-			'url' => 'http://bits.wikimedia.org/skins-1.5/common/images/poweredby_mediawiki_88x31.png',
+			'url' => 'http://upload.wikimedia.org/wikipedia/mediawiki/b/bc/Wiki.png',
 			'asyncdownload' => 1,
 			'token' => $token,
 			'leavemessage' => 1,
@@ -229,14 +237,17 @@ class UploadFromUrlTest extends ApiTestCase {
 			$this->doApiRequest( array(
 				'action' => 'upload',
 				'filename' => 'UploadFromUrlTest.png',
-				'url' => 'http://bits.wikimedia.org/skins-1.5/common/images/poweredby_mediawiki_88x31.png',
+				'url' => 'http://upload.wikimedia.org/wikipedia/mediawiki/b/bc/Wiki.png',
 				'asyncdownload' => 1,
 				'token' => $token,
 				'leavemessage' => 1,
 			) );
 		} catch ( UsageException $e ) {
 			$exception = true;
-			$this->assertEquals( 'Using leavemessage without ignorewarnings is not supported', $e->getMessage() );
+			$this->assertEquals(
+				'Using leavemessage without ignorewarnings is not supported',
+				$e->getMessage()
+			);
 		}
 		$this->assertTrue( $exception );
 
@@ -262,13 +273,16 @@ class UploadFromUrlTest extends ApiTestCase {
 	 * Helper function to perform an async upload, execute the job and fetch
 	 * the status
 	 *
+	 * @param string $token
+	 * @param bool $ignoreWarnings
+	 * @param bool $leaveMessage
 	 * @return array The result of action=upload&statuskey=key
 	 */
 	private function doAsyncUpload( $token, $ignoreWarnings = false, $leaveMessage = false ) {
 		$params = array(
 			'action' => 'upload',
 			'filename' => 'UploadFromUrlTest.png',
-			'url' => 'http://bits.wikimedia.org/skins-1.5/common/images/poweredby_mediawiki_88x31.png',
+			'url' => 'http://upload.wikimedia.org/wikipedia/mediawiki/b/bc/Wiki.png',
 			'asyncdownload' => 1,
 			'token' => $token,
 		);

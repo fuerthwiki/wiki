@@ -5,7 +5,6 @@
  *
  * @group ComposerHooks
  *
- * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class ComposerVersionNormalizerTest extends PHPUnit_Framework_TestCase {
@@ -59,7 +58,9 @@ class ComposerVersionNormalizerTest extends PHPUnit_Framework_TestCase {
 	/**
 	 * @dataProvider complexVersionProvider
 	 */
-	public function testGivenComplexVersionWithoutDash_normalizeSuffixAddsDash( $withoutDash, $withDash ) {
+	public function testGivenComplexVersionWithoutDash_normalizeSuffixAddsDash(
+		$withoutDash, $withDash
+	) {
 		$normalizer = new ComposerVersionNormalizer();
 
 		$this->assertEquals(
@@ -83,7 +84,9 @@ class ComposerVersionNormalizerTest extends PHPUnit_Framework_TestCase {
 	/**
 	 * @dataProvider complexVersionProvider
 	 */
-	public function testGivenComplexVersionWithDash_normalizeSuffixReturnsAsIs( $withoutDash, $withDash ) {
+	public function testGivenComplexVersionWithDash_normalizeSuffixReturnsAsIs(
+		$withoutDash, $withDash
+	) {
 		$this->assertRemainsUnchanged( $withDash );
 	}
 
@@ -114,7 +117,9 @@ class ComposerVersionNormalizerTest extends PHPUnit_Framework_TestCase {
 	/**
 	 * @dataProvider levelNormalizationProvider
 	 */
-	public function testGivenFewerLevels_levelCountNormalizationEnsuresFourLevels( $expected, $version ) {
+	public function testGivenFewerLevels_levelCountNormalizationEnsuresFourLevels(
+		$expected, $version
+	) {
 		$normalizer = new ComposerVersionNormalizer();
 
 		$this->assertEquals(

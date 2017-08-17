@@ -1,8 +1,7 @@
 <?php
 /** Haitian (Kreyòl ayisyen)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -87,6 +86,7 @@ $specialPageAliases = array(
 	'Mostrevisions'             => array( 'PlisRevizyon' ),
 	'Movepage'                  => array( 'DeplasePaj' ),
 	'Mycontributions'           => array( 'KontribisyonM' ),
+	'MyLanguage'                => array( 'LangMwen' ),
 	'Mypage'                    => array( 'PajMwen' ),
 	'Mytalk'                    => array( 'DiskisyonM' ),
 	'Myuploads'                 => array( 'ChajmanM' ),
@@ -94,7 +94,7 @@ $specialPageAliases = array(
 	'Newpages'                  => array( 'PajNouvo' ),
 	'PasswordReset'             => array( 'ResètMopas2' ),
 	'PermanentLink'             => array( 'LyenPouToutTan' ),
-	'Popularpages'              => array( 'PajPopilè' ),
+
 	'Preferences'               => array( 'Preferans' ),
 	'Prefixindex'               => array( 'EndèksPrefiks' ),
 	'Protectedpages'            => array( 'PajPwoteje' ),

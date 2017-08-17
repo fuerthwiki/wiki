@@ -8,6 +8,9 @@ be an integer, in the range `[0, 100]`, then ParamProcessor will verify the
 input is an integer, in the specified range, and return it as an actual
 integer variable.
 
+Also see [ParserHooks](https://github.com/JeroenDeDauw/ParserHooks), a library
+that builds on top of ParamProcessor and provides MediaWiki integration.
+
 [![Build Status](https://secure.travis-ci.org/JeroenDeDauw/ParamProcessor.png?branch=master)](http://travis-ci.org/JeroenDeDauw/ParamProcessor)
 [![Code Coverage](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/?branch=master)
@@ -29,7 +32,7 @@ dependency on `param-processor/param-processor` to your project's `composer.json
 Here is a minimal example of a `composer.json` file that just defines a dependency on
 version 1.x of this package:
 
-```js
+```json
 {
     "require": {
         "param-processor/param-processor": "~1.0"
@@ -146,7 +149,7 @@ These fields are supported:
 		<td><i>none</i></td>
 		<td>Takes the value as only parameter and returns the new value</td>
 	</tr>
-	
+
 </table>
 
 The requires fields currently are: name and message
@@ -202,19 +205,19 @@ The requires fields currently are: name and message
 ### Parameter definitions
 
 ```php
-$paramDefintions = array();
+$paramDefinitions = array();
 
-$paramDefintions[] = array(
+$paramDefinitions[] = array(
     'name' => 'username',
 );
 
-$paramDefintions[] = array(
+$paramDefinitions[] = array(
     'name' => 'job',
     'default' => 'unknown',
     'values' => array( 'Developer', 'Designer', 'Manager', 'Tester' ),
 );
 
-$paramDefintions[] = array(
+$paramDefinitions[] = array(
     'name' => 'favourite-numbers',
     'islist' => true,
     'type' => 'int',
@@ -232,7 +235,7 @@ $inputParams = array(
 
 $processor = ParamProcessor\Processor::newDefault();
 
-$processor->setParameters( $inputParams, $paramDefintions );
+$processor->setParameters( $inputParams, $paramDefinitions );
 
 $processingResult = $processor->processParameters();
 
@@ -245,6 +248,11 @@ This library comes with a set up PHPUnit tests that cover all non-trivial code. 
 tests using the PHPUnit configuration file found in the root directory. The tests can also be run
 via TravisCI, as a TravisCI configuration file is also provided in the root directory.
 
+## Contributing
+
+* [File an issue](https://github.com/JeroenDeDauw/ParamProcessor/issues)
+* [Submit a pull request](https://github.com/JeroenDeDauw/ParamProcessor/pulls) ([tasks for newcommers](https://github.com/JeroenDeDauw/ParamProcessor/issues?q=is%3Aissue+is%3Aopen+label%3Anewcomer))
+
 ## Authors
 
 ParamProcessor has been written by [Jeroen De Dauw](https://github.com/JeroenDeDauw) to
@@ -252,6 +260,33 @@ support the [Maps](https://github.com/JeroenDeDauw/Maps) and [Semantic MediaWiki
 (https://semantic-mediawiki.org/) projects.
 
 ## Release notes
+
+### 1.3.2 (2017-03-26)
+
+* Fixed clearing of processing errors when making multiple processing calls to one `Processor` instance
+
+### 1.3.1 (2016-09-21)
+
+* Fixed `ParamDefinitionFactory` emitting a warning when initialized without the global `wgParamDefinitions` being set
+
+### 1.3.0 (2016-07-15)
+
+* Dropped support for PHP 5.3 and PHP 5.4.
+* Fixed bug in `ParamDefinition::format`
+
+### 1.2.5 (2016-05-23)
+
+* Fixed bug in `Processor::newProcessingResult`
+
+### 1.2.4 (2016-05-15)
+
+* Fixed bug in `ParamDefinition::getAllowedValues`
+
+### 1.2.3 (2016-04-04)
+
+* Installation together with DataValues Interfaces 0.2.x is now allowed.
+* Installation together with DataValues Common 0.3.x is now allowed.
+* The component is now also tested against PHP 7
 
 ### 1.2.2 (2014-10-24)
 

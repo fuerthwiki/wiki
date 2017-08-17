@@ -5,7 +5,7 @@ namespace ValueValidators;
 /**
  * @since 0.1
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class Error {
@@ -28,10 +28,10 @@ class Error {
 	 * @param string      $code
 	 * @param array       $params
 	 *
-	 * @return Error
+	 * @return self
 	 */
-	public static function newError( $text = '', $property = null, $code = 'invalid', $params = array() ) {
-		return new static( $text, Error::SEVERITY_ERROR, $property, $code, $params );
+	public static function newError( $text = '', $property = null, $code = 'invalid', array $params = [] ) {
+		return new static( $text, self::SEVERITY_ERROR, $property, $code, $params );
 	}
 
 	/**
@@ -43,7 +43,7 @@ class Error {
 	 * @param string      $code
 	 * @param array       $params
 	 */
-	protected function __construct( $text, $severity, $property, $code, $params ) {
+	protected function __construct( $text, $severity, $property, $code, array $params ) {
 		$this->text = $text;
 		$this->severity = $severity;
 		$this->property = $property;
@@ -95,8 +95,3 @@ class Error {
 	}
 
 }
-
-/**
- * @deprecated
- */
-class ErrorObject extends Error {}

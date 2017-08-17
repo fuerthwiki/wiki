@@ -1,8 +1,7 @@
 <?php
 /** Tagalog (Tagalog)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -105,7 +104,7 @@ $specialPageAliases = array(
 	'Newpages'                  => array( 'Bagong_mga_pahina' ),
 	'PasswordReset'             => array( 'Muling_Pagtatakda_ng_Hudyat' ),
 	'PermanentLink'             => array( 'Pamalagiang_Kawing' ),
-	'Popularpages'              => array( 'Sikat_na_mga_pahina' ),
+
 	'Preferences'               => array( 'Mga_nais' ),
 	'Prefixindex'               => array( 'Talatuntunan_ng_unlapi' ),
 	'Protectedpages'            => array( 'Mga_pahinang_nakasanggalang' ),

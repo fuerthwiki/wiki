@@ -21,6 +21,7 @@ class StructureTest extends MediaWikiTestCase {
 			'ApiQueryTestBase',
 			'ApiQueryContinueTestBase',
 			'MediaWikiLangTestCase',
+			'MediaWikiMediaTestCase',
 			'MediaWikiTestCase',
 			'ResourceLoaderTestCase',
 			'PHPUnit_Framework_TestCase',
@@ -57,6 +58,8 @@ class StructureTest extends MediaWikiTestCase {
 
 	/**
 	 * Filter to remove testUnitTestFileNamesEndWithTest false positives.
+	 * @param string $filename
+	 * @return bool
 	 */
 	public function filterSuites( $filename ) {
 		return strpos( $filename, __DIR__ . '/../suites/' ) !== 0;

@@ -1,8 +1,7 @@
 <?php
 /** Friulian (furlan)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -65,7 +64,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'MêsDiscussions' ),
 	'Newimages'                 => array( 'GnovisFiguris' ),
 	'Newpages'                  => array( 'GnovisPagjinis' ),
-	'Popularpages'              => array( 'PagjinisPopolârs' ),
+
 	'Preferences'               => array( 'Preferencis' ),
 	'Prefixindex'               => array( 'Prefìs' ),
 	'Protectedpages'            => array( 'PagjinisProtezudis' ),

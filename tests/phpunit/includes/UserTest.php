@@ -126,6 +126,31 @@ class UserTest extends MediaWikiTestCase {
 	}
 
 	/**
+	 * @dataProvider provideIPs
+	 * @covers User::isIP
+	 */
+	public function testIsIP( $value, $result, $message ) {
+		$this->assertEquals( $this->user->isIP( $value ), $result, $message );
+	}
+
+	public static function provideIPs() {
+		return array(
+			array( '', false, 'Empty string' ),
+			array( ' ', false, 'Blank space' ),
+			array( '10.0.0.0', true, 'IPv4 private 10/8' ),
+			array( '10.255.255.255', true, 'IPv4 private 10/8' ),
+			array( '192.168.1.1', true, 'IPv4 private 192.168/16' ),
+			array( '203.0.113.0', true, 'IPv4 example' ),
+			array( '2002:ffff:ffff:ffff:ffff:ffff:ffff:ffff', true, 'IPv6 example' ),
+			// Not valid IPs but classified as such by MediaWiki for negated asserting
+			// of whether this might be the identifier of a logged-out user or whether
+			// to allow usernames like it.
+			array( '300.300.300.300', true, 'Looks too much like an IPv4 address' ),
+			array( '203.0.113.xxx', true, 'Assigned by UseMod to cloaked logged-out users' ),
+		);
+	}
+
+	/**
 	 * @dataProvider provideUserNames
 	 * @covers User::isValidUserName
 	 */
@@ -148,6 +173,9 @@ class UserTest extends MediaWikiTestCase {
 			array( 'Abcdകഖഗഘ', true, ' Mixed scripts' ),
 			array( 'ജോസ്‌തോമസ്', false, 'ZWNJ- Format control character' ),
 			array( 'Ab　cd', false, ' Ideographic space' ),
+			array( '300.300.300.300', false, 'Looks too much like an IPv4 address' ),
+			array( '302.113.311.900', false, 'Looks too much like an IPv4 address' ),
+			array( '203.0.113.xxx', false, 'Reserved for usage by UseMod for cloaked logged-out users' ),
 		);
 	}
 
@@ -157,7 +185,7 @@ class UserTest extends MediaWikiTestCase {
 	 * Extensions and core
 	 */
 	public function testAllRightsWithMessage() {
-		//Getting all user rights, for core: User::$mCoreRights, for extensions: $wgAvailableRights
+		// Getting all user rights, for core: User::$mCoreRights, for extensions: $wgAvailableRights
 		$allRights = User::getAllRights();
 		$allMessageKeys = Language::getMessageKeysFor( 'en' );
 
@@ -186,8 +214,10 @@ class UserTest extends MediaWikiTestCase {
 	 */
 	public function testEditCount() {
 		$user = User::newFromName( 'UnitTestUser' );
-		$user->loadDefaults();
-		$user->addToDatabase();
+
+		if ( !$user->getId() ) {
+			$user->addToDatabase();
+		}
 
 		// let the user have a few (3) edits
 		$page = WikiPage::factory( Title::newFromText( 'Help:UserTest_EditCount' ) );
@@ -196,13 +226,21 @@ class UserTest extends MediaWikiTestCase {
 		}
 
 		$user->clearInstanceCache();
-		$this->assertEquals( 3, $user->getEditCount(), 'After three edits, the user edit count should be 3' );
+		$this->assertEquals(
+			3,
+			$user->getEditCount(),
+			'After three edits, the user edit count should be 3'
+		);
 
 		// increase the edit count and clear the cache
 		$user->incEditCount();
 
 		$user->clearInstanceCache();
-		$this->assertEquals( 4, $user->getEditCount(), 'After increasing the edit count manually, the user edit count should be 4' );
+		$this->assertEquals(
+			4,
+			$user->getEditCount(),
+			'After increasing the edit count manually, the user edit count should be 4'
+		);
 	}
 
 	/**
@@ -212,14 +250,17 @@ class UserTest extends MediaWikiTestCase {
 	 */
 	public function testOptions() {
 		$user = User::newFromName( 'UnitTestUser' );
-		$user->addToDatabase();
 
-		$user->setOption( 'someoption', 'test' );
+		if ( !$user->getId() ) {
+			$user->addToDatabase();
+		}
+
+		$user->setOption( 'userjs-someoption', 'test' );
 		$user->setOption( 'cols', 200 );
 		$user->saveSettings();
 
 		$user = User::newFromName( 'UnitTestUser' );
-		$this->assertEquals( 'test', $user->getOption( 'someoption' ) );
+		$this->assertEquals( 'test', $user->getOption( 'userjs-someoption' ) );
 		$this->assertEquals( 200, $user->getOption( 'cols' ) );
 	}
 
@@ -230,9 +271,9 @@ class UserTest extends MediaWikiTestCase {
 	 */
 	public function testAnonOptions() {
 		global $wgDefaultUserOptions;
-		$this->user->setOption( 'someoption', 'test' );
+		$this->user->setOption( 'userjs-someoption', 'test' );
 		$this->assertEquals( $wgDefaultUserOptions['cols'], $this->user->getOption( 'cols' ) );
-		$this->assertEquals( 'test', $this->user->getOption( 'someoption' ) );
+		$this->assertEquals( 'test', $this->user->getOption( 'userjs-someoption' ) );
 	}
 
 	/**
@@ -240,12 +281,10 @@ class UserTest extends MediaWikiTestCase {
 	 * @covers User::getPasswordExpired()
 	 */
 	public function testPasswordExpire() {
-		global $wgPasswordExpireGrace;
-		$wgTemp = $wgPasswordExpireGrace;
-		$wgPasswordExpireGrace = 3600 * 24 * 7; // 7 days
+		$this->setMwGlobals( 'wgPasswordExpireGrace', 3600 * 24 * 7 ); // 7 days
 
 		$user = User::newFromName( 'UnitTestUser' );
-		$user->loadDefaults();
+		$user->loadDefaults( 'UnitTestUser' );
 		$this->assertEquals( false, $user->getPasswordExpired() );
 
 		$ts = time() - ( 3600 * 24 * 1 ); // 1 day ago
@@ -255,8 +294,6 @@ class UserTest extends MediaWikiTestCase {
 		$ts = time() - ( 3600 * 24 * 10 ); // 10 days ago
 		$user->expirePassword( $ts );
 		$this->assertEquals( 'hard', $user->getPasswordExpired() );
-
-		$wgPasswordExpireGrace = $wgTemp;
 	}
 
 	/**
@@ -269,7 +306,10 @@ class UserTest extends MediaWikiTestCase {
 	 * @covers User::isValidPassword()
 	 */
 	public function testCheckPasswordValidity() {
-		$this->setMwGlobals( 'wgMinimalPasswordLength', 6 );
+		$this->setMwGlobals( array(
+			'wgMinimalPasswordLength' => 6,
+			'wgMaximalPasswordLength' => 30,
+		) );
 		$user = User::newFromName( 'Useruser' );
 		// Sanity
 		$this->assertTrue( $user->isValidPassword( 'Password1234' ) );
@@ -277,14 +317,112 @@ class UserTest extends MediaWikiTestCase {
 		// Minimum length
 		$this->assertFalse( $user->isValidPassword( 'a' ) );
 		$this->assertFalse( $user->checkPasswordValidity( 'a' )->isGood() );
+		$this->assertTrue( $user->checkPasswordValidity( 'a' )->isOK() );
 		$this->assertEquals( 'passwordtooshort', $user->getPasswordValidity( 'a' ) );
+
+		// Maximum length
+		$longPass = str_repeat( 'a', 31 );
+		$this->assertFalse( $user->isValidPassword( $longPass ) );
+		$this->assertFalse( $user->checkPasswordValidity( $longPass )->isGood() );
+		$this->assertFalse( $user->checkPasswordValidity( $longPass )->isOK() );
+		$this->assertEquals( 'passwordtoolong', $user->getPasswordValidity( $longPass ) );
 
 		// Matches username
 		$this->assertFalse( $user->checkPasswordValidity( 'Useruser' )->isGood() );
+		$this->assertTrue( $user->checkPasswordValidity( 'Useruser' )->isOK() );
 		$this->assertEquals( 'password-name-match', $user->getPasswordValidity( 'Useruser' ) );
 
 		// On the forbidden list
 		$this->assertFalse( $user->checkPasswordValidity( 'Passpass' )->isGood() );
 		$this->assertEquals( 'password-login-forbidden', $user->getPasswordValidity( 'Passpass' ) );
+	}
+
+	/**
+	 * @covers User::getCanonicalName()
+	 * @dataProvider provideGetCanonicalName
+	 */
+	public function testGetCanonicalName( $name, $expectedArray, $msg ) {
+		foreach ( $expectedArray as $validate => $expected ) {
+			$this->assertEquals(
+				$expected,
+				User::getCanonicalName( $name, $validate === 'false' ? false : $validate ),
+				$msg . ' (' . $validate . ')'
+			);
+		}
+	}
+
+	public static function provideGetCanonicalName() {
+		return array(
+			array( ' Trailing space ', array( 'creatable' => 'Trailing space' ), 'Trailing spaces' ),
+			// @todo FIXME: Maybe the creatable name should be 'Talk:Username' or false to reject?
+			array( 'Talk:Username', array( 'creatable' => 'Username', 'usable' => 'Username',
+				'valid' => 'Username', 'false' => 'Talk:Username' ), 'Namespace prefix' ),
+			array( ' name with # hash', array( 'creatable' => false, 'usable' => false ), 'With hash' ),
+			array( 'Multi  spaces', array( 'creatable' => 'Multi spaces',
+				'usable' => 'Multi spaces' ), 'Multi spaces' ),
+			array( 'lowercase', array( 'creatable' => 'Lowercase' ), 'Lowercase' ),
+			array( 'in[]valid', array( 'creatable' => false, 'usable' => false, 'valid' => false,
+				'false' => 'In[]valid' ), 'Invalid' ),
+			array( 'with / slash', array( 'creatable' => false, 'usable' => false, 'valid' => false,
+				'false' => 'With / slash' ), 'With slash' ),
+		);
+	}
+
+	/**
+	 * @covers User::equals
+	 */
+	public function testEquals() {
+		$first = User::newFromName( 'EqualUser' );
+		$second = User::newFromName( 'EqualUser' );
+
+		$this->assertTrue( $first->equals( $first ) );
+		$this->assertTrue( $first->equals( $second ) );
+		$this->assertTrue( $second->equals( $first ) );
+
+		$third = User::newFromName( '0' );
+		$fourth = User::newFromName( '000' );
+
+		$this->assertFalse( $third->equals( $fourth ) );
+		$this->assertFalse( $fourth->equals( $third ) );
+
+		// Test users loaded from db with id
+		$user = User::newFromName( 'EqualUnitTestUser' );
+		if ( !$user->getId() ) {
+			$user->addToDatabase();
+		}
+
+		$id = $user->getId();
+
+		$fifth = User::newFromId( $id );
+		$sixth = User::newFromName( 'EqualUnitTestUser' );
+		$this->assertTrue( $fifth->equals( $sixth ) );
+	}
+
+	/**
+	 * @covers User::getId
+	 */
+	public function testGetId() {
+		$user = User::newFromName( 'UTSysop' );
+		$this->assertTrue( $user->getId() > 0 );
+
+	}
+
+	/**
+	 * @covers User::isLoggedIn
+	 * @covers User::isAnon
+	 */
+	public function testLoggedIn() {
+		$user = User::newFromName( 'UTSysop' );
+		$this->assertTrue( $user->isLoggedIn() );
+		$this->assertFalse( $user->isAnon() );
+
+		// Non-existent users are perceived as anonymous
+		$user = User::newFromName( 'UTNonexistent' );
+		$this->assertFalse( $user->isLoggedIn() );
+		$this->assertTrue( $user->isAnon() );
+
+		$user = new User;
+		$this->assertFalse( $user->isLoggedIn() );
+		$this->assertTrue( $user->isAnon() );
 	}
 }

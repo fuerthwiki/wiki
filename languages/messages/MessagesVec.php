@@ -1,8 +1,7 @@
 <?php
 /** vèneto (vèneto)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -118,7 +117,7 @@ $specialPageAliases = array(
 	'Newpages'                  => array( 'PagineNove' ),
 	'PasswordReset'             => array( 'ReinpostaPassword' ),
 	'PermanentLink'             => array( 'LinkParmanente' ),
-	'Popularpages'              => array( 'PaginePiassèVisità' ),
+
 	'Preferences'               => array( 'Preferense' ),
 	'Prefixindex'               => array( 'Prefissi' ),
 	'Protectedpages'            => array( 'PagineProtete' ),

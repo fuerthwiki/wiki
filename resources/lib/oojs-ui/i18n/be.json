@@ -1,8 +1,10 @@
 {
-    "@metadata": {
-        "authors": [
-            "Чаховіч Уладзіслаў"
-        ]
-    },
-    "ooui-dialog-action-close": "Закрыць"
+	"@metadata": {
+		"authors": [
+			"Чаховіч Уладзіслаў",
+			"Artificial123"
+		]
+	},
+	"ooui-dialog-message-accept": "ОК",
+	"ooui-dialog-message-reject": "Адмяніць"
 }

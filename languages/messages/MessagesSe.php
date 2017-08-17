@@ -1,8 +1,7 @@
 <?php
 /** Northern Sami (sámegiella)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -81,7 +80,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'Mu_ságastallan' ),
 	'Newimages'                 => array( 'Ođđa_govat', 'Ođđa_fiillat' ),
 	'Newpages'                  => array( 'Ođđa_siiddut' ),
-	'Popularpages'              => array( 'Bivnnuhis_siiddut' ),
+
 	'Preferences'               => array( 'Válljemat', 'Ásahusat' ),
 	'Protectedpages'            => array( 'Suodjaluvvon_siiddut' ),
 	'Protectedtitles'           => array( 'Suodjaluvvon_bajilčállagat', 'Suodjaluvvon_siidonamat' ),

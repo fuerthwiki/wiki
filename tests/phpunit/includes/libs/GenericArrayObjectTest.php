@@ -24,13 +24,13 @@
  * @ingroup Test
  * @group GenericArrayObject
  *
- * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
-abstract class GenericArrayObjectTest extends MediaWikiTestCase {
+abstract class GenericArrayObjectTest extends PHPUnit_Framework_TestCase {
 
 	/**
-	 * Returns objects that can serve as elements in the concrete GenericArrayObject deriving class being tested.
+	 * Returns objects that can serve as elements in the concrete
+	 * GenericArrayObject deriving class being tested.
 	 *
 	 * @since 1.20
 	 *
@@ -170,7 +170,7 @@ abstract class GenericArrayObjectTest extends MediaWikiTestCase {
 	/**
 	 * @since 1.20
 	 *
-	 * @param callback $function
+	 * @param callable $function
 	 *
 	 * @covers GenericArrayObject::getObjectType
 	 */

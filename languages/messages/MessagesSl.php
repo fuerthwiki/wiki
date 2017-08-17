@@ -1,8 +1,7 @@
 <?php
 /** Slovenian (slovenščina)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -82,7 +81,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'MojPogovor' ),
 	'Newimages'                 => array( 'NoveDatoteke', 'NoveSlike' ),
 	'Newpages'                  => array( 'NoveStrani' ),
-	'Popularpages'              => array( 'PriljubljeneStrani' ),
+
 	'Preferences'               => array( 'Nastavitve' ),
 	'Protectedpages'            => array( 'ZaščiteneStrani' ),
 	'Protectedtitles'           => array( 'ZaščiteniNaslovi' ),

@@ -2,6 +2,7 @@
 
 namespace ValueParsers\Test;
 
+use ValueParsers\ParserOptions;
 use ValueParsers\StringValueParser;
 
 /**
@@ -17,38 +18,33 @@ use ValueParsers\StringValueParser;
  */
 abstract class StringValueParserTest extends ValueParserTestBase {
 
+	/**
+	 * @see ValueParserTestBase::invalidInputProvider
+	 *
+	 * @return array[]
+	 */
 	public function invalidInputProvider() {
-		$argLists = array();
-
-		$invalid = array(
-			true,
-			false,
-			null,
-			4.2,
-			array(),
-			42,
+		return array(
+			array( true ),
+			array( false ),
+			array( null ),
+			array( 4.2 ),
+			array( array() ),
+			array( 42 ),
 		);
-
-		foreach ( $invalid as $value ) {
-			$argLists[] = array( $value );
-		}
-
-		return $argLists;
 	}
 
 	public function testSetAndGetOptions() {
-		$options = $this->newParserOptions();
-
 		/**
 		 * @var StringValueParser $parser
 		 */
 		$parser = $this->getInstance();
 
-		$parser->setOptions( $options );
+		$parser->setOptions( new ParserOptions() );
 
-		$this->assertEquals( $options, $parser->getOptions() );
+		$this->assertEquals( new ParserOptions(), $parser->getOptions() );
 
-		$options = $this->newParserOptions();
+		$options = new ParserOptions();
 		$options->setOption( '~=[,,_,,]:3', '~=[,,_,,]:3' );
 
 		$parser->setOptions( $options );

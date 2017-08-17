@@ -1,20 +1,23 @@
 <?php
-
 /**
  * RandomImageGenerator -- does what it says on the tin.
- * Requires Imagick, the ImageMagick library for PHP, or the command line equivalent (usually 'convert').
+ * Requires Imagick, the ImageMagick library for PHP, or the command line
+ * equivalent (usually 'convert').
  *
- * Because MediaWiki tests the uniqueness of media upload content, and filenames, it is sometimes useful to generate
- * files that are guaranteed (or at least very likely) to be unique in both those ways.
- * This generates a number of filenames with random names and random content (colored triangles)
+ * Because MediaWiki tests the uniqueness of media upload content, and
+ * filenames, it is sometimes useful to generate files that are guaranteed (or
+ * at least very likely) to be unique in both those ways. This generates a
+ * number of filenames with random names and random content (colored triangles).
  *
- * It is also useful to have fresh content because our tests currently run in a "destructive" mode, and don't create a fresh new wiki for each
- * test run.
- * Consequently, if we just had a few static files we kept re-uploading, we'd get lots of warnings about matching content or filenames,
- * and even if we deleted those files, we'd get warnings about archived files.
+ * It is also useful to have fresh content because our tests currently run in a
+ * "destructive" mode, and don't create a fresh new wiki for each test run.
+ * Consequently, if we just had a few static files we kept re-uploading, we'd
+ * get lots of warnings about matching content or filenames, and even if we
+ * deleted those files, we'd get warnings about archived files.
  *
- * This can also be used with a cronjob to generate random files all the time -- I use it to have a constant, never ending supply when I'm
- * testing interactively.
+ * This can also be used with a cronjob to generate random files all the time.
+ * I use it to have a constant, never ending supply when I'm testing
+ * interactively.
  *
  * @file
  * @author Neil Kandalgaonkar <neilk@wikimedia.org>
@@ -25,7 +28,6 @@
  * Can fetch a random image, or also write a number of them to disk with random filenames.
  */
 class RandomImageGenerator {
-
 	private $dictionaryFile;
 	private $minWidth = 400;
 	private $maxWidth = 800;
@@ -34,10 +36,11 @@ class RandomImageGenerator {
 	private $shapesToDraw = 5;
 
 	/**
-	 * Orientations: 0th row, 0th column, Exif orientation code, rotation 2x2 matrix that is opposite of orientation
-	 * n.b. we do not handle the 'flipped' orientations, which is why there is no entry for 2, 4, 5, or 7. Those
-	 * seem to be rare in real images anyway
-	 * (we also would need a non-symmetric shape for the images to test those, like a letter F)
+	 * Orientations: 0th row, 0th column, Exif orientation code, rotation 2x2
+	 * matrix that is opposite of orientation. N.b. we do not handle the
+	 * 'flipped' orientations, which is why there is no entry for 2, 4, 5, or 7.
+	 * Those seem to be rare in real images anyway (we also would need a
+	 * non-symmetric shape for the images to test those, like a letter F).
 	 */
 	private static $orientations = array(
 		array(
@@ -67,7 +70,9 @@ class RandomImageGenerator {
 	);
 
 	public function __construct( $options = array() ) {
-		foreach ( array( 'dictionaryFile', 'minWidth', 'minHeight', 'maxWidth', 'maxHeight', 'shapesToDraw' ) as $property ) {
+		foreach ( array( 'dictionaryFile', 'minWidth', 'minHeight',
+			'maxWidth', 'maxHeight', 'shapesToDraw' ) as $property
+		) {
 			if ( isset( $options[$property] ) ) {
 				$this->$property = $options[$property];
 			}
@@ -89,17 +94,19 @@ class RandomImageGenerator {
 			}
 		}
 		if ( !isset( $this->dictionaryFile ) ) {
-			throw new Exception( "RandomImageGenerator: dictionary file not found or not specified properly" );
+			throw new Exception( "RandomImageGenerator: dictionary file not "
+				. "found or not specified properly" );
 		}
 	}
 
 	/**
-	 * Writes random images with random filenames to disk in the directory you specify, or current working directory
+	 * Writes random images with random filenames to disk in the directory you
+	 * specify, or current working directory.
 	 *
-	 * @param int $number number of filenames to write
-	 * @param string $format optional, must be understood by ImageMagick, such as 'jpg' or 'gif'
-	 * @param string $dir directory, optional (will default to current working directory)
-	 * @return array filenames we just wrote
+	 * @param int $number Number of filenames to write
+	 * @param string $format Optional, must be understood by ImageMagick, such as 'jpg' or 'gif'
+	 * @param string $dir Directory, optional (will default to current working directory)
+	 * @return array Filenames we just wrote
 	 */
 	function writeImages( $number, $format = 'jpg', $dir = null ) {
 		$filenames = $this->getRandomFilenames( $number, $format, $dir );
@@ -128,11 +135,15 @@ class RandomImageGenerator {
 			global $wgExiv2Command;
 			if ( class_exists( 'Imagick' ) && $wgExiv2Command && is_executable( $wgExiv2Command ) ) {
 				return 'writeImageWithApi';
-			} elseif ( $wgUseImageMagick && $wgImageMagickConvertCommand && is_executable( $wgImageMagickConvertCommand ) ) {
+			} elseif ( $wgUseImageMagick
+				&& $wgImageMagickConvertCommand
+				&& is_executable( $wgImageMagickConvertCommand )
+			) {
 				return 'writeImageWithCommandLine';
 			}
 		}
-		throw new Exception( "RandomImageGenerator: could not find a suitable method to write images in '$format' format" );
+		throw new Exception( "RandomImageGenerator: could not find a suitable "
+			. "method to write images in '$format' format" );
 	}
 
 	/**
@@ -163,9 +174,11 @@ class RandomImageGenerator {
 
 	/**
 	 * Generate data representing an image of random size (within limits),
-	 * consisting of randomly colored and sized upward pointing triangles against a random background color
-	 * (This data is used in the writeImage* methods).
-	 * @return {Mixed}
+	 * consisting of randomly colored and sized upward pointing triangles
+	 * against a random background color. (This data is used in the
+	 * writeImage* methods).
+	 *
+	 * @return mixed
 	 */
 	public function getImageSpec() {
 		$spec = array();
@@ -224,9 +237,9 @@ class RandomImageGenerator {
 	 * Based on image specification, write a very simple SVG file to disk.
 	 * Ignores the background spec because transparency is cool. :)
 	 *
-	 * @param array $spec spec describing background and shapes to draw
-	 * @param string $format file format to write (which is obviously always svg here)
-	 * @param string $filename filename to write to
+	 * @param array $spec Spec describing background and shapes to draw
+	 * @param string $format File format to write (which is obviously always svg here)
+	 * @param string $filename Filename to write to
 	 *
 	 * @throws Exception
 	 */
@@ -254,9 +267,9 @@ class RandomImageGenerator {
 
 	/**
 	 * Based on an image specification, write such an image to disk, using Imagick PHP extension
-	 * @param array $spec spec describing background and circles to draw
-	 * @param string $format file format to write
-	 * @param string $filename filename to write to
+	 * @param array $spec Spec describing background and circles to draw
+	 * @param string $format File format to write
+	 * @param string $filename Filename to write to
 	 */
 	public function writeImageWithApi( $spec, $format, $filename ) {
 		// this is a hack because I can't get setImageOrientation() to work. See below.
@@ -264,8 +277,10 @@ class RandomImageGenerator {
 
 		$image = new Imagick();
 		/**
-		 * If the format is 'jpg', will also add a random orientation -- the image will be drawn rotated with triangle points
-		 * facing in some direction (0, 90, 180 or 270 degrees) and a countering rotation should turn the triangle points upward again
+		 * If the format is 'jpg', will also add a random orientation -- the
+		 * image will be drawn rotated with triangle points facing in some
+		 * direction (0, 90, 180 or 270 degrees) and a countering rotation
+		 * should turn the triangle points upward again.
 		 */
 		$orientation = self::$orientations[0]; // default is normal orientation
 		if ( $format == 'jpg' ) {
@@ -289,8 +304,10 @@ class RandomImageGenerator {
 
 		$image->writeImage( $filename );
 
-		// because the above setImageOrientation call doesn't work... nor can I get an external imagemagick binary to do this either...
-		// hacking this for now (only works if you have exiv2 installed, a program to read and manipulate exif)
+		// because the above setImageOrientation call doesn't work... nor can I
+		// get an external imagemagick binary to do this either... Hacking this
+		// for now (only works if you have exiv2 installed, a program to read
+		// and manipulate exif).
 		if ( $wgExiv2Command ) {
 			$cmd = wfEscapeShellArg( $wgExiv2Command )
 				. " -M "
@@ -309,9 +326,9 @@ class RandomImageGenerator {
 	/**
 	 * Given an image specification, produce rotated version
 	 * This is used when simulating a rotated image capture with Exif orientation
-	 * @param $spec Object returned by getImageSpec
-	 * @param $matrix 2x2 transformation matrix
-	 * @return array transformed Spec
+	 * @param array $spec Returned by getImageSpec
+	 * @param array $matrix 2x2 transformation matrix
+	 * @return array Transformed Spec
 	 */
 	private static function rotateImageSpec( &$spec, $matrix ) {
 		$tSpec = array();
@@ -348,8 +365,8 @@ class RandomImageGenerator {
 	/**
 	 * Given a matrix and a pair of images, return new position
 	 * @param array $matrix 2x2 rotation matrix
-	 * @param int $x x-coordinate number
-	 * @param int $y y-coordinate number
+	 * @param int $x The x-coordinate number
+	 * @param int $y The y-coordinate number
 	 * @return array Transformed with properties x, y
 	 */
 	private static function matrixMultiply2x2( $matrix, $x, $y ) {
@@ -360,7 +377,8 @@ class RandomImageGenerator {
 	}
 
 	/**
-	 * Based on an image specification, write such an image to disk, using the command line ImageMagick program ('convert').
+	 * Based on an image specification, write such an image to disk, using the
+	 * command line ImageMagick program ('convert').
 	 *
 	 * Sample command line:
 	 *  $ convert -size 100x60 xc:rgb(90,87,45) \
@@ -368,10 +386,10 @@ class RandomImageGenerator {
 	 *   -draw 'fill rgb(99,123,231) circle 59,39 56,57' \
 	 *   -draw 'fill rgb(240,12,32)  circle 50,21 50,3'  filename.png
 	 *
-	 * @param array $spec spec describing background and shapes to draw
-	 * @param string $format file format to write (unused by this method but kept so it has the same signature as
-	 * writeImageWithApi)
-	 * @param string $filename filename to write to
+	 * @param array $spec Spec describing background and shapes to draw
+	 * @param string $format File format to write (unused by this method but
+	 *   kept so it has the same signature as writeImageWithApi).
+	 * @param string $filename Filename to write to
 	 *
 	 * @return bool
 	 */
@@ -410,10 +428,11 @@ class RandomImageGenerator {
 	}
 
 	/**
-	 * Get an array of random pairs of random words, like array( array( 'foo', 'bar' ), array( 'quux', 'baz' ) );
+	 * Get an array of random pairs of random words, like
+	 * array( array( 'foo', 'bar' ), array( 'quux', 'baz' ) );
 	 *
 	 * @param int $number Number of pairs
-	 * @return array two-element arrays
+	 * @return array Two-element arrays
 	 */
 	private function getRandomWordPairs( $number ) {
 		$lines = $this->getRandomLines( $number * 2 );
@@ -432,10 +451,10 @@ class RandomImageGenerator {
 	 *
 	 * Will throw exception if the file could not be read or if it had fewer lines than requested.
 	 *
-	 * @param int $number_desired number of lines desired
+	 * @param int $number_desired Number of lines desired
 	 *
 	 * @throws Exception
-	 * @return array of exactly n elements, drawn randomly from lines the file
+	 * @return array Array of exactly n elements, drawn randomly from lines the file
 	 */
 	private function getRandomLines( $number_desired ) {
 		$filepath = $this->dictionaryFile;
@@ -447,8 +466,9 @@ class RandomImageGenerator {
 		}
 
 		/*
-		 * This algorithm obtains N random lines from a file in one single pass. It does this by replacing elements of
-		 * a fixed-size array of lines, less and less frequently as it reads the file.
+		 * This algorithm obtains N random lines from a file in one single pass.
+		 * It does this by replacing elements of a fixed-size array of lines,
+		 * less and less frequently as it reads the file.
 		 */
 		$fh = fopen( $filepath, "r" );
 		if ( !$fh ) {

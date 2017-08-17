@@ -8,7 +8,6 @@
  * @group Database
  * @group Diff
  *
- * @licence GNU GPL v2+
  * @author Katie Filbert < aude.wiki@gmail.com >
  */
 class DifferenceEngineTest extends MediaWikiTestCase {
@@ -39,7 +38,7 @@ class DifferenceEngineTest extends MediaWikiTestCase {
 	}
 
 	/**
-	 * @return int[] revision ids
+	 * @return int[] Revision ids
 	 */
 	protected function doEdits() {
 		$title = $this->getTitle();

@@ -6,9 +6,10 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'ValueValidators\\' => array($vendorDir . '/data-values/interfaces/src'),
-    'ValueParsers\\' => array($vendorDir . '/data-values/interfaces/src', $vendorDir . '/data-values/common/src'),
-    'ValueFormatters\\' => array($vendorDir . '/data-values/interfaces/src', $vendorDir . '/data-values/common/src'),
-    'DataValues\\' => array($vendorDir . '/data-values/data-values/src', $vendorDir . '/data-values/common/src'),
-    'Composer\\Installers\\' => array($vendorDir . '/composer/installers/src'),
+    'TextCat' => array($vendorDir . '/wikimedia/textcat'),
+    'Psr\\Log\\' => array($vendorDir . '/psr/log'),
+    'Liuggio' => array($vendorDir . '/liuggio/statsd-php-client/src'),
+    'DataValues\\' => array($vendorDir . '/data-values/data-values/src'),
+    'ComposerHookHandler' => array($baseDir . '/includes/composer'),
+    '' => array($vendorDir . '/cssjanus/cssjanus/src'),
 );

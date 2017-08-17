@@ -1,8 +1,7 @@
 <?php
 /** Oriya (ଓଡ଼ିଆ)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -132,7 +131,7 @@ $specialPageAliases = array(
 	'Newimages'                 => array( 'ନୂଆଫାଇଲ' ),
 	'Newpages'                  => array( 'ନୂଆପୃଷ୍ଠା' ),
 	'PermanentLink'             => array( 'ଚିରକାଳଲିଙ୍କ' ),
-	'Popularpages'              => array( 'ଜଣାଶୁଣାପୃଷ୍ଠା' ),
+
 	'Preferences'               => array( 'ପସନ୍ଦ' ),
 	'Prefixindex'               => array( 'ଆଗରେଯୋଡ଼ାହେବାଇଣ୍ଡେକ୍ସ' ),
 	'Protectedpages'            => array( 'କିଳାଯାଇଥିବାପୃଷ୍ଠା' ),
@@ -204,7 +203,6 @@ $magicWords = array(
 	'numberofusers'             => array( '1', 'ବ୍ୟବାହାରକାରୀ_ସଂଖ୍ୟା', 'NUMBEROFUSERS' ),
 	'numberofactiveusers'       => array( '1', 'ସଚଳ_ବ୍ୟବାହାରକାରୀଙ୍କ_ସଂଖ୍ୟା', 'NUMBEROFACTIVEUSERS' ),
 	'numberofedits'             => array( '1', 'ବଦଳ_ସଂଖ୍ୟା', 'NUMBEROFEDITS' ),
-	'numberofviews'             => array( '1', 'କେତେଥର_ଦେଖାଯାଇଛି', 'NUMBEROFVIEWS' ),
 	'pagename'                  => array( '1', 'ପୃଷ୍ଠା_ନାଆଁ', 'PAGENAME' ),
 	'pagenamee'                 => array( '1', 'ପୃଷ୍ଠା_ନାମକାରଣକାରୀ', 'PAGENAMEE' ),
 	'namespace'                 => array( '1', 'ନେମସ୍ପେସ', 'NAMESPACE' ),

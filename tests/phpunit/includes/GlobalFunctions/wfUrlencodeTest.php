@@ -1,6 +1,9 @@
 <?php
+
 /**
  * The function only need a string parameter and might react to IIS7.0
+ *
+ * @group GlobalFunctions
  * @covers ::wfUrlencode
  */
 class WfUrlencodeTest extends MediaWikiTestCase {
@@ -62,12 +65,14 @@ class WfUrlencodeTest extends MediaWikiTestCase {
 			return $expectations;
 		} elseif ( is_array( $expectations ) ) {
 			if ( !array_key_exists( $server, $expectations ) ) {
-				throw new MWException( __METHOD__ . " expectation does not have any value for server name $server. Check the provider array.\n" );
+				throw new MWException( __METHOD__ . " expectation does not have any "
+					. "value for server name $server. Check the provider array.\n" );
 			} else {
 				return $expectations[$server];
 			}
 		} else {
-			throw new MWException( __METHOD__ . " given invalid expectation for '$server'. Should be a string or an array( <http server name> => <string> ).\n" );
+			throw new MWException( __METHOD__ . " given invalid expectation for "
+				. "'$server'. Should be a string or an array( <http server name> => <string> ).\n" );
 		}
 	}
 

@@ -6,9 +6,12 @@ use DataValues\Geo\Values\GlobeCoordinateValue;
 use DataValues\Geo\Values\LatLongValue;
 
 /**
+ * Logical and mathematical helper functions for normalizations and calculations with
+ * GlobeCoordinateValue objects.
+ *
  * @since 0.2
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0+
  * @author Thiemo Mättig
  */
 class GlobeMath {

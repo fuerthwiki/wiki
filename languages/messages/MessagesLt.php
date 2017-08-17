@@ -1,8 +1,7 @@
 <?php
 /** Lithuanian (lietuvių)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -108,7 +107,7 @@ $specialPageAliases = array(
 	'Mytalk'                    => array( 'Mano_aptarimas' ),
 	'Newimages'                 => array( 'Nauji_paveikslėliai' ),
 	'Newpages'                  => array( 'Naujausi_puslapiai' ),
-	'Popularpages'              => array( 'Populiarūs_puslapiai' ),
+
 	'Preferences'               => array( 'Nustatymai' ),
 	'Prefixindex'               => array( 'Prasidedantys' ),
 	'Protectedpages'            => array( 'Užrakinti_puslapiai' ),

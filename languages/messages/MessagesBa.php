@@ -1,8 +1,7 @@
 <?php
 /** Bashkir (башҡортса)
  *
- * See MessagesQqq.php for message documentation incl. usage of parameters
- * To improve a translation please visit http://translatewiki.net
+ * To improve a translation please visit https://translatewiki.net
  *
  * @ingroup Language
  * @file
@@ -92,7 +91,7 @@ $specialPageAliases = array(
 	'Newpages'                  => array( 'Яңы_биттәр' ),
 	'PasswordReset'             => array( 'Паролде_яңыртыу' ),
 	'PermanentLink'             => array( 'Даими_һылтанма' ),
-	'Popularpages'              => array( 'Популяр_биттәр' ),
+
 	'Preferences'               => array( 'Көйләүҙәр' ),
 	'Protectedpages'            => array( 'Һаҡланған_биттәр' ),
 	'Protectedtitles'           => array( 'Һаҡланған_исемдәр' ),

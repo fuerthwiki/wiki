@@ -59,6 +59,9 @@ class EditPageTest extends MediaWikiLangTestCase {
 	 * User input text is passed to rtrim() by edit page. This is a simple
 	 * wrapper around assertEquals() which calls rrtrim() to normalize the
 	 * expected and actual texts.
+	 * @param string $expected
+	 * @param string $actual
+	 * @param string $msg
 	 */
 	protected function assertEditedTextEquals( $expected, $actual, $msg = '' ) {
 		return $this->assertEquals( rtrim( $expected ), rtrim( $actual ), $msg );
@@ -67,34 +70,36 @@ class EditPageTest extends MediaWikiLangTestCase {
 	/**
 	 * Performs an edit and checks the result.
 	 *
-	 * @param String|Title $title The title of the page to edit
-	 * @param String|null $baseText Some text to create the page with before attempting the edit.
-	 * @param User|String|null $user The user to perform the edit as.
+	 * @param string|Title $title The title of the page to edit
+	 * @param string|null $baseText Some text to create the page with before attempting the edit.
+	 * @param User|string|null $user The user to perform the edit as.
 	 * @param array $edit An array of request parameters used to define the edit to perform.
 	 *              Some well known fields are:
 	 *              * wpTextbox1: the text to submit
 	 *              * wpSummary: the edit summary
 	 *              * wpEditToken: the edit token (will be inserted if not provided)
-	 *              * wpEdittime: timestamp of the edit's base revision (will be inserted if not provided)
+	 *              * wpEdittime: timestamp of the edit's base revision (will be inserted
+	 *                if not provided)
 	 *              * wpStarttime: timestamp when the edit started (will be inserted if not provided)
 	 *              * wpSectionTitle: the section to edit
 	 *              * wpMinorEdit: mark as minor edit
 	 *              * wpWatchthis: whether to watch the page
 	 * @param int|null $expectedCode The expected result code (EditPage::AS_XXX constants).
-	 *                  Set to null to skip the check. Defaults to EditPage::AS_OK.
-	 * @param String|null $expectedText The text expected to be on the page after the edit.
 	 *                  Set to null to skip the check.
-	 * @param String|null $message An optional message to show along with any error message.
+	 * @param string|null $expectedText The text expected to be on the page after the edit.
+	 *                  Set to null to skip the check.
+	 * @param string|null $message An optional message to show along with any error message.
 	 *
 	 * @return WikiPage The page that was just edited, useful for getting the edit's rev_id, etc.
 	 */
 	protected function assertEdit( $title, $baseText, $user = null, array $edit,
-		$expectedCode = EditPage::AS_OK, $expectedText = null, $message = null
+		$expectedCode = null, $expectedText = null, $message = null
 	) {
 		if ( is_string( $title ) ) {
 			$ns = $this->getDefaultWikitextNS();
 			$title = Title::newFromText( $title, $ns );
 		}
+		$this->assertNotNull( $title );
 
 		if ( is_string( $user ) ) {
 			$user = User::newFromName( $user );
@@ -140,7 +145,9 @@ class EditPageTest extends MediaWikiLangTestCase {
 
 		$req = new FauxRequest( $edit, true ); // session ??
 
-		$ep = new EditPage( new Article( $title ) );
+		$article = new Article( $title );
+		$article->getContext()->setTitle( $title );
+		$ep = new EditPage( $article );
 		$ep->setContextTitle( $title );
 		$ep->importFormData( $req );
 
@@ -173,94 +180,86 @@ class EditPageTest extends MediaWikiLangTestCase {
 		return $page;
 	}
 
+	public static function provideCreatePages() {
+		return array(
+			array( 'expected article being created',
+				'EditPageTest_testCreatePage',
+				null,
+				'Hello World!',
+				EditPage::AS_SUCCESS_NEW_ARTICLE,
+				'Hello World!'
+			),
+			array( 'expected article not being created if empty',
+				'EditPageTest_testCreatePage',
+				null,
+				'',
+				EditPage::AS_BLANK_ARTICLE,
+				null
+			),
+			array( 'expected MediaWiki: page being created',
+				'MediaWiki:January',
+				'UTSysop',
+				'Not January',
+				EditPage::AS_SUCCESS_NEW_ARTICLE,
+				'Not January'
+			),
+			array( 'expected not-registered MediaWiki: page not being created if empty',
+				'MediaWiki:EditPageTest_testCreatePage',
+				'UTSysop',
+				'',
+				EditPage::AS_BLANK_ARTICLE,
+				null
+			),
+			array( 'expected registered MediaWiki: page being created even if empty',
+				'MediaWiki:January',
+				'UTSysop',
+				'',
+				EditPage::AS_SUCCESS_NEW_ARTICLE,
+				''
+			),
+			array( 'expected registered MediaWiki: page whose default content is empty'
+					. ' not being created if empty',
+				'MediaWiki:Ipb-default-expiry',
+				'UTSysop',
+				'',
+				EditPage::AS_BLANK_ARTICLE,
+				''
+			),
+			array( 'expected MediaWiki: page not being created if text equals default message',
+				'MediaWiki:January',
+				'UTSysop',
+				'January',
+				EditPage::AS_BLANK_ARTICLE,
+				null
+			),
+			array( 'expected empty article being created',
+				'EditPageTest_testCreatePage',
+				null,
+				'',
+				EditPage::AS_SUCCESS_NEW_ARTICLE,
+				'',
+				true
+			),
+		);
+	}
+
 	/**
-	 * @todo split into a dataprovider and test method
+	 * @dataProvider provideCreatePages
 	 * @covers EditPage
 	 */
-	public function testCreatePage() {
-		$this->assertEdit(
-			'EditPageTest_testCreatePage',
-			null,
-			null,
-			array(
-				'wpTextbox1' => "Hello World!",
-			),
-			EditPage::AS_SUCCESS_NEW_ARTICLE,
-			"Hello World!",
-			"expected article being created"
-		)->doDeleteArticleReal( 'EditPageTest_testCreatePage' );
+	public function testCreatePage(
+		$desc, $pageTitle, $user, $editText, $expectedCode, $expectedText, $ignoreBlank = false
+	) {
+		$edit = array( 'wpTextbox1' => $editText );
+		if ( $ignoreBlank ) {
+			$edit['wpIgnoreBlankArticle'] = 1;
+		}
 
-		$this->assertEdit(
-			'EditPageTest_testCreatePage',
-			null,
-			null,
-			array(
-				'wpTextbox1' => "",
-			),
-			EditPage::AS_BLANK_ARTICLE,
-			null,
-			"expected article not being created if empty"
-		);
+		$page = $this->assertEdit( $pageTitle, null, $user, $edit, $expectedCode, $expectedText, $desc );
 
-		$this->assertEdit(
-			'MediaWiki:January',
-			null,
-			'UTSysop',
-			array(
-				'wpTextbox1' => "Not January",
-			),
-			EditPage::AS_SUCCESS_NEW_ARTICLE,
-			"Not January",
-			"expected MediaWiki: page being created"
-		)->doDeleteArticleReal( 'EditPageTest_testCreatePage' );
-
-		$this->assertEdit(
-			'MediaWiki:EditPageTest_testCreatePage',
-			null,
-			'UTSysop',
-			array(
-				'wpTextbox1' => "",
-			),
-			EditPage::AS_BLANK_ARTICLE,
-			null,
-			"expected not-registered MediaWiki: page not being created if empty"
-		);
-
-		$this->assertEdit(
-			'MediaWiki:January',
-			null,
-			'UTSysop',
-			array(
-				'wpTextbox1' => "",
-			),
-			EditPage::AS_SUCCESS_NEW_ARTICLE,
-			"",
-			"expected registered MediaWiki: page being created even if empty"
-		)->doDeleteArticleReal( 'EditPageTest_testCreatePage' );
-
-		$this->assertEdit(
-			'MediaWiki:Ipb-default-expiry',
-			null,
-			'UTSysop',
-			array(
-				'wpTextbox1' => "",
-			),
-			EditPage::AS_BLANK_ARTICLE,
-			"",
-			"expected registered MediaWiki: page whose default content is empty not being created if empty"
-		);
-
-		$this->assertEdit(
-			'MediaWiki:January',
-			null,
-			'UTSysop',
-			array(
-				'wpTextbox1' => "January",
-			),
-			EditPage::AS_BLANK_ARTICLE,
-			null,
-			"expected MediaWiki: page not being created if text equals default message"
-		);
+		if ( $expectedCode != EditPage::AS_BLANK_ARTICLE ) {
+			$page->doDeleteArticleReal( $pageTitle );
+		}
 	}
 
 	public function testUpdatePage() {
@@ -474,8 +473,14 @@ hello
 		}
 
 		$starttime = wfTimestampNow();
-		$adamsTime = wfTimestamp( TS_MW, (int)wfTimestamp( TS_UNIX, $starttime ) + (int)$adamsEdit['wpStarttime'] );
-		$bertasTime = wfTimestamp( TS_MW, (int)wfTimestamp( TS_UNIX, $starttime ) + (int)$bertasEdit['wpStarttime'] );
+		$adamsTime = wfTimestamp(
+			TS_MW,
+			(int)wfTimestamp( TS_UNIX, $starttime ) + (int)$adamsEdit['wpStarttime']
+		);
+		$bertasTime = wfTimestamp(
+			TS_MW,
+			(int)wfTimestamp( TS_UNIX, $starttime ) + (int)$bertasEdit['wpStarttime']
+		);
 
 		$adamsEdit['wpStarttime'] = $adamsTime;
 		$bertasEdit['wpStarttime'] = $bertasTime;

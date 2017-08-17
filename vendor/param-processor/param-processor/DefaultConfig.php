@@ -6,33 +6,42 @@
  * @licence GNU GPL v2+
  */
 
-$GLOBALS['egValidatorSettings'] = array(
-	'errorListMinSeverity' => 'minor',
-);
+use ParamProcessor\Definition\DimensionParam;
+use ParamProcessor\Definition\StringParam;
+use ValueParsers\BoolParser;
+use ValueParsers\FloatParser;
+use ValueParsers\IntParser;
+use ValueValidators\DimensionValidator;
+use ValueValidators\RangeValidator;
+use ValueValidators\StringValidator;
 
-$GLOBALS['wgParamDefinitions'] = array(
-	'boolean' => array(
-		'string-parser' => '\ValueParsers\BoolParser',
+$GLOBALS['egValidatorSettings'] = [
+	'errorListMinSeverity' => 'minor',
+];
+
+$GLOBALS['wgParamDefinitions'] = [
+	'boolean' => [
+		'string-parser' => BoolParser::class,
 		'validation-callback' => 'is_bool',
-	),
-	'float' => array(
-		'string-parser' => '\ValueParsers\FloatParser',
+	],
+	'float' => [
+		'string-parser' => FloatParser::class,
 		'validation-callback' => function( $value ) {
 			return is_float( $value ) || is_int( $value );
 		},
-		'validator' => '\ValueValidators\RangeValidator',
-	),
-	'integer' => array(
-		'string-parser' => '\ValueParsers\IntParser',
+		'validator' => RangeValidator::class,
+	],
+	'integer' => [
+		'string-parser' => IntParser::class,
 		'validation-callback' => 'is_int',
-		'validator' => '\ValueValidators\RangeValidator',
-	),
-	'string' => array(
-		'validator' => '\ValueValidators\StringValidator',
-		'definition' => '\ParamProcessor\Definition\StringParam',
-	),
-	'dimension' => array(
-		'definition' => '\ParamProcessor\Definition\DimensionParam',
-		'validator' => '\ValueValidators\DimensionValidator',
-	),
-);
+		'validator' => RangeValidator::class,
+	],
+	'string' => [
+		'validator' => StringValidator::class,
+		'definition' => StringParam::class,
+	],
+	'dimension' => [
+		'definition' => DimensionParam::class,
+		'validator' => DimensionValidator::class,
+	],
+];
