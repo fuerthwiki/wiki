@@ -1,12 +1,13 @@
 <?php
 
-// // Umleitung zur Wartungsseite
+/* // Umleitung zur Wartungsseite
 if ($_SERVER['REMOTE_ADDR'] != '146.52.238.94') {
 	header('HTTP/1.1 503 Service Temporarily Unavailable'); //send the proper response code
 	header('Retry-After: 10800'); //Retry after 3 hours
 	header('Location: /wartung/');
 	exit;
 }
+*/
 
 
 /**
