@@ -1,0 +1,84 @@
+== About ==
+
+Page Forms is an extension to MediaWiki that allows for the
+creation and usage of forms to add and edit semantic data. It can
+work in conjuction with two other extensions that both handle the
+storage of data: Semantic MediaWiki and Cargo.
+
+For much more information on Page Forms, see the extension
+homepage at
+http://www.mediawiki.org/wiki/Extension:Page_Forms
+
+Notes on installing Page Forms can be found in the file INSTALL.
+
+== Credits ==
+
+Page Forms was created, and mostly written by, Yaron Koren.
+
+Significant parts of the code were contributed by Stephan Gambke.
+
+Much of the jQuery and related Javascript functionality was initially
+created by Sanyam Goyal as part of the 2010 Google Summer of Code
+program.
+
+Integration into the Page Schemas extension was initially created by
+Ankit Garg as part of the 2011 Google Summer of Code.
+
+Support for section handling, and PHPUnit tests, were added by Himeshi
+De Silva as part of the 2013 Google Summer of Code.
+
+The "tokens" and updated "combobox" input types were created by
+Jatin Mehta as part of the 2014 Google Summer of Code.
+
+Important code contributions were also made by Christoph Burgmer,
+Cindy Cicalese, Daniel Friesen, Daniel Hansch, Eugene Mednikov,
+Harold Solbrig, Ilmārs Poikāns, Jayson Harshbarger, Jeffrey Stuckman,
+Joel Natividad, Jeroen De Dauw, Joel Natividad, Louis Gerbarg, LY Meng,
+Mathias Lidal, Matt Williamson, MWJames, Niklas Laxstrom, Nils
+Opperman, Paladox, Patrick Nagel, Peter Grassberger, Remco de Boer,
+Sebastian Richter, Sergey Chernyshev, Siebrand Mazeland, Simon Heimler,
+Solitarius, Tom Fellows, Vedmaka, wheresmytab and others.
+
+Language translations were provided by many people; see the files in
+the /i18n and /languages directories for the full listings.
+
+== Contact ==
+
+Comments, questions and suggestions can be sent to either the MediaWiki
+or the Semantic MediaWiki mailing lists:
+
+ https://lists.wikimedia.org/mailman/listinfo/mediawiki-l
+ https://lists.sourceforge.net/lists/listinfo/semediawiki-user
+
+If possible, please add "[Page Forms]" at the beginning of the subject
+line, to clarify the subject matter.
+
+Bug reports should be submitted at the Wikimedia Phabricator site:
+
+ https://phabricator.wikimedia.org/maniphest/task/create/
+
+== Credits to other projects ==
+
+Page Forms includes the following JavaScript libraries:
+
+* FancyBox (http://fancybox.net) by Janis Skarnelis, distributed
+under both the MIT and GPL licenses.
+
+* Dynatree (https://github.com/mar10/dynatree) by Martin Wendt,
+distributed under both the MIT and GPL licenses.
+
+* jsGrid (http://js-grid.com) by Artem Tabalin, distributed under
+the MIT license.
+
+* RateYo! (http://rateyo.fundoocode.ninja/) by Prashanth Pamidi,
+distributed under the MIT license.
+
+* Select2 (https://select2.github.io) by Igor Vaynberg, distributed
+under both the Apache and GPL licenses.
+
+It also includes the Balloon.css CSS library
+(https://kazzkiq.github.io/balloon.css/) by Claudio Holanda,
+distributed under the MIT license.
+
+Page Forms also makes extensive use of the jQuery and jQuery UI
+JavaScript libraries, included within MediaWiki.

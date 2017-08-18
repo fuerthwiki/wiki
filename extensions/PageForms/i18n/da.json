@@ -1,0 +1,15 @@
+{
+	"@metadata": {
+		"authors": [
+			"Jon Harald Søby",
+			"Christian List"
+		]
+	},
+	"pf_createproperty_propname": "Egenskabsnavn:",
+	"pf_createtemplate_standardformat": "Tabel",
+	"pf_createtemplate_deletefield": "Slet",
+	"pf_createform_template": "Skabelon:",
+	"pf_createform_inputtypedefault": "(standard)",
+	"pf_createcategory_name": "Kategorinavn:",
+	"pf_formedit_none": "Ingen"
+}

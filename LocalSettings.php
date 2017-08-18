@@ -239,7 +239,7 @@ require_once("$IP/extensions/SemanticMediaWiki/SemanticMediaWiki.php");
 //require_once("$IP/extensions/Maps/Maps.php");
 
 # Semantic Result Formats and Forms
-enableSemantics( '172.17.0.1:8080' );
+enableSemantics( 'fuerthwiki.de' );
 $GLOBALS['sespSpecialProperties'] = array(
     '_VIEWS',
     '_EXIFDATA',
@@ -324,3 +324,5 @@ require_once "$IP/extensions/SearchStats/SearchStats.php";
 require_once "$IP/extensions/Tabber/Tabber.php";
 
 wfLoadExtension( 'HitCounters' );
+
+wfLoadExtension( 'PageForms' );
