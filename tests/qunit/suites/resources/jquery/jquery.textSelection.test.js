@@ -5,13 +5,13 @@
 	/**
 	 * Test factory for $.fn.textSelection( 'encapsulateText' )
 	 *
-	 * @param options {object} associative array containing:
-	 *   description {string}
-	 *   input {string}
-	 *   output {string}
-	 *   start {int} starting char for selection
-	 *   end {int} ending char for selection
-	 *   params {object} add'l parameters for $().textSelection( 'encapsulateText' )
+	 * @param {Object} options Associative configuration array
+	 * @param {string} options.description Description
+	 * @param {string} options.input Input
+	 * @param {string} options.output Output
+	 * @param {int} options.start Starting char for selection
+	 * @param {int} options.end Ending char for selection
+	 * @param {Object} options.params Additional parameters for $().textSelection( 'encapsulateText' )
 	 */
 	function encapsulateTest( options ) {
 		var opt = $.extend( {
@@ -237,8 +237,8 @@
 			}
 
 			pos = $textarea.textSelection( 'getCaretPosition', { startAndEnd: true } );
-			among( pos[0], options.start, 'Caret start should be where we set it.' );
-			among( pos[1], options.end, 'Caret end should be where we set it.' );
+			among( pos[ 0 ], options.start, 'Caret start should be where we set it.' );
+			among( pos[ 1 ], options.end, 'Caret end should be where we set it.' );
 		} );
 	}
 

@@ -8,7 +8,10 @@ $baseDir = dirname($vendorDir);
 return array(
     'TextCat' => array($vendorDir . '/wikimedia/textcat'),
     'Psr\\Log\\' => array($vendorDir . '/psr/log'),
+    'Prophecy\\' => array($vendorDir . '/phpspec/prophecy/src'),
     'Liuggio' => array($vendorDir . '/liuggio/statsd-php-client/src'),
+    'Less' => array($vendorDir . '/oyejorge/less.php/lib'),
+    'Kafka\\' => array($vendorDir . '/nmred/kafka-php/src'),
     'DataValues\\' => array($vendorDir . '/data-values/data-values/src'),
     'ComposerHookHandler' => array($baseDir . '/includes/composer'),
     '' => array($vendorDir . '/cssjanus/cssjanus/src'),

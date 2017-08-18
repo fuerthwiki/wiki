@@ -6,30 +6,40 @@
 $.wikiEditor.modules.dialogs = {
 
 	/**
-	 * Compatability map
+	 * Compatibility map
 	 */
 	browsers: {
 		// Left-to-right languages
 		ltr: {
-			msie: [['>=', 7]],
+			msie: [ [ '>=', 7 ] ],
 			// jQuery UI appears to be broken in FF 2.0 - 2.0.0.4
 			firefox: [
-				['>=', 2], ['!=', '2.0'], ['!=', '2.0.0.1'], ['!=', '2.0.0.2'], ['!=', '2.0.0.3'], ['!=', '2.0.0.4']
+				[ '>=', 2 ],
+				[ '!=', '2.0' ],
+				[ '!=', '2.0.0.1' ],
+				[ '!=', '2.0.0.2' ],
+				[ '!=', '2.0.0.3' ],
+				[ '!=', '2.0.0.4' ]
 			],
-			opera: [['>=', 9.6]],
-			safari: [['>=', 3]],
-			chrome: [['>=', 3]]
+			opera: [ [ '>=', 9.6 ] ],
+			safari: [ [ '>=', 3 ] ],
+			chrome: [ [ '>=', 3 ] ]
 		},
 		// Right-to-left languages
 		rtl: {
-			msie: [['>=', 7]],
+			msie: [ [ '>=', 7 ] ],
 			// jQuery UI appears to be broken in FF 2.0 - 2.0.0.4
 			firefox: [
-				['>=', 2], ['!=', '2.0'], ['!=', '2.0.0.1'], ['!=', '2.0.0.2'], ['!=', '2.0.0.3'], ['!=', '2.0.0.4']
+				[ '>=', 2 ],
+				[ '!=', '2.0' ],
+				[ '!=', '2.0.0.1' ],
+				[ '!=', '2.0.0.2' ],
+				[ '!=', '2.0.0.3' ],
+				[ '!=', '2.0.0.4' ]
 			],
-			opera: [['>=', 9.6]],
-			safari: [['>=', 3]],
-			chrome: [['>=', 3]]
+			opera: [ [ '>=', 9.6 ] ],
+			safari: [ [ '>=', 3 ] ],
+			chrome: [ [ '>=', 3 ] ]
 		}
 	},
 
@@ -42,7 +52,7 @@ $.wikiEditor.modules.dialogs = {
 		},
 		openDialog: function ( context, module ) {
 			if ( module in $.wikiEditor.modules.dialogs.modules ) {
-				var mod = $.wikiEditor.modules.dialogs.modules[module],
+				var mod = $.wikiEditor.modules.dialogs.modules[ module ],
 					$dialog = $( '#' + mod.id );
 				if ( $dialog.length === 0 ) {
 					$.wikiEditor.modules.dialogs.fn.reallyCreate( context, mod, module );
@@ -59,7 +69,7 @@ $.wikiEditor.modules.dialogs = {
 		},
 		closeDialog: function ( context, module ) {
 			if ( module in $.wikiEditor.modules.dialogs.modules ) {
-				$( '#' + $.wikiEditor.modules.dialogs.modules[module].id ).dialog( 'close' );
+				$( '#' + $.wikiEditor.modules.dialogs.modules[ module ].id ).dialog( 'close' );
 			}
 		}
 	},
@@ -79,12 +89,12 @@ $.wikiEditor.modules.dialogs = {
 
 			// Defer building of modules, unless they require immediate creation
 			for ( mod in config ) {
-				module = config[mod];
+				module = config[ mod ];
 				// Only create the dialog if it's supported, isn't filtered and doesn't exist yet
 				filtered = false;
 				if ( typeof module.filters !== 'undefined' ) {
 					for ( i = 0; i < module.filters.length; i++ ) {
-						if ( $( module.filters[i] ).length === 0 ) {
+						if ( $( module.filters[ i ] ).length === 0 ) {
 							filtered = true;
 							break;
 						}
@@ -98,7 +108,7 @@ $.wikiEditor.modules.dialogs = {
 				// Re-select from the DOM, we might have removed the dialog just now
 				$existingDialog = $( '#' + module.id );
 				if ( !filtered && $.wikiEditor.isSupported( module ) && $existingDialog.length === 0 ) {
-					$.wikiEditor.modules.dialogs.modules[mod] = module;
+					$.wikiEditor.modules.dialogs.modules[ mod ] = module;
 					context.$textarea.trigger( 'wikiEditor-dialogs-setup-' + mod );
 					// If this dialog requires immediate creation, create it now
 					if ( typeof module.immediateCreate !== 'undefined' && module.immediateCreate ) {
@@ -110,18 +120,19 @@ $.wikiEditor.modules.dialogs = {
 
 		/**
 		 * Build the actual dialog. This done on-demand rather than in create()
+		 *
 		 * @param {Object} context Context object of editor dialog belongs to
 		 * @param {Object} module Dialog module object
-		 * @param {String} name Dialog name (key in $.wikiEditor.modules.dialogs.modules)
+		 * @param {string} name Dialog name (key in $.wikiEditor.modules.dialogs.modules)
 		 */
 		reallyCreate: function ( context, module, name ) {
-			var msg, dialogDiv,
+			var msg, dialogDiv, $content,
 				configuration = module.dialog;
 			// Add some stuff to configuration
 			configuration.bgiframe = true;
 			configuration.autoOpen = false;
-			// By default our dialogs are modal, unless explicitely defined in their specific configuration.
-			if( typeof configuration.modal === 'undefined' ) {
+			// By default our dialogs are modal, unless explicitly defined in their specific configuration.
+			if ( typeof configuration.modal === 'undefined' ) {
 				configuration.modal = true;
 			}
 			configuration.title = $.wikiEditor.autoMsg( module, 'title' );
@@ -130,13 +141,20 @@ $.wikiEditor.modules.dialogs = {
 			// foo = { mw.msg( 'bar' ): baz }
 			configuration.newButtons = {};
 			for ( msg in configuration.buttons ) {
-				configuration.newButtons[mw.msg( msg )] = configuration.buttons[msg];
+				configuration.newButtons[ mw.msg( msg ) ] = configuration.buttons[ msg ];
 			}
 			configuration.buttons = configuration.newButtons;
+			if ( module.htmlTemplate ) {
+				$content = mw.template.get( 'jquery.wikiEditor.dialogs.config', module.htmlTemplate ).render();
+			} else if ( module.html instanceof jQuery ) {
+				$content = module.html;
+			} else {
+				$content = $( $.parseHTML( module.html ) );
+			}
 			// Create the dialog <div>
 			dialogDiv = $( '<div>' )
 				.attr( 'id', module.id )
-				.html( module.html )
+				.append( $content )
 				.data( 'context', context )
 				.appendTo( $( 'body' ) )
 				.each( module.init )
@@ -148,9 +166,9 @@ $.wikiEditor.modules.dialogs = {
 				dialogDiv
 					.bind( 'dialogopen', $.wikiEditor.modules.dialogs.fn.resize )
 					.find( '.ui-tabs' ).bind( 'tabsshow', function () {
-						$(this).closest( '.ui-dialog-content' ).each(
+						$( this ).closest( '.ui-dialog-content' ).each(
 							$.wikiEditor.modules.dialogs.fn.resize );
-					});
+					} );
 			}
 			dialogDiv.bind( 'dialogclose', function () {
 				context.fn.restoreSelection();
@@ -168,47 +186,49 @@ $.wikiEditor.modules.dialogs = {
 		 */
 		resize: function () {
 			var oldWS, thisWidth, wrapperWidth,
-				wrapper = $(this).closest( '.ui-dialog' ),
+				wrapper = $( this ).closest( '.ui-dialog' ),
 				oldWidth = wrapper.width(),
 				// Make sure elements don't wrapped so we get an accurate idea of whether they really fit. Also temporarily show
 				// hidden elements. Work around jQuery bug where <div style="display: inline;"/> inside a dialog is both
 				// :visible and :hidden
-				oldHidden = $(this).find( '*' ).not( ':visible' );
+				oldHidden = $( this ).find( '*' ).not( ':visible' );
 
 			// Save the style attributes of the hidden elements to restore them later. Calling hide() after show() messes up
 			// for elements hidden with a class
 			oldHidden.each( function () {
-				$(this).data( 'oldstyle', $(this).attr( 'style' ) );
-			});
+				$( this ).data( 'oldstyle', $( this ).attr( 'style' ) );
+			} );
 			oldHidden.show();
-			oldWS = $(this).css( 'white-space' );
-			$(this).css( 'white-space', 'nowrap' );
-			if ( wrapper.width() <= $(this).get(0).scrollWidth ) {
-				thisWidth = $(this).data( 'thisWidth' ) ? $(this).data( 'thisWidth' ) : 0;
-				thisWidth = Math.max( $(this).get(0).width, thisWidth );
-				$(this).width( thisWidth );
-				$(this).data( 'thisWidth', thisWidth );
-				wrapperWidth = $(this).data( 'wrapperWidth' ) ? $(this).data( 'wrapperWidth' ) : 0;
-				wrapperWidth = Math.max( wrapper.get(0).scrollWidth, wrapperWidth );
+			oldWS = $( this ).css( 'white-space' );
+			$( this ).css( 'white-space', 'nowrap' );
+			if ( wrapper.width() <= $( this ).get( 0 ).scrollWidth ) {
+				thisWidth = $( this ).data( 'thisWidth' ) ? $( this ).data( 'thisWidth' ) : 0;
+				thisWidth = Math.max( $( this ).get( 0 ).width, thisWidth );
+				$( this ).width( thisWidth );
+				$( this ).data( 'thisWidth', thisWidth );
+				wrapperWidth = $( this ).data( 'wrapperWidth' ) ? $( this ).data( 'wrapperWidth' ) : 0;
+				wrapperWidth = Math.max( wrapper.get( 0 ).scrollWidth, wrapperWidth );
 				wrapper.width( wrapperWidth );
-				$(this).data( 'wrapperWidth', wrapperWidth );
-				$(this).dialog( { 'width': wrapper.width() } );
+				$( this ).data( 'wrapperWidth', wrapperWidth );
+				$( this ).dialog( { width: wrapper.width() } );
 				wrapper.css( 'left', parseInt( wrapper.css( 'left' ), 10 ) - ( wrapper.width() - oldWidth ) / 2 );
 			}
-			$(this).css( 'white-space', oldWS );
+			$( this ).css( 'white-space', oldWS );
 			oldHidden.each( function () {
-				$(this).attr( 'style', $(this).data( 'oldstyle' ) );
-			});
+				$( this ).attr( 'style', $( this ).data( 'oldstyle' ) );
+			} );
 		},
+
 		/**
 		 * Set the right tabindexes on elements in a dialog
-		 * @param $elements Elements to set tabindexes on. If they already have tabindexes, this function can behave a bit weird
+		 *
+		 * @param {Object} $elements Elements to set tabindexes on. If they already have tabindexes, this function can behave a bit weird
 		 */
 		setTabindexes: function ( $elements ) {
 			// Get the highest tab index
 			var tabIndex = $( document ).lastTabIndex() + 1;
 			$elements.each( function () {
-				$(this).attr( 'tabindex', tabIndex++ );
+				$( this ).attr( 'tabindex', tabIndex++ );
 			} );
 		}
 	},

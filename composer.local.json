@@ -1,0 +1,11 @@
+{
+	"require": {
+		"mediawiki/maps": "^4.2",
+		"mediawiki/parser-hooks": "~1",
+		"mediawiki/semantic-media-wiki": "^2.5",
+		"mediawiki/semantic-forms": "^3.7",
+		"mediawiki/semantic-result-formats": "^2.5",
+		"mediawiki/validator": "^2.2",
+		"wikimedia/utfnormal": "^1.0"
+	}
+}

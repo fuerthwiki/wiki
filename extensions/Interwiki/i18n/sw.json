@@ -1,8 +1,10 @@
 {
-    "@metadata": {
-        "authors": [
-            "Ikiwaner"
-        ]
-    },
-    "interwiki_1": "ndiyo"
+	"@metadata": {
+		"authors": [
+			"Ikiwaner",
+			"Kwisha"
+		]
+	},
+	"interwiki-legend-label": "Simulizi",
+	"interwiki_1": "ndiyo"
 }
