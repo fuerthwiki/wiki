@@ -1,0 +1,1051 @@
+# MediaWiki 'Arrays' extension Parser test cases
+# Author: Daniel Werner
+
+# Generate required templates.
+# These are the defaults set in $egArraysExpansionEscapeTemplates
+!!article
+Template:((
+!!text
+{{
+!!endarticle
+
+!!article
+Template:))
+!!text
+}}
+!!endarticle
+
+!!article
+Template:=
+!!text
+=
+!!endarticle
+
+!!article
+Template:!
+!!text
+|
+!!endarticle
+
+
+##
+## 0. Misc
+##
+
+!! test
+Inclusion of special page does not reset arrays. Did not work before 'Arrays 2.0' rewrite
+!! input
+"{{#arraydefine:a|test}}{{#arraydefine:foo|{{Special:AllPages}} }}", "{{#arraysize:a}}"
+!!result
+<p>"", "1"
+</p>
+!! end
+
+
+##
+## 1. Construction
+## #arraydefine
+##
+
+!! functionhooks
+arraydefine
+!! endfunctionhooks
+
+!! test
+'arraydefine' with default parameters.
+!! input
+{{#arraydefine: a | a, b, , a, a, }}
+"{{#arrayprint: a}}"
+!!result
+<p>"a, b, , a, a,"
+</p>
+!! end
+
+
+!! test
+';' as separator, unique option
+!! input
+{{#arraydefine: a | a; ; b; a; a ; ; | ; | unique }}
+{{#arrayprint: a}}
+!!result
+<p>a, b
+</p>
+!! end
+
+
+!! test
+'arraydefine' using an regular expression
+!! input
+{{#arraydefine: a | a b c d | /\s+/ }}
+{{#arrayprint: a}}
+!!result
+<p>a, b, c, d
+</p>
+!! end
+
+
+!! test
+'arraydefine' with empty definition should create empty array and one with 'singleempty' option
+!! input
+{{#arraydefine: a | }}{{#arraydefine: b | |, | singleempty }}
+"{{#arraysize: a}}", "{{#arraysize: b}}"
+!!result
+<p>"0", "1"
+</p>
+!! end
+
+
+##
+## 2. Extracting information
+## #arrayprint
+##
+
+!! test
+'arrayprint' with non-existent array.
+!! input
+"{{#arrayprint: non-existent-array }}"
+!!result
+<p>""
+</p>
+!! end
+
+
+!! test
+'arrayprint' with array key output.
+!! input
+{{#arraydefine: a | a, bb, ccc}}
+"{{#arrayprint: a | <br/> }}"
+!!result
+<p>"a<br />bb<br />ccc"
+</p>
+!! end
+
+
+!! functionhooks
+len
+!! endfunctionhooks
+
+!! test
+Parser function within 'arrayprint'
+!! input
+{{#arraydefine: a | a, bb, ccc}}
+"{{#arrayprint: a | | @ | {{#len:@}} }}"
+!!result
+<p>"123"
+</p>
+!! end
+
+
+!! test
+Test whether escaping special chars in 'arrayprint' works (this is related to $egArraysExpansionEscapeTemplates )
+!! input
+{{#arraydefine: a | a{{))}}, {{!}}bb=bb, cc{{))}}c}}
+"{{#arrayprint: a | , | @ | @ }}"
+!!result
+<p>"a}},|bb=bb,cc}}c"
+</p>
+!! end
+
+
+!!article
+Template:ArrayTestHelper
+!!text
+{{
+<!-- This test will check for parameter use within statement -->
+#arrayprint:{{{name|}}} |{{{sep|}}} |@@@@ | {{#if:{{{1|}}}|"{{{1|}}}",}} "@@@@" {{#len:@@@@}}
+}}
+!!endarticle
+
+!! test
+'arrayprint' within a template with parameter in print statement
+!! input
+{{#arraydefine: a | a, bb, ccc}}
+{{ArrayTestHelper |name=a |sep=<br/> |1=fo{{))}}o}}
+!!result
+<p>"fo}}o", "a" 1<br />"fo}}o", "bb" 2<br />"fo}}o", "ccc" 3
+</p>
+!! end
+
+
+##
+## #arrayindex
+##
+
+!! test
+'arrayindex' with non-defined array.
+!! input
+"{{#arrayindex: undefined-array | 0 }}",
+"{{#arrayindex: undefined-array |  }}"
+!!result
+<p>"",
+""
+</p>
+!! end
+
+
+!! test
+'arrayindex' with existing and non-existing keys.
+!! input
+{{#arraydefine: a | 1 }}
+"{{#arrayindex: a | 0 }}",
+"{{#arrayindex: a | 100 }}",
+"{{#arrayindex: a | xxx }}"
+!!result
+<p>"1",
+"",
+""
+</p>
+!! end
+
+
+!! test
+'arrayindex' with negative index.
+!! input
+{{#arraydefine: a | a,b,c,d,e
+}}"{{
+#arrayindex: a | -1 }}", "{{
+#arrayindex: a | -0 }}", "{{
+#arrayindex: a | -111 }}"
+!!result
+<p>"e", "a", ""
+</p>
+!! end
+
+
+!! test
+the need for the 'default=' sucks, should be removed some day.
+!! input
+"{{
+#arrayindex: undefined-array |  }}", "{{
+#arrayindex: undefined-array | 0| dflt
+}}"
+!!result
+<p>"", "dflt"
+</p>
+!! end
+
+
+!! test
+existing index, empty value "", default should jump in
+!! input
+"{{
+#arraydefine: a | A }}{{
+#arrayindex: a | A | dflt
+}}"
+!!result
+<p>"dflt"
+</p>
+!! end
+
+
+!! test
+default expansion test
+!! input
+"{{
+#arraydefine: a | A }}{{
+#vardefine: var }}{{
+#arrayindex: a | 0 | {{#vardefine: var | 1 }} }}{{
+#var: var }}", "{{
+#arrayindex: a | 1 | {{#vardefine: var | 2 }} }}{{
+#var: var
+}}"
+!!result
+<p>"A", "2"
+</p>
+!! end
+
+
+##
+## #arraysize
+##
+
+!! test
+'arraysize' with non-defined array.
+!! input
+"{{#arraysize: undefined-array}}"
+!!result
+<p>""
+</p>
+!! end
+
+
+!! test
+'arraysize' with defined, empty array.
+!! input
+{{#arraydefine: a}}
+"{{#arraysize: a}}"
+!!result
+<p>"0"
+</p>
+!! end
+
+
+!! test
+'arraysize' non-empty array.
+!! input
+{{#arraydefine: a | a, 2 }}
+"{{#arraysize: a}}"
+!!result
+<p>"2"
+</p>
+!! end
+
+
+##
+## #arraysearch
+##
+
+!! test
+'arraysearch' without data
+!! input
+"{{#arraysearch:}}"
+!!result
+<p>""
+</p>
+!! end
+
+
+!! test
+'arraysearch' returning '-1' on not found sucks returns empty string since 2.0 rewrite
+!! input
+"{{#arraysearch:}}"
+!!result
+<p>""
+</p>
+!! end
+
+
+!! test
+'arraysearch' without data
+!! input
+"{{
+#arraydefine:a|a}}{{
+#arraysearch:a| a |0|yes|no}}", "{{
+#arraysearch:a|foo|0|yes|no
+}}"
+!!result
+<p>"yes", "no"
+</p>
+!! end
+
+
+!!article
+Template:ArrayTests:arraysearch
+!!text
+<!-- base by the following tests
+-->{{#arraydefine: arrSearch | red, blue, 1, 5, green, 3, 1, 1, 2}}
+!!endarticle
+
+!! test
+Some basic 'arraysearch'
+!! input
+{{ArrayTests:arraysearch}}
+"{{#arraysearch: arrSearch | 1 }}",
+"{{#arraysearch: arrSearch | red }}",
+"{{#arraysearch: arrSearch | 1 | 3 }}",
+"{{#arraysearch: arrSearch | /\d+/isx }}"
+!!result
+<p>"2",
+"0",
+"6",
+"2"
+</p>
+!! end
+
+!! test
+With negative start index
+!! input
+{{ArrayTests:arraysearch}}
+"{{#arraysearch: arrSearch | 1 | -1 }}",
+"{{#arraysearch: arrSearch | 1 | -2 }}",
+"{{#arraysearch: arrSearch | 1 | -20 }}"
+!!result
+<p>"",
+"7",
+"2"
+</p>
+!! end
+
+!! test
+'arraysearch' parameter 'yes' and 'no' expansion test.
+!! input
+{{ArrayTests:arraysearch}}{{
+#arraydefine: arrSearch | red, blue, 1, 5, green, 3, 1, 1, 2}}{{
+#arraysearch: arrSearch | 1 | 0 | {{#vardefine:yes|1}} | {{#vardefine:no|1}} }}"{{#var:yes}}_{{#var:no}}",
+{{#arraysearch: arrSearch | xxx | 0 | {{#vardefine:yes2|1}} | {{#vardefine:no2|1}} }}"{{#var:yes2}}_{{#var:no2}}"
+!!result
+<p>"1_",
+"_1"
+</p>
+!! end
+
+
+##
+## #arraysearcharray
+##
+
+!!article
+Template:ArrayTests:arraysearcharray
+!!text
+<!-- base by the following tests
+-->{{
+#arrayreset:
+}}{{
+#arraydefine: arrSearch | red, green 1, yellow 1 , 33 , 21, ,  , 9, 0, , 0 , 2, 1 , 1, red, blue
+}}
+!!endarticle
+
+!! test
+Only parameter one
+!! input
+"{{
+ArrayTests:arraysearcharray
+}}{{
+#arrayreset: a }}{{
+#arraysearcharray: a }}{{
+#arraysize: a
+}}"
+!!result
+<p>"0"
+</p>
+!! end
+
+
+!! test
+Empty, this will find the three empty elements
+!! input
+"{{
+ArrayTests:arraysearcharray
+}}{{
+#arraysearcharray: a | arrSearch }}{{
+#arrayprint: a | ,
+}}"
+!!result
+<p>",,"
+</p>
+!! end
+
+
+!! test
+Search for '1'
+!! input
+"{{
+ArrayTests:arraysearcharray
+}}{{
+#arraysearcharray: a | arrSearch | 1 }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"1, 1"
+</p>
+!! end
+
+
+!! test
+Regex search expression, index and offset omitted
+!! input
+"{{
+ArrayTests:arraysearcharray
+}}{{
+#arraysearcharray: a | arrSearch | /\d+/ | | }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"green 1, yellow 1, 33, 21, 9, 0, 0, 2, 1, 1"
+</p>
+!! end
+
+
+!! test
+Regex search with limit
+!! input
+"{{
+ArrayTests:arraysearcharray
+}}{{
+#arraysearcharray: a | arrSearch | /\d+/ | 0 | 4 }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"green 1, yellow 1, 33, 21"
+</p>
+!! end
+
+
+!! test
+Regex search with limit '0'
+!! input
+"{{
+ArrayTests:arraysearcharray
+}}{{
+#arraysearcharray: a | arrSearch | /\d+/ | 0 | 0 }}{{
+#arrayprint: a
+}}"
+!!result
+<p>""
+</p>
+!! end
+
+
+!! test
+Regex search with limit and start index
+!! input
+"{{
+ArrayTests:arraysearcharray
+}}{{
+#arraysearcharray: a | arrSearch | /\d+/ | 2 | 4 }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"yellow 1, 33, 21, 9"
+</p>
+!! end
+
+
+!! test
+Regex search and transform
+!! input
+"{{
+ArrayTests:arraysearcharray
+}}{{
+#arraysearcharray: a | arrSearch | /(\d+)/ | 2 | 3 | $0 + $1 }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"yellow 1 + 1, 33 + 33, 21 + 21"
+</p>
+!! end
+
+
+!! test
+Regex search and transform with limit and negative start index
+!! input
+"{{
+ArrayTests:arraysearcharray
+}}{{
+#arraysearcharray: a | arrSearch | /(\d+)/ | -6 | 4 | +$1 }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"+0, +2, +1, +1"
+</p>
+!! end
+
+
+!! test
+Using Subpage Fun extension with 'e' modifier
+!! options
+disabled
+!! input
+"{{
+ArrayTests:arraysearcharray
+}}{{
+#arraydefine: b | 55555, 333, 4444, 1, 22, 999999999, 88888888, 4444 }}{{
+#arraysearcharray: b | b | /\d+/e | 0 | -1 | {{#len:$0}} }}{{
+#arrayprint: b }}", "{{
+#arrayindex: b | 0
+}}"
+!!result
+<p>"5, 3, 4, 1, 2, 9, 8, 4", "5"
+</p>
+!! end
+
+
+##
+## #arrayslice
+##
+
+!! test
+empty 'arrayslice'
+!! input
+"{{
+#arrayreset: a }}{{
+#arrayslice: a }}{{
+#arraysize: a }}"
+!!result
+<p>"0"
+</p>
+!! end
+
+
+!! test
+'arrayslice' without offset using for cloning an array
+!! input
+"{{
+#arraydefine: a | a, b, c, d, e, f }}{{
+#arrayslice: a | a }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"a, b, c, d, e, f"
+</p>
+!! end
+
+
+!! test
+'arrayslice' with offset and limit
+!! input
+"{{
+#arraydefine: a | a, b, c, d, e, f }}{{
+#arrayslice: a | a | 1 | 2 }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"b, c"
+</p>
+!! end
+
+
+!! test
+'arrayslice' with negative offset
+!! input
+"{{
+#arraydefine: a | a, b, c, d, e, f }}{{
+#arrayslice: a | a | -2 | 100 }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"e, f"
+</p>
+!! end
+
+
+!! test
+'arrayslice' with negative offset and limit
+!! input
+"{{
+#arraydefine: a | a, b, c, d, e, f }}{{
+#arrayslice: a | a | -3 | -1 }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"d, e"
+</p>
+!! end
+
+
+!! test
+'arrayslice' with negative offset and too hight negative limit
+!! input
+"{{
+#arraydefine: a | a, b, c, d, e, f }}{{
+#arrayslice: a | a | -3 | -99 }}{{
+#arrayprint: a
+}}"
+!!result
+<p>""
+</p>
+!! end
+
+
+!! test
+'arrayslice' with negative offset below '0'
+!! input
+"{{
+#arraydefine: a | a, b, c, d, e, f }}{{
+#arrayslice: a | a | -99 }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"a, b, c, d, e, f"
+</p>
+!! end
+
+
+##
+## 3. Alteration
+## #arrayreset
+##
+
+!! test
+'arrayreset' certain arrayes
+!! input
+"{{
+#arraydefine: a }}{{#arraydefine: b }}{{
+#arrayreset: a | xxx }}{{
+#arraysize: a }}{{#arraysize: b
+}}"
+!!result
+<p>"0"
+</p>
+!! end
+
+
+!! test
+'arrayreset' all arrayes
+!! input
+"{{
+#arraydefine: a }}{{#arraydefine: b }}{{
+#arrayreset: }}{{
+#arraysize: a }}{{#arraysize: b
+}}"
+!!result
+<p>""
+</p>
+!! end
+
+
+!! test
+'arrayreset' compatbility-mode
+!! input
+"{{
+#arraydefine: a }}{{#arraydefine: b }}{{
+#arrayreset: a, xxx }}{{
+#arraysize: a }}{{#arraysize: b
+}}"
+!!result
+<p>"00"
+</p>
+!! end
+
+
+##
+## #arrayunique
+##
+
+!! test
+'arrayunique' also removes empty elements!
+!! input
+"{{
+#arraydefine: a }}{{#arraydefine: a | a,b,a,b, , a, ,a,b }}{{
+#arrayunique: a }}{{
+#arrayprint: a
+}}"
+!!result
+<p>"a, b"
+</p>
+!! end
+
+
+##
+## #arraysort
+##
+
+!!article
+Template:ArrayTests:arraysort
+!!text
+<!-- base by the following tests
+-->{{#arraydefine: arrSort | c, g, b, e, a, b, f, e, d }}
+!!endarticle
+
+!! test
+'arraysort' ascending order
+!! input
+"{{
+ArrayTests:arraysort
+}}{{
+#arraysort: arrSort | asce }}{{
+#arrayprint: arrSort
+}}"
+!!result
+<p>"a, b, b, c, d, e, e, f, g"
+</p>
+!! end
+
+
+!! test
+'arraysort' descending order
+!! input
+"{{
+ArrayTests:arraysort
+}}{{
+#arraysort: arrSort | desc }}{{
+#arrayprint: arrSort
+}}"
+!!result
+<p>"g, f, e, e, d, c, b, b, a"
+</p>
+!! end
+
+
+!! test
+'arraysort' ascending order and then revert
+!! input
+"{{
+ArrayTests:arraysort
+}}{{
+#arraysort: arrSort | asc }}{{
+#arraysort: arrSort | reverse }}{{
+#arrayprint: arrSort
+}}"
+!!result
+<p>"g, f, e, e, d, c, b, b, a"
+</p>
+!! end
+
+
+##
+## 4. Interaction between arrays
+## #arraymerge
+##
+
+!!article
+Template:ArrayTests:arrayinteractions
+!!text
+<!-- base by the following tests
+-->{{
+#arrayreset: }}{{
+#arraydefine: 1 | a,    c, d, e, f, g }}{{
+#arraydefine: 2 | a, b,    d,         x, y, z }}{{
+#arraydefine: 3 | a, b,       e,      x,      1, 2
+}}
+!!endarticle
+
+!! test
+'arraymerge' with only one parameter
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayreset: new1 }}{{
+#arraymerge: new1 }}{{
+#arraysize: new1
+}}"
+!!result
+<p>"0"
+</p>
+!! end
+
+
+!! test
+'arraymerge' with only one array
+This already worked before 2.0!
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayreset: new1 }}{{
+#arraymerge: new1 | 1 }}{{
+#arraysize: new1
+}}"
+!!result
+<p>"6"
+</p>
+!! end
+
+
+!! test
+'arraymerge' of two tables
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arraymerge: new1 | 1 | 2 }}{{
+#arrayprint: new1
+}}"
+!!result
+<p>"a, c, d, e, f, g, a, b, d, x, y, z"
+</p>
+!! end
+
+
+!! test
+'arraymerge' of three tables
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arraymerge: new1 | 1 | 2 | 3 }}{{
+#arrayprint: new1
+}}"
+!!result
+<p>"a, c, d, e, f, g, a, b, d, x, y, z, a, b, e, x, 1, 2"
+</p>
+!! end
+
+
+##
+## #arrayunion
+##
+
+!! test
+'arrayunion' with only one parameter
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayreset: new1 }}{{
+#arrayunion: new1 }}{{
+#arraysize: new1
+}}"
+!!result
+<p>"0"
+</p>
+!! end
+
+
+!! test
+'arrayunion' with only one array
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayreset: new1 }}{{
+#arrayunion: new1 | 1 }}{{
+#arraysize: new1
+}}"
+!!result
+<p>"6"
+</p>
+!! end
+
+
+!! test
+'arrayunion' merging two tables
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayunion: new1 | 1 | 2 }}{{
+#arrayprint: new1
+}}"
+!!result
+<p>"a, c, d, e, f, g, b, x, y, z"
+</p>
+!! end
+
+
+!! test
+'arrayunion' of three tables
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayunion: new1 | 1 | 2 | 3 }}{{
+#arrayprint: new1
+}}"
+!!result
+<p>"a, c, d, e, f, g, b, x, y, z, 1, 2"
+</p>
+!! end
+
+
+##
+## #arraydiff
+##
+
+!! test
+'arraydiff' with only one parameter
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayreset: new1 }}{{
+#arraydiff: new1 }}{{
+#arraysize: new1
+}}"
+!!result
+<p>"0"
+</p>
+!! end
+
+
+!! test
+'arraydiff' with only one array
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayreset: new1 }}{{
+#arraydiff: new1 | 1 }}{{
+#arraysize: new1
+}}"
+!!result
+<p>"6"
+</p>
+!! end
+
+
+!! test
+'arraydiff' comparing two tables
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arraydiff: new1 | 1 | 2 }}{{
+#arrayprint: new1
+}}"
+!!result
+<p>"c, e, f, g"
+</p>
+!! end
+
+
+!! test
+'arraydiff' of three tables
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arraydiff: new1 | 1 | 2 | 3 }}{{
+#arrayprint: new1
+}}"
+!!result
+<p>"c, f, g"
+</p>
+!! end
+
+
+##
+## #arrayintersect
+##
+
+!! test
+'arrayintersect' with only one parameter
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayreset: new1 }}{{
+#arrayintersect: new1 }}{{
+#arraysize: new1
+}}"
+!!result
+<p>"0"
+</p>
+!! end
+
+
+!! test
+'arrayintersect' with only one array
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayreset: new1 }}{{
+#arrayintersect: new1 | 1 }}{{
+#arraysize: new1
+}}"
+!!result
+<p>"6"
+</p>
+!! end
+
+
+!! test
+'arrayintersect' comparing two tables
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayintersect: new1 | 1 | 2 }}{{
+#arrayprint: new1
+}}"
+!!result
+<p>"a, d"
+</p>
+!! end
+
+
+!! test
+'arrayintersect' of three tables
+!! input
+"{{
+ArrayTests:arrayinteractions
+}}{{
+#arrayintersect: new1 | 1 | 2 | 3 }}{{
+#arrayprint: new1
+}}"
+!!result
+<p>"a"
+</p>
+!! end

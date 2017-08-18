@@ -1,0 +1,25 @@
+{
+	"@metadata": {
+		"authors": [
+			"AS",
+			"Ahonc",
+			"Prima klasy4na",
+			"Sodmy",
+			"Тест",
+			"Piramidion"
+		]
+	},
+	"authorprotect": "Захист сторінок від не-авторів",
+	"authorprotect-desc": "Дозволяє автору сторінки захищати її від редагувань інших користувачів",
+	"authorprotect-notauthor": "Ви не є автором цієї сторінки",
+	"authorprotect-confirm": "Змінити рівні захисту",
+	"authorprotect-edit": "Редагувати можуть тільки автори",
+	"authorprotect-move": "Перейменовувати можуть тільки автори",
+	"authorprotect-intro": "Використовуйте цю форму для захисту сторінки від не-авторів",
+	"authorprotect-success": "Захист встановлено!",
+	"authorprotect-failure": "Встановити захист не вдалося",
+	"protect-level-author": "Захист від не-авторів",
+	"restriction-level-author": "Авторський захист",
+	"right-authorprotect": "Захист авторських сторінок",
+	"right-author": "Редагування захищених автором сторінок"
+}

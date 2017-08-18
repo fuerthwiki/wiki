@@ -1,0 +1,22 @@
+{
+	"@metadata": {
+		"authors": [
+			"Consta",
+			"Kiriakos",
+			"Omnipaedista",
+			"ZaDiak"
+		]
+	},
+	"authorprotect": "Προστασία σελίδων από μη-συγγραφείς",
+	"authorprotect-desc": "Επιτρέπει στον συγγραφέα μιας σελίδας να την προστατέψει από άλλους χρήστες",
+	"authorprotect-notauthor": "Δεν είστε ο συγγραφέας αυτής της σελίδας",
+	"authorprotect-confirm": "Αλλαγή επιπέδων προστασίας",
+	"authorprotect-edit": "Περιορισμός επεξεργασιών σε συγγραφείς",
+	"authorprotect-move": "Περιορισμός μετακίνησης στους συγγραφείς",
+	"authorprotect-intro": "Χρησιμοποιείστε αυτή τη φόρμα για να κλειδώσετε τη σελίδα από μη-συγγραφείς",
+	"authorprotect-success": "Επιτυχής προστασία!",
+	"authorprotect-failure": "Ανεπιτυχής προστασία",
+	"protect-level-author": "Προστασία από μη-συγγραφείς",
+	"restriction-level-author": "Συγγραφικά-προστατευμένο",
+	"right-authorprotect": "Συγγραφικά προστατευμένες σελίδες"
+}

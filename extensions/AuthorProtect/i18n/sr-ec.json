@@ -1,0 +1,20 @@
+{
+	"@metadata": {
+		"authors": [
+			"Жељко Тодоровић",
+			"Михајло Анђелковић"
+		]
+	},
+	"authorprotect": "Заштити чланак од не-аутора",
+	"authorprotect-desc": "Омогућава аутору чланка да га заштити од других корисника",
+	"authorprotect-notauthor": "Ви нисте аутор овог чланка",
+	"authorprotect-confirm": "Промени нивое заштите",
+	"authorprotect-edit": "Ограничи право измене на ауторе",
+	"authorprotect-move": "Ограничи право премештања само на ауторе",
+	"authorprotect-intro": "Користите ову форму да бисте закључали овај чланак за не-ауторе",
+	"authorprotect-success": "Заштита успешна!",
+	"authorprotect-failure": "Заштита неуспешна",
+	"protect-level-author": "Заштити од не-аутора",
+	"restriction-level-author": "Кориснички заштићено",
+	"right-authorprotect": "заштита страница од стране аутора"
+}

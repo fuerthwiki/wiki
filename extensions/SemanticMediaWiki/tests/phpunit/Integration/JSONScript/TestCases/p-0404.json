@@ -1,0 +1,42 @@
+{
+	"description": "Test in-text annonation on different category colon identifier",
+	"setup": [
+		{
+			"page": "Page-with-category",
+			"contents": "[[Category:SingleColonNotion]], [[Category::DoubleColonNotion]]"
+		}
+	],
+	"tests": [
+		{
+			"type": "parser",
+			"about": "#0 : vs. ::",
+			"subject": "Page-with-category",
+			"assert-store": {
+				"semantic-data": {
+					"strictPropertyValueMatch": false,
+					"propertyCount": 4,
+					"propertyKeys": [
+						"Category",
+						"_MDAT",
+						"_SKEY",
+						"_INST"
+					],
+					"propertyValues": [
+						"SingleColonNotion",
+						"DoubleColonNotion"
+					]
+				}
+			}
+		}
+	],
+	"settings": {
+		"smwgPageSpecialProperties": [
+			"_MDAT"
+		]
+	},
+	"meta": {
+		"version": "2",
+		"is-incomplete": false,
+		"debug": false
+	}
+}

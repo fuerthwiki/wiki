@@ -1,0 +1,22 @@
+{
+	"@metadata": {
+		"authors": [
+			"Cainamarques",
+			"Eduardo.mps",
+			"Giro720"
+		]
+	},
+	"authorprotect": "Proteger página contra não-autores",
+	"authorprotect-desc": "Permite ao autor de uma página protegê-la de outros utilizadores",
+	"authorprotect-notauthor": "Você não é o autor desta página",
+	"authorprotect-confirm": "Alterar níveis de proteção",
+	"authorprotect-edit": "Restringir edição a autores",
+	"authorprotect-move": "Restringir a movimentação da página a autores",
+	"authorprotect-intro": "Use este formulário para bloquear a página contra não-autores",
+	"authorprotect-success": "Proteção com sucesso!",
+	"authorprotect-failure": "Proteção sem sucesso",
+	"protect-level-author": "Proteger de não-autores",
+	"restriction-level-author": "Protegida pelo autor",
+	"right-authorprotect": "Proteger páginas de autoria própria",
+	"right-author": "Editar páginas protegidas pelo autor"
+}

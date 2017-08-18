@@ -1,0 +1,9 @@
+{
+	"@metadata": {
+		"authors": [
+			"Kghbln"
+		]
+	},
+	"smw-browse-intro": "Mit dieser Spezialseite können die auf Seiten oder mit Subobjekten gespeicherten Daten und Informationen eingesehen werden. Bitte geben Sie den Namen einer Seite ein, die eingesehen werden soll.",
+	"smw-admin-announce-text": "Sofern dieses Wiki öffentlich zugänglich ist, kann es auf <a href=\"https://wikiapiary.com\">WikiApiary</a>, dem Wiki zum Tracken von Wikis, registriert werden."
+}

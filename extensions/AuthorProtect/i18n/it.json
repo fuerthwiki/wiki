@@ -1,0 +1,24 @@
+{
+	"@metadata": {
+		"authors": [
+			"Beta16",
+			"BrokenArrow",
+			"Darth Kule",
+			"OrbiliusMagister",
+			"Pietrodn"
+		]
+	},
+	"authorprotect": "Proteggi la pagina dai non-autori",
+	"authorprotect-desc": "Permette all'autore di una pagina di proteggerla dagli altri utenti",
+	"authorprotect-notauthor": "Non sei l'autore di questa pagina",
+	"authorprotect-confirm": "Cambia i livelli di protezione",
+	"authorprotect-edit": "Limita le modifiche agli autori",
+	"authorprotect-move": "Limita gli spostamenti agli autori",
+	"authorprotect-intro": "Usa questo modulo per proteggere questa pagina dai non-autori",
+	"authorprotect-success": "Protezione impostata!",
+	"authorprotect-failure": "Protezione non riuscita.",
+	"protect-level-author": "Protetta dai non-autori",
+	"restriction-level-author": "Protetta dall'autore",
+	"right-authorprotect": "Protegge le pagine con autori",
+	"right-author": "Modifica le pagine protette dall'autore"
+}

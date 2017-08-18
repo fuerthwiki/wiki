@@ -1,0 +1,21 @@
+{
+	"@metadata": {
+		"authors": [
+			"Helix84",
+			"Teslaton"
+		]
+	},
+	"authorprotect": "Zabrániť neautorským úpravám",
+	"authorprotect-desc": "Umožní autorovi stránky zabrániť ostatným používateľom upravovať ju",
+	"authorprotect-notauthor": "Nie ste autorom tejto stránky",
+	"authorprotect-confirm": "Zmeniť úrovne ochrany",
+	"authorprotect-edit": "Povoliť výlučne úpravy autorov",
+	"authorprotect-move": "Povoliť presúvanie výlučne pre autorov",
+	"authorprotect-intro": "Tento formulár slúži na zamknutie tejto stránky ostatným používateľom okrem jej autorov.",
+	"authorprotect-success": "Ochrana prebehla úspešne!",
+	"authorprotect-failure": "Ochrana neprebehla úspešne",
+	"protect-level-author": "Ochrániť pred neautorskými úpravami",
+	"restriction-level-author": "Len pre autorov",
+	"right-authorprotect": "Chrániť autorské stránky",
+	"right-author": "Upravovať stránky chránené pred neautorskými úpravami"
+}

@@ -1,0 +1,20 @@
+{
+	"@metadata": {
+		"authors": [
+			"Siebrand"
+		]
+	},
+	"authorprotect": "Pagina beveiligen voor niet-auteurs",
+	"authorprotect-desc": "Staat de auteur van een pagina toe deze te beveiligen voor andere gebruikers",
+	"authorprotect-notauthor": "U bent niet de auteur van deze pagina",
+	"authorprotect-confirm": "Beveiligingsniveaus wijzigen",
+	"authorprotect-edit": "Alleen bewerken door auteurs",
+	"authorprotect-move": "Alleen hernoemen door auteurs",
+	"authorprotect-intro": "Gebruik dit formulier om de pagina voor niet-auteurs te beveiligen",
+	"authorprotect-success": "Beveiliging ingesteld.",
+	"authorprotect-failure": "Beveiliging niet ingesteld",
+	"protect-level-author": "Beveiligen voor niet-auteurs",
+	"restriction-level-author": "Alleen te bewerken door auteurs",
+	"right-authorprotect": "Zelf bewerkte pagina's beveiligen",
+	"right-author": "Pagina's die alleen door auteurs te bewerken zijn te bewerken"
+}

@@ -1,0 +1,23 @@
+{
+	"@metadata": {
+		"authors": [
+			"Hamilton Abreu",
+			"Malafaya",
+			"Waldir",
+			"Vitorvicentevalente"
+		]
+	},
+	"adminlinks": "Links para administradores",
+	"adminlinks-desc": "Adiciona uma [[Special:AdminLinks|página especial]] que contém links úteis para administradores",
+	"adminlinks_documentation": "Documentação sobre $1",
+	"adminlinks_general": "Geral",
+	"adminlinks_editsidebar": "Editar barra lateral",
+	"adminlinks_editcss": "Editar ficheiro CSS",
+	"adminlinks_editmainpagename": "Editar nome da página principal",
+	"adminlinks_users": "Utilizadores",
+	"adminlinks_createuser": "Criar um utilizador",
+	"adminlinks_browsesearch": "Navegação e pesquisa",
+	"adminlinks_importexport": "Importação e exportação",
+	"adminlinks_pagenotfound": "Falha ao localizar a página especial $1.",
+	"right-adminlinks": "Ver o link para a página [[Special:AdminLinks|Links para administradores]]"
+}

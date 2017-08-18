@@ -1,0 +1,12 @@
+{
+	"@metadata": {
+		"authors": [
+			"Avjoska",
+			"Pikne"
+		]
+	},
+	"authorprotect-notauthor": "Sa ei ole selle lehekülje autor",
+	"authorprotect-confirm": "Muuda kaitse taset",
+	"authorprotect-success": "Kaitse edukas!",
+	"restriction-level-author": "Autori kaitse all"
+}

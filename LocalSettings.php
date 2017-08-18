@@ -25,7 +25,7 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 # $wgDisableOutputCompression = true;
 
 $wgSitename      = "FürthWiki";
-#$wgReadOnly = 'Das FürthWiki wird gerade gewartet. Wir bitten um Verständnis!';
+$wgReadOnly = '<b><span style="color:red;">Das FürthWiki wird in momentan upgedated und ist daher vorläufig schreibgeschützt. Bitte versuchen Sie es in ein paar Stunden wieder!</span></b>';
 
 ## The URL base path to the directory containing the wiki;
 ## defaults for all runtime URL paths are based off of this.
@@ -168,6 +168,10 @@ $wgExtraNamespaces =
 $smwgNamespacesWithSemanticLinks[200] = true;
 $smwgNamespacesWithSemanticLinks[201] = true;
 
+$wgTmpDirectory = ini_get('upload_tmp_dir');
+
+$wgDefaultUserOptions['thumbsize'] = 2; //180px
+
 
 # Enabled Extensions. Most extensions are enabled by including the base extension file here
 # but check specific extension documentation for more details
@@ -235,6 +239,8 @@ require_once("$IP/extensions/SemanticMediaWiki/SemanticMediaWiki.php");
 require_once("$IP/extensions/Maps/Maps.php");
 
 # Semantic Result Formats and Forms
+enableSemantics( '172.17.0.1' );
+/*
 require_once("$IP/extensions/SemanticForms/SemanticForms.php");
 require_once("$IP/extensions/SemanticFormsInputs/SemanticFormsInputs.php");
 require_once("$IP/extensions/SemanticResultFormats/SemanticResultFormats.php");
@@ -246,6 +252,7 @@ $GLOBALS['sespSpecialProperties'] = array(
     '_EXIFDATA',
     '_EXIF',
 );
+*/
 
 # Other Hazzle Dazzle
 include_once("$IP/extensions/Arrays/Arrays.php");

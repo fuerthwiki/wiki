@@ -1,0 +1,20 @@
+{
+	"@metadata": {
+		"authors": [
+			"Joetaras"
+		]
+	},
+	"authorprotect": "Protegge 'a pàgene da ce no jè autore",
+	"authorprotect-desc": "Permette a l'autore d'a pògene de proteggerle da otre utinde",
+	"authorprotect-notauthor": "Non ge sì l'autore de sta pàgene.",
+	"authorprotect-confirm": "Cange le levèlle de protezione",
+	"authorprotect-edit": "Restringe le cangiaminde a l'auture",
+	"authorprotect-move": "Restringe le spustaminde a le auture",
+	"authorprotect-intro": "Ause stu module pe bloccà sta pàgene da chidde ca no sò  l'autore.",
+	"authorprotect-success": "Protezione riuscite!",
+	"authorprotect-failure": "Protezione none riuscite.",
+	"protect-level-author": "Protette da le none autore",
+	"restriction-level-author": "Protette da l'autore",
+	"right-authorprotect": "protette le pàggene autorizzate",
+	"right-author": "Cange le pàggene protette da l'autore"
+}

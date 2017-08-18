@@ -1,0 +1,37 @@
+{
+	"@metadata": {
+		"authors": [
+			"Amire80",
+			"Sapral Mikail",
+			"Adam-Yourist",
+			"Умар"
+		]
+	},
+	"coll-collection": "Китаб",
+	"coll-collections": "Китабаш",
+	"coll-your_book": "Хьа китаб",
+	"coll-remove": "ДIаяккха",
+	"coll-show": "Хьахьокха",
+	"coll-move_up": "ЛакхагIа дIаоза",
+	"coll-move_down": "ЛохагIа дIаоза",
+	"coll-yes": "XӀаа",
+	"coll-no": "A",
+	"coll-notfound_title": "Китаб корая яц",
+	"coll-download_notfound_title": "Паьл корая яц",
+	"coll-suggest_your_book": "Хьа китаб",
+	"coll-suggest_show": "хьахокха",
+	"coll-print_export": "Зарба/экспорт",
+	"coll-create_a_book": "Джей кхолла",
+	"coll-book_creator": "Джей кхоллар",
+	"coll-download_as": "Хьачудаккха $1 санна",
+	"coll-bookscategory": "Китабаш",
+	"coll-clear_collection": "Китаба цӀенае",
+	"coll-help": "Новкъoстал",
+	"coll-helppage": "Help:Джейнаш",
+	"coll-load_collection": "Китаба чуяккха",
+	"coll-n_pages": "$1 {{PLURAL:$1|1=оагӀув|оагӀувнаш}}",
+	"coll-remove_this_page": "ДIаяккх ер оагIув хьай тептара тIара",
+	"coll-show_collection": "Джей хьахьокха",
+	"coll-make_suggestions": "Éшаргйолаш оттая оагIонаш",
+	"coll-suggest_empty": "яьсса"
+}

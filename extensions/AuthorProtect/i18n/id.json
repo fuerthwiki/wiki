@@ -1,0 +1,24 @@
+{
+	"@metadata": {
+		"authors": [
+			"Bennylin",
+			"Farras",
+			"IvanLanin",
+			"Kenrick95",
+			"Rex"
+		]
+	},
+	"authorprotect": "Melindungi halaman dari non-penulis pertama",
+	"authorprotect-desc": "Mengizinkan penulis pertama suatu halaman untuk melindunginya dari pengguna lain",
+	"authorprotect-notauthor": "Anda bukan penulis pertama halaman ini",
+	"authorprotect-confirm": "Mengganti tingkat pelindungan",
+	"authorprotect-edit": "Membatasi penyuntingan hanya untuk penulis pertama",
+	"authorprotect-move": "Membatasi pemindahan hanya untuk penulis pertama",
+	"authorprotect-intro": "Gunakan formulir berikut untuk mengunci halaman ini dari non-penulis pertama",
+	"authorprotect-success": "Pelindungan berhasil!",
+	"authorprotect-failure": "Pelindungan tidak berhasil",
+	"protect-level-author": "Melindungi dari non-penulis pertama",
+	"restriction-level-author": "Dilindungi penulis pertama",
+	"right-authorprotect": "Lindungi halaman dengan penulis pertama",
+	"right-author": "Menyunting halaman yang dilindungi penulis"
+}

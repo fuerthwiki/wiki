@@ -1,0 +1,178 @@
+{
+	"description": "Test `format=embedded` output (skip 1.19)",
+	"setup": [
+		{
+			"namespace": "SMW_NS_PROPERTY",
+			"page": "HasSomePageProperty",
+			"contents": "[[Has type::Page]]"
+		},
+		{
+			"namespace": "SMW_NS_PROPERTY",
+			"page": "Has another property",
+			"contents": "[[Has type::Page]]"
+		},
+		{
+			"page": "Format/Embedded/A/1",
+			"contents": "[[HasSomePageProperty::ABC]] {{#subobject:HasSomePageProperty=123}} [[Category:Embedded format/A]]"
+		},
+		{
+			"page": "Format/Embedded/A/2",
+			"contents": "[[HasSomePageProperty::DEF]] {{#subobject:HasSomePageProperty=456}} [[Category:Embedded format/A]]"
+		},
+		{
+			"page": "Format/Embedded/B/1",
+			"contents": "[[HasSomePageProperty::ABC]] {{#subobject:HasSomePageProperty=123}} [[Category:Embedded format/B]]"
+		},
+		{
+			"page": "Format/Embedded/B/2",
+			"contents": "[[HasSomePageProperty::DEF]] {{#subobject:HasSomePageProperty=456}} [[Category:Embedded format/B]]"
+		},
+		{
+			"page": "Format/Embedded/A",
+			"contents": "{{#ask:[[Category:Embedded format/A]] |format=embedded |link=none |headers=show |embedformat=h1 }}"
+		},
+		{
+			"page": "Format/Embedded/B",
+			"contents": "{{#ask:[[Category:Embedded format]] |format=count/B}} {{#ask:[[Category:Embedded format/B]] |format=embedded |link=none |headers=show |embedformat=h1 }}"
+		},
+		{
+			"page": "Format/Embedded/C",
+			"contents": "{{:Format/Embedded/A/1}}"
+		},
+		{
+			"page": "Format/Embedded/D",
+			"contents": "[[Has another property::A123]] {{#ask:[[Category:Embedded format]] |format=count/B}} {{#ask:[[Category:Embedded format/B]] [[!Format/Embedded/B]]|format=embedded |link=none |headers=show |embedformat=h1 }} {{#set:Has another property=ABCD}}"
+		}
+	],
+	"tests": [
+		{
+			"type": "parser",
+			"about": "#0",
+			"subject": "Format/Embedded/A",
+			"assert-store": {
+				"semantic-data": {
+					"strictPropertyValueMatch": false,
+					"propertyCount": 4,
+					"propertyKeys": [
+						"_INST",
+						"_MDAT",
+						"_SKEY",
+						"_ASK"
+					],
+					"propertyValues": [
+						"Embedded format/A"
+					]
+				}
+			},
+			"assert-output": {
+				"to-contain": [
+					"<h1><span class=\"mw-headline\" id=\"Format.2FEmbedded.2FA\">.*selflink\">Format/Embedded/A.*</h1>",
+					"<h1><span class=\"mw-headline\" id=\"Format.2FEmbedded.2FA.2F1\">",
+					"<h1><span class=\"mw-headline\" id=\"Format.2FEmbedded.2FA.2F2\">",
+					"ABC",
+					"DEF"
+				]
+			}
+		},
+		{
+			"type": "parser",
+			"about": "#1",
+			"subject": "Format/Embedded/B",
+			"assert-store": {
+				"semantic-data": {
+					"strictPropertyValueMatch": false,
+					"propertyCount": 4,
+					"propertyKeys": [
+						"_INST",
+						"_MDAT",
+						"_SKEY",
+						"_ASK"
+					],
+					"propertyValues": [
+						"Embedded format/B"
+					]
+				}
+			},
+			"assert-output": {
+				"to-contain": [
+					"<h1><span class=\"mw-headline\" id=\"Format.2FEmbedded.2FB\">.*selflink\">Format/Embedded/B.*</h1>",
+					"<h1><span class=\"mw-headline\" id=\"Format.2FEmbedded.2FB.2F1\">",
+					"<h1><span class=\"mw-headline\" id=\"Format.2FEmbedded.2FB.2F2\">",
+					"ABC",
+					"DEF"
+				]
+			}
+		},
+		{
+			"type": "parser",
+			"about": "#2 (manual embedded)",
+			"subject": "Format/Embedded/C",
+			"assert-store": {
+				"semantic-data": {
+					"strictPropertyValueMatch": false,
+					"propertyCount": 5,
+					"propertyKeys": [
+						"_INST",
+						"_MDAT",
+						"_SKEY",
+						"_SOBJ",
+						"HasSomePageProperty"
+					],
+					"propertyValues": [
+						"Embedded format/A",
+						"ABC"
+					]
+				}
+			}
+		},
+		{
+			"type": "parser",
+			"about": "#3 (ensure that annotations for the target page are not disabled, exclude embbeded query from [[!Format/Embedded/B]] otherwise we point to ourselves)",
+			"subject": "Format/Embedded/D",
+			"assert-store": {
+				"semantic-data": {
+					"strictPropertyValueMatch": false,
+					"propertyCount": 5,
+					"propertyKeys": [
+						"_INST",
+						"_MDAT",
+						"_SKEY",
+						"_ASK",
+						"Has_another_property"
+					],
+					"propertyValues": [
+						"Embedded format/B",
+						"A123",
+						"ABCD"
+					]
+				}
+			},
+			"assert-output": {
+				"to-contain": [
+					"<h1><span class=\"mw-headline\" id=\"Format.2FEmbedded.2FD\">.*selflink\">Format/Embedded/D.*</h1>",
+					"<h1><span class=\"mw-headline\" id=\"Format.2FEmbedded.2FB.2F1\">",
+					"<h1><span class=\"mw-headline\" id=\"Format.2FEmbedded.2FB.2F2\">",
+					"A123",
+					"ABC",
+					"DEF"
+				]
+			}
+		}
+	],
+	"settings": {
+		"smwgPageSpecialProperties": [ "_MDAT" ],
+		"smwgQueryResultCacheType": false,
+		"smwgNamespacesWithSemanticLinks": {
+			"NS_MAIN": true,
+			"SMW_NS_PROPERTY": true
+		}
+	},
+	"meta": {
+		"skip-on": {
+			"mw-1.19.20": "<h1> contains an extra space"
+		},
+		"version": "2",
+		"is-incomplete": false,
+		"debug": false
+	}
+}

@@ -1,0 +1,22 @@
+{
+	"@metadata": {
+		"authors": [
+			"EugeneZelenko",
+			"Jim-by",
+			"Wizardist"
+		]
+	},
+	"authorprotect": "Абарона старонак ад не-аўтараў",
+	"authorprotect-desc": "Дазваляе аўтару старонкі абараняць яе ад іншых удзельнікаў",
+	"authorprotect-notauthor": "Вы не зьяўляецеся аўтарам гэтай старонкі",
+	"authorprotect-confirm": "Зьмяніць узроўні абароны",
+	"authorprotect-edit": "Дазволіць рэдагаваньне толькі аўтарам",
+	"authorprotect-move": "Дазволіць перанос толькі аўтарам",
+	"authorprotect-intro": "Выкарыстоўвайце гэтую формы для абароны гэтай старонкі ад не-аўтараў",
+	"authorprotect-success": "Старонка абароненая!",
+	"authorprotect-failure": "Старонка не абароненая",
+	"protect-level-author": "Абарона ад не-аўтараў",
+	"restriction-level-author": "Аўтарская абарона",
+	"right-authorprotect": "абарона аўтарскіх старонак",
+	"right-author": "рэдагаваньне абароненых аўтарамі старонак"
+}

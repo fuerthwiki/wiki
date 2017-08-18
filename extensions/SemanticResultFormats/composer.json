@@ -1,0 +1,84 @@
+{
+	"name": "mediawiki/semantic-result-formats",
+	"type": "mediawiki-extension",
+	"description": "Provides additional result formats for queries using Semantic MediaWiki",
+	"keywords": [
+		"SRF",
+		"Semantic Result Formats",
+		"Result Formats",
+		"SMW",
+		"Semantic MediaWiki",
+		"Wiki",
+		"MediaWiki"
+	],
+	"homepage": "https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Result_Formats",
+	"license": "GPL-2.0+",
+	"authors": [
+		{
+			"name": "Jeroen De Dauw",
+			"email": "jeroendedauw@gmail.com",
+			"homepage": "https://www.entropywins.wtf/",
+			"role": "Developer"
+		},
+		{
+			"name": "James Hong Kong",
+			"homepage": "https://www.semantic-mediawiki.org/wiki/User:MWJames",
+			"role": "Developer"
+		},
+		{
+			"name": "Stephan Gambke",
+			"homepage": "https://www.mediawiki.org/wiki/User:F.trott",
+			"role": "Developer"
+		},
+		{
+			"name": "Yaron Koren",
+			"homepage": "https://www.yaronkoren.com/",
+			"role": "Developer"
+		}
+	],
+	"support": {
+		"email": "semediawiki-user@lists.sourceforge.net",
+		"issues": "https://github.com/SemanticMediaWiki/SemanticResultFormats/issues",
+		"irc": "irc://irc.freenode.net/semantic-mediawiki",
+		"forum": "https://www.semantic-mediawiki.org/wiki/semantic-mediawiki.org_talk:Community_portal",
+		"wiki": "https://www.semantic-mediawiki.org/wiki/",
+		"source": "https://github.com/SemanticMediaWiki/SemanticResultFormats"
+	},
+	"require": {
+		"php": ">=5.5.0",
+		"composer/installers": "1.*,>=1.0.1",
+		"mediawiki/semantic-media-wiki": "~2.1",
+		"nicmart/tree": "^0.2.7",
+		"symfony/css-selector": "^3.3"
+	},
+	"suggest": {
+		"phpoffice/phpexcel": "Required for 'format=excel'",
+		"mediawiki/graph-viz": "Required for 'format=graph' and 'format=process'",
+		"data-values/geo": "Required for 'format=filtered' with map view and/or distance filter"
+	},
+	"autoload": {
+		"psr-4": {
+			"SRF\\": "src/"
+		},
+		"files" : [
+			"SemanticResultFormats.php"
+		],
+		"classmap": [
+			"formats/",
+			"SemanticResultFormats.hooks.php",
+			"SemanticResultFormats.parser.php",
+			"SemanticResultFormats.utils.php"
+		]
+	},
+	"extra": {
+		"branch-alias": {
+			"dev-master": "2.5.x-dev"
+		}
+	},
+	"config": {
+		"process-timeout": 0
+	},
+	"scripts":{
+		"phpunit": "php ../../tests/phpunit/phpunit.php -c phpunit.xml.dist"
+	}
+}
