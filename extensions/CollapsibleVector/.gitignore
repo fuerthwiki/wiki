@@ -1,0 +1,7 @@
+.svn
+*~
+*.kate-swp
+.*.swp
+.DS_Store
+node_modules/
+vendor/

@@ -1,0 +1,33 @@
+{
+	"name": "mediawiki/collapsible-vector",
+	"type": "mediawiki-extension",
+	"description": "Improves on the user interface elements of the Vector skin",
+	"keywords": [
+		"wiki",
+		"MediaWiki",
+		"extension"
+	],
+	"homepage": "https://www.mediawiki.org/wiki/Extension:CollapsibleVector",
+	"license": "GPL-2.0+",
+	"authors": [
+		{
+			"name": "Paladox"
+		}
+	],
+	"support": {
+		"wiki": "https://www.mediawiki.org/wiki/Extension:CollapsibleVector",
+		"forum": "https://www.mediawiki.org/wiki/Extension_talk:CollapsibleVector",
+		"source": "https://git.wikimedia.org/summary/mediawiki%2Fextensions%2FCollapsibleVector",
+		"irc": "irc://irc.freenode.org/mediawiki"
+	},
+	"require-dev": {
+		"jakub-onderka/php-parallel-lint": "0.9.2",
+		"mediawiki/mediawiki-codesniffer": "0.5.1"
+	},
+	"scripts": {
+		"test": [
+			"parallel-lint . --exclude vendor",
+			"phpcs -p -s"
+		]
+	}
+}

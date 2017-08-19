@@ -1,0 +1,13 @@
+{
+	"@metadata": {
+		"authors": [
+			"Esketti"
+		]
+	},
+	"collapsiblevector-extensionname": "CollapsibleVector",
+	"collapsiblevector": "UI-verbeteringen voor Vector",
+	"collapsiblevector-desc": "Verbetert de user interface bij gebruik van de Vector huid",
+	"collapsiblevector-collapsiblenav-preference": "Inschakelen instorten van de items in de zijbalk in de Vector huid",
+	"collapsiblevector-collapsiblenav-more": "Meer talen",
+	"collapsiblevector-noexperiments-preference": "Uitsluiten mij van de functie experimenten"
+}

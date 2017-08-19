@@ -326,3 +326,5 @@ require_once "$IP/extensions/Tabber/Tabber.php";
 wfLoadExtension( 'HitCounters' );
 
 wfLoadExtension( 'PageForms' );
+
+wfLoadExtension( 'CollapsibleVector' );
