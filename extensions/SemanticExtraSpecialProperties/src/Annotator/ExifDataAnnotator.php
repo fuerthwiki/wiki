@@ -29,24 +29,32 @@ use RuntimeException;
  * @author rotsee
  * @author Stephan Gambke
  */
-class ExifDataAnnotator extends BaseAnnotator {
+class ExifDataAnnotator {
 
-	/** @var SemanticData */
-	protected $semanticData = null;
+	/**
+	 * @var SemanticData
+	 */
+	private $semanticData = null;
 
-	/** @var File  */
-	protected $file = null;
+	/**
+	 * @var File
+	 */
+	private $file = null;
 
-	/** @var Subobject */
-	protected $subobject = null;
+	/**
+	 * @var Subobject
+	 */
+	private $subobject = null;
 
 	/**
 	 * @since 1.0
 	 *
 	 * @param SemanticData $semanticData
+	 * @param File $file
 	 */
-	public function __construct( SemanticData $semanticData ) {
+	public function __construct( SemanticData $semanticData, File $file ) {
 		$this->semanticData = $semanticData;
+		$this->file = $file;
 	}
 
 	/**
@@ -61,27 +69,26 @@ class ExifDataAnnotator extends BaseAnnotator {
 	/**
 	 * @since 1.0
 	 *
-	 * @param File $file
-	 */
-	public function setFile( File $file ) {
-		$this->file = $file;
-	}
-
-	/**
-	 * @since 1.0
-	 *
 	 * @return boolean
 	 */
 	public function addAnnotation() {
 
-		if ( $this->file === null ) {
-			throw new RuntimeException( 'Expected a file' );
+		if ( !$this->file->exists() ) {
+			return false;
 		}
 
-		$exif = unserialize( $this->file->getMetadata() );
+		// #66
+		$meta = $this->file->getMetadata();
+
+		if ( !$meta ) {
+			return false;
+		}
+
+		// Guard against "Error at offset 0 of 1 bytes"
+		$exif = @unserialize( $meta );
 
 		if ( !is_array( $exif ) || count( $exif ) === 0 ) {
-			return true;
+			return false;
 		}
 
 		$exif[ 'ImageWidth' ]  = $this->file->getWidth();

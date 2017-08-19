@@ -1,0 +1,17 @@
+{
+	"@metadata": {
+		"authors": [
+			"An13sa",
+			"Sator"
+		]
+	},
+	"sesp-property-author": "Orriaren egilea",
+	"sesp-property-first-author": "Orriaren sortzailea",
+	"sesp-property-revision-id": "Berrikuspen IDa",
+	"sesp-property-page-id": "Orriaren IDa",
+	"sesp-property-view-count": "Ikustaldi kopurua",
+	"sesp-property-subpages": "Azpiorrialdea",
+	"sesp-property-mimetype": "MIME mota",
+	"sesp-property-shorturl": "URL motza",
+	"sesp-property-user-edit-count": "Lankidearen aldaketa kontagailua"
+}

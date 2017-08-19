@@ -20,24 +20,23 @@ Property labels are displayed in accordance with the maintained [content languag
 
 ### Identifier
 
-- `_EUSER` add all users that edited this page (expensive; use with care)
-- `_CUSER` add user that created this page
-- `_REVID` add property with current revision ID
-- `_PAGEID` add property the page ID
-- `_VIEWS` add property with number of page views. Note that depending on local settings this value might not be
-very up to date. If [`$wgDisableCounters`][$wgDisableCounters] is set to
-"true" this property will never be set.
-- `_NREV` add property showing an estimated number of total revisions
-- `_NTREV` same but for the talk page, i.e. showing how much discussion is going on around this page
-- `_SUBP` add properties for subpages
-- `_USERREG` add a property to user pages with the users registration date
-- `_EXIFDATA` add properties based on image metadata (Exif data), when available and in case it is a `NS_FILE` namespace object data are stored as a [subobject][subobject]. Details on available Exif data can be found [here](/src/Definition/definitions.json).
+- `_EUSER` adds a property with all users that edited this page (expensive; use with care)
+- `_CUSER` adds a property with the user that created this page
+- `_REVID` adds a property with current revision ID
+- `_PAGEID` adds a property with the page ID
+- `_PAGELGTH` adds a property with the page length (in bytes)
+- `_NREV` adds a property showing an estimated number of total revisions of a page
+- `_NTREV` same as `_NREV` but for the talk page, i.e. showing how much discussion is going on around this page
+- `_SUBP` adds a property with all subpages
+- `_USERREG` adds a property to user pages with the users registration date
+- `_USEREDITCNT` add a property to user pages with the users edit count
+- `_EXIFDATA` adds properties based on image metadata (Exif data), when available and in case it is a `NS_FILE` namespace object data are stored as a [subobject][subobject]. Details on available Exif data can be found [here](/src/Definition/definitions.json).
 
 
 #### Properties with further dependencies
 
-- `_SHORTURL` add short URL if the [ShortUrl][ShortUrl]
-is installed, and there is a shortened URL for the current page
+- `_SHORTURL` adds short URL if the [ShortUrl][ShortUrl] extension is installed, and there is a shortened URL for the current page
+- `_VIEWS` adds a property with number of page views if the [HitCounters][HitCounters] extension is installed. This is required starting with MediaWiki 1.25 and later. In earlier versions of MediaWiki this special property used to work out of the box if enabled. Note that depending on local settings this value might not be very up to date. If [`$wgDisableCounters`][$wgDisableCounters] is set to "true" this property will never be set.
 
 #### Depreciated properties
 
@@ -82,6 +81,7 @@ can pose a [privacy issue][privacy].
 [MIME type]: https://semantic-mediawiki.org/wiki/Help:Special_property_MIME_type
 [Media type]: https://semantic-mediawiki.org/wiki/Help:Special_property_Media_type
 [ShortUrl]: https://www.mediawiki.org/wiki/Extension:ShortUrl
+[HitCounters]: https://www.mediawiki.org/wiki/Extension:HitCounters
 [data-refresh]: https://semantic-mediawiki.org/wiki/Help:Data_refresh#Examples
 [mw-update]: https://www.mediawiki.org/wiki/Manual:Update.php
 [mw-localsettings]: https://www.mediawiki.org/wiki/Localsettings

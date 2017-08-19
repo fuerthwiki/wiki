@@ -3,6 +3,7 @@
 namespace SESP\Annotator;
 
 use SESP\PropertyRegistry;
+use SESP\AppFactory;
 
 use SMW\SemanticData;
 use SMW\DIProperty;
@@ -28,23 +29,33 @@ use RuntimeException;
  * @author mwjames
  * @author rotsee
  */
-class ExtraPropertyAnnotator extends BaseAnnotator {
+class ExtraPropertyAnnotator {
 
-	/** @var SemanticData */
+	/**
+	 * @var SemanticData
+	 */
 	protected $semanticData = null;
 
+	/**
+	 * @var AppFactory
+	 */
+	private $appFactory = null;
+
+
 	protected $configuration = null;
-	protected $dbConnection = null;
-	protected $page = null;
+	private $dbConnection = null;
+	private $page = null;
 
 	/**
 	 * @since 1.0
 	 *
 	 * @param SemanticData $semanticData
+	 * @param Factory $factory
 	 * @param array $configuration
 	 */
-	public function __construct( SemanticData $semanticData, array $configuration ) {
+	public function __construct( SemanticData $semanticData, AppFactory $appFactory, array $configuration ) {
 		$this->semanticData = $semanticData;
+		$this->appFactory = $appFactory;
 		$this->configuration = $configuration;
 	}
 
@@ -53,8 +64,16 @@ class ExtraPropertyAnnotator extends BaseAnnotator {
 	 *
 	 * @return boolean
 	 * @throws RuntimeException
+	 *
+	 * @return boolean
 	 */
 	public function addAnnotation() {
+
+		$subject = $this->semanticData->getSubject();
+
+		if ( $subject === null || $subject->getTitle() === null || $subject->getTitle()->isSpecialPage() ) {
+			return false;
+		}
 
 		if ( isset( $this->configuration['sespSpecialProperties'] ) &&
 			is_array( $this->configuration['sespSpecialProperties'] ) ) {
@@ -81,7 +100,7 @@ class ExtraPropertyAnnotator extends BaseAnnotator {
 	public function getWikiPage() {
 
 		if ( $this->page === null ) {
-			$this->page = $this->loadRegisteredObject( 'WikiPage' );
+			$this->page = $this->appFactory->newWikiPage( $this->semanticData->getSubject()->getTitle() ); //$this->loadRegisteredObject( 'WikiPage' );
 		}
 
 		return $this->page;
@@ -140,8 +159,14 @@ class ExtraPropertyAnnotator extends BaseAnnotator {
 			case '_USERREG' :
 				$dataItem = $this->makeUserRegistrationDataItem();
 				break;
+			case '_USEREDITCNT' :
+				$dataItem = $this->makeUserEditCountDataItem();
+				break;
 			case '_PAGEID' :
 				$dataItem = $this->makePageIdDataItem();
+				break;
+			case '_PAGELGTH' :
+				$dataItem = $this->makePageLengthDataItem();
 				break;
 			case '_REVID' :
 				$dataItem = $this->makeRevisionIdDataItem();
@@ -173,15 +198,6 @@ class ExtraPropertyAnnotator extends BaseAnnotator {
 		return $dataItem;
 	}
 
-	private function acquireDBConnection() {
-
-		if ( $this->dbConnection === null ) {
-			$this->dbConnection = $this->loadRegisteredObject( 'DBConnection', 'DatabaseBase' );
-		}
-
-		return $this->dbConnection;
-	}
-
 	private function isUserPage() {
 		return $this->getWikiPage()->getTitle()->inNamespace( NS_USER );
 	}
@@ -199,9 +215,29 @@ class ExtraPropertyAnnotator extends BaseAnnotator {
 	}
 
 	private function makeNumberOfPageViewsDataItem() {
-		if ( !$this->configuration['wgDisableCounters'] && $this->getWikiPage()->getCount() ) {
-			return new DINumber( $this->getWikiPage()->getCount() );
+		if ( $this->configuration['wgDisableCounters'] ) {
+			return null;
 		}
+
+		$count = $this->getPageViewCount();
+
+		if ( !is_numeric( $count ) ) {
+			return null;
+		}
+
+		return new DINumber( $count );
+	}
+
+	private function getPageViewCount() {
+		if ( class_exists( '\HitCounters\HitCounters' ) ) {
+			return \HitCounters\HitCounters::getCount( $this->getWikiPage()->getTitle() );
+		}
+
+		if ( method_exists( $this->getWikiPage(), 'getCount' ) ) {
+			return $this->getWikiPage()->getCount();
+		}
+
+		return null;
 	}
 
 	private function addPropertyValuesForPageContributors( DIProperty $property ) {
@@ -226,23 +262,36 @@ class ExtraPropertyAnnotator extends BaseAnnotator {
 	}
 
 	private function makePageIdDataItem() {
-		$revId = $this->getWikiPage()->getId();
+		$pageID = $this->getWikiPage()->getId();
 
-		if ( is_integer( $revId ) ) {
-			return new DINumber( $revId );
+		if ( is_integer( $pageID ) && $pageID > 0 ) {
+			return new DINumber( $pageID );
+		}
+	}
+
+	private function makePageLengthDataItem() {
+		$pageLen = $this->getWikiPage()->getTitle()->getLength();
+
+		if ( is_integer( $pageLen ) && $pageLen > 0 ) {
+			return new DINumber( $pageLen );
 		}
 	}
 
 	private function makeRevisionIdDataItem() {
-		$revId = $this->getWikiPage()->getLatest();
+		$revID = $this->getWikiPage()->getLatest();
 
-		if ( is_integer( $revId ) ) {
-			return new DINumber( $revId );
+		if ( is_integer( $revID ) && $revID > 0 ) {
+			return new DINumber( $revID );
 		}
 	}
 
 	private function getPageRevisionsForId( $pageId ) {
-		return $this->acquireDBConnection()->estimateRowCount(
+
+		if ( $this->dbConnection === null ) {
+			$this->dbConnection = $this->appFactory->newDatabaseConnection(); //( 'DBConnection', 'DatabaseBase' );
+		}
+
+		return $this->dbConnection->estimateRowCount(
 			"revision",
 			"*",
 			array( "rev_page" => $pageId )
@@ -250,18 +299,22 @@ class ExtraPropertyAnnotator extends BaseAnnotator {
 	}
 
 	private function makeNumberOfRevisionsDataItem() {
-		return new DINumber( $this->getPageRevisionsForId(
+		$numberOfPageRevisions = $this->getPageRevisionsForId(
 			$this->getWikiPage()->getTitle()->getArticleID()
-		) );
+		);
+
+		if ( $this->getWikiPage()->getTitle()->exists() && $numberOfPageRevisions > 0 ) {
+			return new DINumber( $numberOfPageRevisions );
+		}
 	}
 
 	private function makeNumberOfTalkPageRevisionsDataItem() {
-		$numberOfPageRevisions = $this->getPageRevisionsForId(
+		$numberOfTalkPageRevisions = $this->getPageRevisionsForId(
 			$this->getWikiPage()->getTitle()->getTalkPage()->getArticleID()
 		);
 
-		if ( $this->getWikiPage()->getTitle()->getTalkPage()->exists() && $numberOfPageRevisions > 0 ) {
-			return new DINumber( $numberOfPageRevisions );
+		if ( $this->getWikiPage()->getTitle()->getTalkPage()->exists() && $numberOfTalkPageRevisions > 0 ) {
+			return new DINumber( $numberOfTalkPageRevisions );
 		}
 	}
 
@@ -302,15 +355,15 @@ class ExtraPropertyAnnotator extends BaseAnnotator {
 
 	private function addPropertyValuesForExifData() {
 		if ( $this->isFilePage() ) {
-			$exifDataAnnotator = new ExifDataAnnotator( $this->getSemanticData() );
-			$exifDataAnnotator->setFile( $this->getWikiPage()->getFile() );
-			$exifDataAnnotator->addAnnotation();
+			$this->appFactory->newExifDataAnnotator( $this->getSemanticData(), $this->getWikiPage()->getFile() )->addAnnotation();
 		}
 	}
 
 	private function addPropertyValuesForShortUrl() {
-		if ( class_exists( 'ShortUrlUtils' ) ) {
-			$shortUrlAnnotator = new ShortUrlAnnotator( $this->getSemanticData(), $this->configuration );
+
+		$shortUrlAnnotator = $this->appFactory->newShortUrlAnnotator( $this->getSemanticData() );
+
+		if ( $shortUrlAnnotator->canUseShortUrl() ) {
 			$shortUrlAnnotator->addAnnotation();
 		}
 	}
@@ -321,7 +374,7 @@ class ExtraPropertyAnnotator extends BaseAnnotator {
 			return null;
 		}
 
-		$user = $this->loadRegisteredObject( 'UserByPageName', 'User' );
+		$user = $this->appFactory->newUserFromTitle( $this->getWikiPage()->getTitle() );
 
 		if ( $user instanceof User ) {
 
@@ -336,6 +389,21 @@ class ExtraPropertyAnnotator extends BaseAnnotator {
 				$date->format('H'),
 				$date->format('i')
 			);
+		}
+	}
+
+	private function makeUserEditCountDataItem() {
+
+		if ( !$this->isUserPage() ) {
+			return;
+		}
+
+		$user = $this->appFactory->newUserFromTitle( $this->getWikiPage()->getTitle() );
+
+		$count = $user instanceof User ? $user->getEditCount() : false;
+
+		if ( $count ) {
+			return new DINumber( $count );
 		}
 	}
 

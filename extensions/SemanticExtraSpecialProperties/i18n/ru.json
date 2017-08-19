@@ -2,7 +2,9 @@
 	"@metadata": {
 		"authors": [
 			"Okras",
-			"ShinePhantom"
+			"ShinePhantom",
+			"Аль-Гимравий",
+			"Putnik"
 		]
 	},
 	"sesp-desc": "Добавляет некоторые дополнительные специальные свойства для всех страниц",
@@ -18,5 +20,6 @@
 	"sesp-property-mediatype": "Тип медиа",
 	"sesp-property-shorturl": "Короткая ссылка",
 	"sesp-property-user-registration-date": "Дата регистрации пользователя",
+	"sesp-property-user-edit-count": "Число правок участника",
 	"sesp-property-exif-data": "Данные EXIF"
 }

@@ -5,6 +5,7 @@
 		"mediawiki/semantic-media-wiki": "^2.5",
 		"mediawiki/semantic-forms": "^3.7",
 		"mediawiki/semantic-result-formats": "^2.5",
+		"mediawiki/semantic-extra-special-properties": "^1.5",
 		"mediawiki/validator": "^2.2",
 		"wikimedia/utfnormal": "^1.0"
 	}

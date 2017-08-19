@@ -12,18 +12,20 @@ class ComposerStaticInit_mediawiki_vendor
         '90559502573a0d473dc66fde5c0ff7e2' => __DIR__ . '/..' . '/data-values/common/Common.php',
         '0dd9431cbbfa9ed9cb9d565d7129dbaf' => __DIR__ . '/..' . '/data-values/validators/Validators.php',
         'af3cc937b8a54e5b4209c82d6cfe8889' => __DIR__ . '/..' . '/param-processor/param-processor/DefaultConfig.php',
-        'a24b5daa493ecb5e767c7d1592a8da36' => __DIR__ . '/..' . '/mediawiki/at-ease/src/Functions.php',
         '94e265ce14c952a920a4ea5f7e8e9baa' => __DIR__ . '/..' . '/mediawiki/parser-hooks/ParserHooks.php',
         '5a04c63399fef01344b45823e301d04d' => __DIR__ . '/..' . '/onoi/shared-resources/Resources.php',
         'f4c767faab43077fd89ff7cf99ffb4b8' => __DIR__ . '/..' . '/serialization/serialization/Serialization.php',
+        'a24b5daa493ecb5e767c7d1592a8da36' => __DIR__ . '/..' . '/mediawiki/at-ease/src/Functions.php',
+        'cd9b6b6b76aed1304a64986142337d3a' => __DIR__ . '/../..' . '/extensions/SemanticMediaWiki/SemanticMediaWiki.php',
         'c3ae67574219cc56cab6c30ef8877b85' => __DIR__ . '/../..' . '/extensions/Validator/Validator.php',
         '5a494680c593293bd6035e42e2a6825c' => __DIR__ . '/..' . '/data-values/geo/Geo.php',
-        'cd9b6b6b76aed1304a64986142337d3a' => __DIR__ . '/../..' . '/extensions/SemanticMediaWiki/SemanticMediaWiki.php',
         'c3f7f0e81464740a933532e81fa26cc7' => __DIR__ . '/..' . '/wikimedia/base-convert/src/Functions.php',
         'd55c27a601de788b19a09b7d057d07ae' => __DIR__ . '/..' . '/wikimedia/relpath/src/RelPath.php',
         'fe1bcd0336136e435eaf197895daf81a' => __DIR__ . '/..' . '/nikic/php-parser/lib/bootstrap.php',
         '9ebf2cbcc0b7687b276c44d77096b002' => __DIR__ . '/../..' . '/extensions/Maps/Maps.php',
         '43b3c7644dd913f46db744c4ac998fef' => __DIR__ . '/../..' . '/extensions/SemanticResultFormats/SemanticResultFormats.php',
+        '02d63a16591d28134871cab9deee4744' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/DefaultSettings.php',
+        '49b46b7a2828914e66c76de75c8414c0' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/SemanticExtraSpecialProperties.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -58,6 +60,7 @@ class ComposerStaticInit_mediawiki_vendor
             'SRF\\' => 4,
             'SMW\\Maintenance\\' => 16,
             'SMW\\' => 4,
+            'SESP\\' => 5,
         ),
         'P' => 
         array (
@@ -175,6 +178,10 @@ class ComposerStaticInit_mediawiki_vendor
         'SMW\\' => 
         array (
             0 => __DIR__ . '/../..' . '/extensions/SemanticMediaWiki/src',
+        ),
+        'SESP\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src',
         ),
         'ParserHooks\\' => 
         array (
@@ -1604,6 +1611,14 @@ class ComposerStaticInit_mediawiki_vendor
         'Psr\\Log\\Test\\LoggerInterfaceTest' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/LoggerInterfaceTest.php',
         'RunningStat\\PSquare' => __DIR__ . '/..' . '/wikimedia/running-stat/src/PSquare.php',
         'RunningStat\\RunningStat' => __DIR__ . '/..' . '/wikimedia/running-stat/src/RunningStat.php',
+        'SESP\\Annotator\\ExifDataAnnotator' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/Annotator/ExifDataAnnotator.php',
+        'SESP\\Annotator\\ExtraPropertyAnnotator' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/Annotator/ExtraPropertyAnnotator.php',
+        'SESP\\Annotator\\ShortUrlAnnotator' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/Annotator/ShortUrlAnnotator.php',
+        'SESP\\AppFactory' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/AppFactory.php',
+        'SESP\\Cache\\MessageCache' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/Cache/MessageCache.php',
+        'SESP\\Definition\\DefinitionReader' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/Definition/DefinitionReader.php',
+        'SESP\\HookRegistry' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/HookRegistry.php',
+        'SESP\\PropertyRegistry' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/PropertyRegistry.php',
         'SMKMLPrinter' => __DIR__ . '/../..' . '/extensions/Maps/SemanticMaps/src/queryprinters/SM_KMLPrinter.php',
         'SMMapPrinter' => __DIR__ . '/../..' . '/extensions/Maps/SemanticMaps/src/queryprinters/SM_MapPrinter.php',
         'SMQueryHandler' => __DIR__ . '/../..' . '/extensions/Maps/SemanticMaps/src/queryprinters/SM_QueryHandler.php',

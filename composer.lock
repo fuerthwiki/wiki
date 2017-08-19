@@ -868,6 +868,68 @@
             "time": "2016-03-05T15:47:04+00:00"
         },
         {
+            "name": "mediawiki/semantic-extra-special-properties",
+            "version": "1.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/SemanticMediaWiki/SemanticExtraSpecialProperties.git",
+                "reference": "0c787d63aec50b767feb009bae910861c62c1d9e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/SemanticMediaWiki/SemanticExtraSpecialProperties/zipball/0c787d63aec50b767feb009bae910861c62c1d9e",
+                "reference": "0c787d63aec50b767feb009bae910861c62c1d9e",
+                "shasum": ""
+            },
+            "require": {
+                "composer/installers": "1.*,>=1.0.1",
+                "mediawiki/semantic-media-wiki": "~2.3",
+                "php": ">=5.3.0"
+            },
+            "type": "mediawiki-extension",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "DefaultSettings.php",
+                    "SemanticExtraSpecialProperties.php"
+                ],
+                "psr-4": {
+                    "SESP\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "Leo Wallentin",
+                    "homepage": "https://github.com/rotsee",
+                    "role": "Creator"
+                },
+                {
+                    "name": "James Hong Kong",
+                    "homepage": "https://www.semantic-mediawiki.org/wiki/User:MWJames",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Provides extra special properties for Semantic MediaWiki",
+            "homepage": "https://www.mediawiki.org/wiki/Extension:SemanticExtraSpecialProperties",
+            "keywords": [
+                "SMW",
+                "Semantic MediaWiki",
+                "mediawiki",
+                "properties",
+                "special properties",
+                "wiki"
+            ],
+            "time": "2017-06-07T21:54:08+00:00"
+        },
+        {
             "name": "mediawiki/semantic-forms",
             "version": "3.7",
             "source": {

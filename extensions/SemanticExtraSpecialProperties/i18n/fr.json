@@ -3,7 +3,9 @@
 		"authors": [
 			"Gomoko",
 			"Hello71",
-			"Pierre Slamich"
+			"Pierre Slamich",
+			"Wladek92",
+			"Benoit Rochon"
 		]
 	},
 	"sesp-desc": "Ajoute des propriétés spéciales supplémentaires à toutes les pages",
@@ -11,6 +13,9 @@
 	"sesp-property-first-author": "Créateur de la page",
 	"sesp-property-revision-id": "ID de révision",
 	"sesp-property-page-id": "ID de la page",
+	"sesp-property-page-id-desc": "$1 identifie l'ID MediaWiki d'une page et est fourni par l'extension [https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Extra_Special_Properties SESP].",
+	"sesp-property-page-len": "Longueur de la page",
+	"sesp-property-page-len-desc": "$1 identifie la longueur d'une page en octets et est fourni par l'extension [https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Extra_Special_Properties SESP].",
 	"sesp-property-view-count": "Nombre de page vues",
 	"sesp-property-subpages": "Sous-page",
 	"sesp-property-revisions": "Nombre de révisions",
@@ -19,5 +24,6 @@
 	"sesp-property-mediatype": "Type de média",
 	"sesp-property-shorturl": "URL courte",
 	"sesp-property-user-registration-date": "Date d'inscription de l'utilisateur",
+	"sesp-property-user-edit-count": "Compteur d'édition de l'utilisateur",
 	"sesp-property-exif-data": "Données Exif"
 }

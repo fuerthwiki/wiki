@@ -23,6 +23,7 @@ return array(
     'SRF\\' => array($baseDir . '/extensions/SemanticResultFormats/src'),
     'SMW\\Maintenance\\' => array($baseDir . '/extensions/SemanticMediaWiki/maintenance'),
     'SMW\\' => array($baseDir . '/extensions/SemanticMediaWiki/src'),
+    'SESP\\' => array($baseDir . '/extensions/SemanticExtraSpecialProperties/src'),
     'ParserHooks\\' => array($vendorDir . '/mediawiki/parser-hooks/src'),
     'ParamProcessor\\' => array($vendorDir . '/param-processor/param-processor/src', $baseDir . '/extensions/Validator/src/ParamProcessor'),
     'Onoi\\Tesa\\' => array($vendorDir . '/onoi/tesa/src'),

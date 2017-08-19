@@ -1,36 +1,24 @@
 <?php
 
-if ( php_sapi_name() !== 'cli' ) {
+if ( PHP_SAPI !== 'cli' ) {
 	die( 'Not an entry point' );
 }
 
-if ( !defined( 'MEDIAWIKI' ) ) {
-	die( 'MediaWiki is not available for the test environment' );
+error_reporting( E_ALL | E_STRICT );
+date_default_timezone_set( 'UTC' );
+ini_set( 'display_errors', 1 );
+
+if ( !is_readable( $autoloaderClassPath = __DIR__ . '/../../SemanticMediaWiki/tests/autoloader.php' ) ) {
+	die( 'The Semantic MediaWiki test autoloader is not available' );
 }
 
-function registerAutoloaderPath( $name, $path ) {
-	print( "\nUsing the {$name} vendor autoloader ...\n\n" );
-	return require $path;
+if ( !class_exists( 'SemanticExtraSpecialProperties' ) || ( $version = SemanticExtraSpecialProperties::getVersion() ) === null ) {
+	die( "\nSemantic Extra Special Properties is not available, please check your Composer or LocalSettings.\n" );
 }
 
-function runTestAutoLoader( $autoLoader = null ) {
+print sprintf( "\n%-20s%s\n", "Semantic Extra Special Properties: ", $version );
 
-	$mwVendorPath = __DIR__ . '/../../../vendor/autoload.php';
-	$localVendorPath = __DIR__ . '/../vendor/autoload.php';
-
-	if ( is_readable( $localVendorPath ) ) {
-		$autoLoader = registerAutoloaderPath( 'local', $localVendorPath );
-	} elseif ( is_readable( $mwVendorPath ) ) {
-		$autoLoader = registerAutoloaderPath( 'MediaWiki', $mwVendorPath );
-	}
-
-	if ( $autoLoader instanceof \Composer\Autoload\ClassLoader ) {
-		return true;
-	}
-
-	return false;
-}
-
-if ( !runTestAutoLoader() ) {
-	die( 'The required test autoloader was not accessible' );
-}
+$autoloader = require $autoloaderClassPath;
+$autoloader->addPsr4( 'SESP\\Tests\\', __DIR__ . '/phpunit/Unit' );
+$autoloader->addPsr4( 'SESP\\Tests\\Integration\\', __DIR__ . '/phpunit/Integration' );
+unset( $autoloader );

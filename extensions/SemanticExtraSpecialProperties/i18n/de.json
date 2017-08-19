@@ -6,11 +6,14 @@
 			"Rotsee"
 		]
 	},
-	"sesp-desc": "Stellt zusätzliche Spezialattribute zur Verfügung",
+	"sesp-desc": "Stellt zusätzliche Spezialattribute bereit",
 	"sesp-property-author": "Seitenbearbeiter",
 	"sesp-property-first-author": "Seitenersteller",
 	"sesp-property-revision-id": "Bearbeitungskennung",
 	"sesp-property-page-id": "Seitenkennung",
+	"sesp-property-page-id-desc": "„$1“ identifiziert die Seitenkennung in MediaWiki und wird von der Erweiterung [https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Extra_Special_Properties SESP] zur Verfügung gestellt.",
+	"sesp-property-page-len": "Seitenlänge",
+	"sesp-property-page-len-desc": "„$1“ identifiziert die Seitenlänge in Bytes und wird von der Erweiterung [https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Extra_Special_Properties SESP] zur Verfügung gestellt.",
 	"sesp-property-view-count": "Anzahl der Seitenaufrufe",
 	"sesp-property-subpages": "Unterseite",
 	"sesp-property-revisions": "Anzahl der Bearbeitungen",
@@ -19,5 +22,6 @@
 	"sesp-property-mediatype": "Medientyp",
 	"sesp-property-shorturl": "Kurz-URL",
 	"sesp-property-user-registration-date": "Benutzerregistrierungsdatum",
+	"sesp-property-user-edit-count": "Anzahl der Benutzerbearbeitungen",
 	"sesp-property-exif-data": "Exif-Daten"
 }

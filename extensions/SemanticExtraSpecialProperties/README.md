@@ -1,5 +1,5 @@
 # Semantic Extra Special Properties
-[![Build Status](https://travis-ci.org/SemanticMediaWiki/SemanticExtraSpecialProperties.png?branch=master)](https://travis-ci.org/SemanticMediaWiki/SemanticExtraSpecialProperties)
+[![Build Status](https://travis-ci.org/SemanticMediaWiki/SemanticExtraSpecialProperties.svg?branch=master)](https://travis-ci.org/SemanticMediaWiki/SemanticExtraSpecialProperties)
 [![Code Coverage](https://scrutinizer-ci.com/g/SemanticMediaWiki/SemanticExtraSpecialProperties/badges/coverage.png?s=c5563fd91abeb49b37a6ef999198530b6796dd3c)](https://scrutinizer-ci.com/g/SemanticMediaWiki/SemanticExtraSpecialProperties/)
 [![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/SemanticMediaWiki/SemanticExtraSpecialProperties/badges/quality-score.png?s=9cc8ce493f63f5c2c22db71b2061b4b8c21f43ba)](https://scrutinizer-ci.com/g/SemanticMediaWiki/SemanticExtraSpecialProperties/)
 [![Latest Stable Version](https://poser.pugx.org/mediawiki/semantic-extra-special-properties/version.png)](https://packagist.org/packages/mediawiki/semantic-extra-special-properties)
@@ -11,43 +11,37 @@ Semantic Extra Special Properties (a.k.a. SESP) is an extension to [Semantic Med
 ## Requirements
 
 - PHP 5.3 or later
-- MediaWiki 1.20 or later
-- Semantic MediaWiki 1.9 or later
-- When using MySQL 5 or later or when using SQLite 3 or later
+- MediaWiki 1.25 or later
+- Semantic MediaWiki 2.3 or later
 
 ## Installation
 
-The recommended way to install this extension is by using [Composer][composer]. Just add the following to the
-MediaWiki `composer.json` file and run the ``php composer.phar install/update`` command.
+The recommended way to install Semantic Extra Special Properties is by using [Composer][composer]
+with an entry in MediaWiki's `composer.json`.
 
 ```json
 {
 	"require": {
-		"mediawiki/semantic-extra-special-properties": "~1.2"
+		"mediawiki/semantic-extra-special-properties": "~1.5"
 	}
 }
 ```
-After upgrading this extension to a newer version it is strongly recommended to rebuild existing semantic data by running the [data refresh][data-refresh] command from the base directory.
+1. From your MediaWiki installation directory, execute
+   `composer require mediawiki/semantic-extra-special-properties:~1.5`
+2. It is strongly recommended to rebuild existing semantic data and run
+   Semantic MediaWiki's rebuild data process.
+3. Navigate to _Special:Version_ on your wiki and verify that the package
+   have been successfully installed.
 
-## Configuration
+## Usage
 
-The [`LocalSettings.php`][mw-localsettings] needs additional settings in order to enable `SESP` property annotations. For details on how to adjust the settings, please have a look at the [configuration guideline](CONFIGURATION.md).
+The annotation process for predefined properties is mostly done in the background
+and therefore doesn't need any special interaction from a user but [`LocalSettings`][mw-localsettings] for
+`SESP` need to be enabled.
 
-```php
-$GLOBALS['sespSpecialProperties'] = array(
-	'_EUSER',
-	'_CUSER',
-	...
-);
-```
-
-## Changelog
-
-For details about changed behaviour, added customizing or features, see the [Changelog](CHANGELOG.md).
+For details about available settings, please have a look at the [configuration](docs/01-configuration.md) document.
 
 ## Contribution and support
-
-This extension was originally written for [säsongsmat.nu][säsongsmat] by Leo Wallentin (leo_wallentin (at) hotmail.com).
 
 If you have remarks, questions, or suggestions, please send them to semediawiki-users@lists.sourceforge.net. You can subscribe to this list [here](http://sourceforge.net/mailarchive/forum.php?forum_name=semediawiki-user).
 
@@ -61,7 +55,8 @@ developers mailing list and have a look at the [contribution guildline](/CONTRIB
 
 ### Tests
 
-The library provides unit tests that covers the core-functionality normally run by the [continues integration platform][travis]. Tests can also be executed [manual][mw-testing] using the PHPUnit configuration file found in the root directory.
+This extension provides unit and integration tests that are run by a [continues integration platform][travis]
+but can also be executed using `composer phpunit` from the extension base directory.
 
 ## License
 
@@ -73,8 +68,7 @@ The library provides unit tests that covers the core-functionality normally run 
 [smw]: https://www.semantic-mediawiki.org/wiki/Semantic_MediaWiki
 [travis]: https://travis-ci.org/SemanticMediaWiki/SemanticExtraSpecialProperties
 [mw-testing]: https://www.mediawiki.org/wiki/Manual:PHP_unit_testing
-[data-refresh]: https://semantic-mediawiki.org/wiki/Help:Data_refresh#Examples
 [mw-update]: https://www.mediawiki.org/wiki/Manual:Update.php
 [mw-localsettings]: https://www.mediawiki.org/wiki/Localsettings
 [contributors]: https://github.com/SemanticMediaWiki/SemanticExtraSpecialProperties/graphs/contributors
-[säsongsmat]: http://säsongsmat.nu
+[semver]: http://semver.org/
