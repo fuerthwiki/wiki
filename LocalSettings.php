@@ -322,3 +322,6 @@ wfLoadExtension( 'HitCounters' );
 wfLoadExtension( 'PageForms' );
 
 wfLoadExtension( 'CollapsibleVector' );
+
+wfLoadExtension( 'MobileFrontend' );
+$wgMFAutodetectMobileView = true;
