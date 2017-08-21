@@ -102,6 +102,10 @@ $wgSVGConverterPath = "/usr/bin/convert";
 $wgMaxShellTime = 0;
 $wgMaxShellMemory  = 0;
 
+## Force SSL Login
+## fixes https://bitbucket.org/FuerthWiki/wiki/issues/6
+$wgSecureLogin = true;
+
 ## To enable image uploads, make sure the 'images' directory
 ## is writable, then set this to true:
 $wgEnableUploads  = true;
