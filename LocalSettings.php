@@ -97,6 +97,11 @@ $wgAllowTitlesInSVG = true;
 $wgSVGConverter = 'ImageMagick';
 $wgSVGConverterPath = "/usr/bin/convert";
 
+## Fixes https://bitbucket.org/FuerthWiki/wiki/issues/15
+## see https://www.mediawiki.org/wiki/Manual:$wgMaxShellMemory/de
+$wgMaxShellTime = 0;
+$wgMaxShellMemory  = 0;
+
 ## To enable image uploads, make sure the 'images' directory
 ## is writable, then set this to true:
 $wgEnableUploads  = true;
@@ -167,8 +172,6 @@ $wgExtraNamespaces =
 
 $smwgNamespacesWithSemanticLinks[200] = true;
 $smwgNamespacesWithSemanticLinks[201] = true;
-
-//$wgTmpDirectory = ini_get('upload_tmp_dir');
 
 $wgDefaultUserOptions['thumbsize'] = 2; //180px
 
