@@ -38,10 +38,6 @@ $wgScriptExtension  = ".php";
 ## The protocol and server name to use in fully-qualified URLs
 $wgServer           = $SECRET_wgServer;
 
-## Force SSL Login
-## fixes https://bitbucket.org/FuerthWiki/wiki/issues/6
-$wgSecureLogin = $SECRET_wgSecureLogin;
-
 ## Wiki editor by default
 $wgDefaultUserOptions['usebetatoolbar'] = 1;
 $wgDefaultUserOptions['usebetatoolbar-cgd'] = 1;
@@ -105,6 +101,10 @@ $wgSVGConverterPath = "/usr/bin/convert";
 ## see https://www.mediawiki.org/wiki/Manual:$wgMaxShellMemory/de
 $wgMaxShellTime = 0;
 $wgMaxShellMemory  = 0;
+
+## Force SSL Login
+## fixes https://bitbucket.org/FuerthWiki/wiki/issues/6
+$wgSecureLogin = true;
 
 ## To enable image uploads, make sure the 'images' directory
 ## is writable, then set this to true:
@@ -176,6 +176,7 @@ $wgExtraNamespaces =
 
 $smwgNamespacesWithSemanticLinks[200] = true;
 $smwgNamespacesWithSemanticLinks[201] = true;
+$smwgLinksInValues = true;
 
 $wgDefaultUserOptions['thumbsize'] = 2; //180px
 
