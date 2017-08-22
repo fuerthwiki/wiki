@@ -307,7 +307,7 @@ require_once "$IP/extensions/Collection/Collection.php";
 
 require_once("$IP/extensions/ReplaceText/ReplaceText.php");
 
-require_once "$IP/extensions/Echo/Echo.php";
+//require_once "$IP/extensions/Echo/Echo.php";
 
 require_once("$IP/extensions/AuthorProtect/AuthorProtect.php");
 
