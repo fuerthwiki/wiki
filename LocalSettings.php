@@ -307,6 +307,7 @@ require_once "$IP/extensions/Collection/Collection.php";
 
 require_once("$IP/extensions/ReplaceText/ReplaceText.php");
 
+//Problems with MobielFrontend:
 //require_once "$IP/extensions/Echo/Echo.php";
 
 require_once("$IP/extensions/AuthorProtect/AuthorProtect.php");
@@ -325,3 +326,4 @@ wfLoadExtension( 'CollapsibleVector' );
 
 wfLoadExtension( 'MobileFrontend' );
 $wgMFAutodetectMobileView = true;
+$wgMFNearby = true;
