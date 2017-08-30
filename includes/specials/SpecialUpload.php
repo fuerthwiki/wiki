@@ -596,7 +596,7 @@ class SpecialUpload extends SpecialPage {
 			}
 		}
 
-		return $pageText;
+		return "{{Bild}}\n" . $pageText;
 	}
 
 	/**
