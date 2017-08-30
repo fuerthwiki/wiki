@@ -95,7 +95,7 @@ $wgMemoryLimit = "1024M";
 $wgFileExtensions = array_merge( $wgFileExtensions, array( 'svg', 'mp3', 'mp4', 'pdf' ));
 $wgAllowTitlesInSVG = true;
 $wgSVGConverter = 'ImageMagick';
-$wgSVGConverterPath = "/usr/bin/convert";
+$wgSVGConverterPath = "/usr/bin";
 
 ## Fixes https://bitbucket.org/FuerthWiki/wiki/issues/15
 ## see https://www.mediawiki.org/wiki/Manual:$wgMaxShellMemory/de
@@ -254,10 +254,12 @@ $GLOBALS['sespSpecialProperties'] = array(
     '_EXIF',
 );
 
-# Other Hazzle Dazzle
+# Programmer extensions
 require_once("$IP/extensions/Arrays/Arrays.php");
 require_once("$IP/extensions/Loops/Loops.php"); # Set limit to 10000
-require_once("$IP/extensions/HeaderTabs/HeaderTabs.php");
+require_once("$IP/extensions/Variables/Variables.php");
+
+# Content extensions
 require_once("$IP/extensions/Widgets/Widgets.php");
 require_once("$IP/extensions/Tabs/Tabs.php");
 
@@ -265,10 +267,7 @@ require_once("$IP/extensions/Tabs/Tabs.php");
 $wgUseAjax = true;
 require_once("$IP/extensions/CategoryTree/CategoryTree.php");
 
-# Loops extension
-
 # Variables extension
-require_once("$IP/extensions/Variables/Variables.php");
 
 # Facebook extension
 #require_once("$IP/extensions/Facebook/Facebook.php");
@@ -277,19 +276,8 @@ require_once("$IP/extensions/Variables/Variables.php");
 #$wgFbSecret = 'b760f91121a6a350a848174c5a7200be';
 #$smwgShowFactbox = SMW_FACTBOX_NONEMPTY;
 
-# SVG direct embedd
-#require_once( "$IP/extensions/NativeSvgHandler/NativeSvgHandler.php" );
-
 # FancyDancyBox
 require_once("$IP/extensions/FancyBoxThumbs/FancyBoxThumbs.php");
-
-# UploadWizard
-// Needed to make UploadWizard work in IE, see bug 39877
-//$wgApiFrameOptions = 'SAMEORIGIN';
-
-#require_once( "$IP/extensions/UploadWizard/UploadWizard.php" );
-#$wgUploadWizardConfig['autoCategories'] =  array('Bilder');
-#$wgUploadWizardConfig['skipTutorial'] =  true;
 
 $wgNamespaceAliases = array('Bild' => NS_FILE);
 $wgNamespacesWithSubpages[NS_TEMPLATE] = true;
@@ -328,8 +316,6 @@ require_once "$IP/extensions/ProofreadPage/ProofreadPage.php";
 # SearchStats
 require_once "$IP/extensions/SearchStats/SearchStats.php";
 
-# New try to tabs
-require_once "$IP/extensions/Tabber/Tabber.php";
 
 wfLoadExtension( 'HitCounters' );
 
