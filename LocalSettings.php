@@ -325,5 +325,5 @@ wfLoadExtension( 'PageForms' );
 wfLoadExtension( 'CollapsibleVector' );
 
 wfLoadExtension( 'MobileFrontend' );
-$wgMFAutodetectMobileView = true;
+$wgMFAutodetectMobileView = false;
 $wgMFNearby = true;
