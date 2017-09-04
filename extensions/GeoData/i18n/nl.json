@@ -1,0 +1,27 @@
+{
+	"@metadata": {
+		"authors": [
+			"SPQRobin",
+			"Siebrand",
+			"Hansmuller"
+		]
+	},
+	"geodata-desc": "Voegt geografische coördinatenopslag en weergavefunctionaliteit toe",
+	"geodata-bad-input": "Er zijn ongeldige argumenten opgegeven in de functie <nowiki>{{#coordinates:}}</nowiki>",
+	"geodata-bad-latitude": "<nowiki>{{#coordinates:}}</nowiki>: ongeldige breedtegraad",
+	"geodata-bad-longitude": "<nowiki>{{#coordinates:}}</nowiki>: ongeldige lengtegraad",
+	"geodata-bad-type": "<nowiki>{{#coordinates:}}</nowiki>: type \"$1\" niet herkend",
+	"geodata-bad-globe": "<nowiki>{{#coordinates:}}</nowiki>: wereldbol \"$1\" niet herkend",
+	"geodata-bad-region": "<nowiki>{{#coordinates:}}</nowiki>: ongeldig formaat van de regiocode",
+	"geodata-multiple-primary": "<nowiki>{{#coordinates:}}</nowiki>: er kan niet meer dan één primair label per pagina zijn",
+	"geodata-limit-exceeded": "De limiet van $1 <nowiki>{{#coordinates:}}</nowiki>-{{PLURAL:$1|label|labels}} per pagina is overschreden",
+	"geodata-broken-tags-category": "Pagina's met onjuiste coördinatenlabels",
+	"geodata-broken-tags-category-desc": "De pagina heeft een ongeldig label <code><nowiki>{{#coordinates:}}</nowiki></code>.",
+	"geodata-unknown-type-category": "Pagina's met onbekend type coördinaten",
+	"geodata-unknown-type-category-desc": "De pagina gebruikt een onbekende waarde voor de parameter <code>type</code> voor coördinaten.",
+	"geodata-unknown-globe-category": "Pagina's met onbekende waarde voor wereldbol",
+	"geodata-unknown-globe-category-desc": "De pagina gebruikt een onbekende waarde voor de parameter <code>globe</code> voor coördinaten.",
+	"geodata-unknown-region-category": "Pagina's met ongeldige waarde voor regio",
+	"geodata-unknown-region-category-desc": "De pagina gebruikt een onbekende waarde voor de parameter <code>region</code> voor coördinaten.",
+	"apihelp-query+geosearch-description": "Geef pagina's terug met coordinaten in de buurt van het opgegeven punt."
+}

@@ -327,3 +327,6 @@ wfLoadExtension( 'CollapsibleVector' );
 wfLoadExtension( 'MobileFrontend' );
 $wgMFAutodetectMobileView = false;
 $wgMFNearby = true;
+
+# GeoData
+require_once "$IP/extensions/GeoData/GeoData.php";
