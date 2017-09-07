@@ -330,3 +330,6 @@ $wgMFNearby = true;
 
 # GeoData
 require_once "$IP/extensions/GeoData/GeoData.php";
+
+# PageImages (add Images to "Nearby")
+require_once "$IP/extensions/PageImages/PageImages.php";
