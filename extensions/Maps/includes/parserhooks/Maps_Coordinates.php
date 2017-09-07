@@ -22,7 +22,7 @@ class MapsCoordinates extends ParserHook {
 	 * @return string
 	 */
 	protected function getName() {
-		return 'coordinates';
+		return 'coordinatez';
 	}
 	
 	/**

@@ -15,7 +15,7 @@ $magicWords['en'] = [
 	'geocode' => [ 0, 'geocode' ],
 	'geodistance' => [ 0, 'geodistance' ],
 	'finddestination' => [ 0, 'finddestination' ],
-	'coordinates' => [ 0, 'coordinates' ],
+	'coordinatez' => [ 0, 'coordinatez' ],
 	'distance' => [ 0, 'distance' ],
 	'mapsdoc' => [ 0, 'mapsdoc' ],
 ];
@@ -23,7 +23,7 @@ $magicWords['en'] = [
 /** Afrikaans (Afrikaans) */
 $magicWords['af'] = [
 	'geocode' => [ 0, 'geokode', 'geocode' ],
-	'coordinates' => [ 0, 'koördinate', 'coordinates' ],
+	'coordinatez' => [ 0, 'koördinate', 'coordinatez' ],
 ];
 
 /** Arabic (العربية) */
@@ -35,7 +35,7 @@ $magicWords['ar'] = [
 	'geocode' => [ 0, 'كود_جغرافي' ],
 	'geodistance' => [ 0, 'مسافة_جغرافية' ],
 	'finddestination' => [ 0, 'إيجاد_الوجهة' ],
-	'coordinates' => [ 0, 'إحداثيات' ],
+	'coordinatez' => [ 0, 'إحداثيات' ],
 	'distance' => [ 0, 'مسافة' ],
 	'mapsdoc' => [ 0, 'توثيق_الخرائط' ],
 ];
@@ -49,7 +49,7 @@ $magicWords['arz'] = [
 	'geocode' => [ 0, 'كود_جغرافي' ],
 	'geodistance' => [ 0, 'مسافه_جغرافيه', 'مسافة_جغرافية' ],
 	'finddestination' => [ 0, 'إيجاد_الوجهه', 'إيجاد_الوجهة' ],
-	'coordinates' => [ 0, 'إحداثيات' ],
+	'coordinatez' => [ 0, 'إحداثيات' ],
 	'distance' => [ 0, 'مسافه' ],
 	'mapsdoc' => [ 0, 'توثيق_الخرايط' ],
 ];
@@ -61,7 +61,7 @@ $magicWords['as'] = [
 
 /** Breton (brezhoneg) */
 $magicWords['br'] = [
-	'coordinates' => [ 0, 'daveennoù' ],
+	'coordinatez' => [ 0, 'daveennoù' ],
 	'distance' => [ 0, 'hed' ],
 ];
 
@@ -79,7 +79,7 @@ $magicWords['de'] = [
 	'geocode' => [ 0, 'geokodiere' ],
 	'geodistance' => [ 0, 'geoentfernung' ],
 	'finddestination' => [ 0, 'finde_ziel' ],
-	'coordinates' => [ 0, 'koordinaten' ],
+	'coordinatez' => [ 0, 'koordinaten' ],
 	'distance' => [ 0, 'entfernung' ],
 	'mapsdoc' => [ 0, 'mapsdok' ],
 ];
@@ -93,14 +93,14 @@ $magicWords['diq'] = [
 	'geocode' => [ 0, 'herunkodi' ],
 	'geodistance' => [ 0, 'heruna_mesafi' ],
 	'finddestination' => [ 0, 'menzilvinayış' ],
-	'coordinates' => [ 0, 'koordinati' ],
+	'coordinatez' => [ 0, 'koordinati' ],
 	'distance' => [ 0, 'mesafe' ],
 	'mapsdoc' => [ 0, 'dokumanéğerita' ],
 ];
 
 /** Esperanto (Esperanto) */
 $magicWords['eo'] = [
-	'coordinates' => [ 0, 'koordinatoj' ],
+	'coordinatez' => [ 0, 'koordinatoj' ],
 	'distance' => [ 0, 'distanco' ],
 ];
 
@@ -108,7 +108,7 @@ $magicWords['eo'] = [
 $magicWords['es'] = [
 	'display_point' => [ 0, 'mostrar_punto' ],
 	'geocode' => [ 0, 'geocodificar' ],
-	'coordinates' => [ 0, 'coordenadas' ],
+	'coordinatez' => [ 0, 'coordenadas' ],
 	'distance' => [ 0, 'distancia' ],
 ];
 
@@ -121,7 +121,7 @@ $magicWords['fr'] = [
 	'geocode' => [ 0, 'codegéo' ],
 	'geodistance' => [ 0, 'distancegéo' ],
 	'finddestination' => [ 0, 'trouverdestination' ],
-	'coordinates' => [ 0, 'coordonnées' ],
+	'coordinatez' => [ 0, 'coordonnées' ],
 	'distance' => [ 0, 'distance' ],
 	'mapsdoc' => [ 0, 'doccartes' ],
 ];
@@ -134,7 +134,7 @@ $magicWords['he'] = [
 /** Indonesian (Bahasa Indonesia) */
 $magicWords['id'] = [
 	'finddestination' => [ 0, 'petunjukarah' ],
-	'coordinates' => [ 0, 'koordinat' ],
+	'coordinatez' => [ 0, 'koordinat' ],
 	'distance' => [ 0, 'jarak' ],
 ];
 
@@ -151,7 +151,7 @@ $magicWords['it'] = [
 	'geocode' => [ 0, 'geocodice' ],
 	'geodistance' => [ 0, 'geodistanza' ],
 	'finddestination' => [ 0, 'trovadestinazione' ],
-	'coordinates' => [ 0, 'coordinate' ],
+	'coordinatez' => [ 0, 'coordinate' ],
 	'distance' => [ 0, 'distanza' ],
 	'mapsdoc' => [ 0, 'docmappe' ],
 ];
@@ -163,13 +163,13 @@ $magicWords['ja'] = [
 	'geocode' => [ 0, '地理的コード' ],
 	'geodistance' => [ 0, '地理的距離' ],
 	'finddestination' => [ 0, '目的地検索' ],
-	'coordinates' => [ 0, '座標' ],
+	'coordinatez' => [ 0, '座標' ],
 	'distance' => [ 0, '距離' ],
 ];
 
 /** Georgian (ქართული) */
 $magicWords['ka'] = [
-	'coordinates' => [ 0, 'კოორდინატები' ],
+	'coordinatez' => [ 0, 'კოორდინატები' ],
 	'distance' => [ 0, 'მანძილი' ],
 ];
 
@@ -182,14 +182,14 @@ $magicWords['ko'] = [
 	'geocode' => [ 0, '지리코드' ],
 	'geodistance' => [ 0, '지리거리' ],
 	'finddestination' => [ 0, '목적지찾기' ],
-	'coordinates' => [ 0, '좌표' ],
+	'coordinatez' => [ 0, '좌표' ],
 	'distance' => [ 0, '거리' ],
 	'mapsdoc' => [ 0, '지도문서' ],
 ];
 
 /** Kurdish (Latin script) (Kurdî (latînî)‎) */
 $magicWords['ku-latn'] = [
-	'coordinates' => [ 0, 'koordînat' ],
+	'coordinatez' => [ 0, 'koordînat' ],
 ];
 
 /** Ladino (Ladino) */
@@ -199,14 +199,14 @@ $magicWords['lad'] = [
 
 /** Luxembourgish (Lëtzebuergesch) */
 $magicWords['lb'] = [
-	'coordinates' => [ 0, 'Koordinaten' ],
+	'coordinatez' => [ 0, 'Koordinaten' ],
 	'distance' => [ 0, 'Distanz' ],
 ];
 
 /** Minangkabau (Baso Minangkabau) */
 $magicWords['min'] = [
 	'finddestination' => [ 0, 'petunjukarah' ],
-	'coordinates' => [ 0, 'koordinat' ],
+	'coordinatez' => [ 0, 'koordinat' ],
 	'distance' => [ 0, 'jarak' ],
 ];
 
@@ -219,7 +219,7 @@ $magicWords['mk'] = [
 	'geocode' => [ 0, 'геокод' ],
 	'geodistance' => [ 0, 'георастојание' ],
 	'finddestination' => [ 0, 'најдиодредница' ],
-	'coordinates' => [ 0, 'координати' ],
+	'coordinatez' => [ 0, 'координати' ],
 	'distance' => [ 0, 'растојание' ],
 	'mapsdoc' => [ 0, 'докумкарти' ],
 ];
@@ -233,7 +233,7 @@ $magicWords['ml'] = [
 	'geocode' => [ 0, 'ജിയോകോഡ്' ],
 	'geodistance' => [ 0, 'ഭൗമദൂരം' ],
 	'finddestination' => [ 0, 'ലക്ഷ്യംതിരയുക' ],
-	'coordinates' => [ 0, 'നിർദ്ദേശാങ്കങ്ങൾ' ],
+	'coordinatez' => [ 0, 'നിർദ്ദേശാങ്കങ്ങൾ' ],
 	'distance' => [ 0, 'ദൂരം' ],
 ];
 
@@ -248,7 +248,7 @@ $magicWords['nds-nl'] = [
 	'geocode' => [ 0, 'geokoderen' ],
 	'geodistance' => [ 0, 'geo-aofstaand' ],
 	'finddestination' => [ 0, 'bestemmingzeuken' ],
-	'coordinates' => [ 0, 'koordinaoten' ],
+	'coordinatez' => [ 0, 'koordinaoten' ],
 	'distance' => [ 0, 'aofstaand' ],
 ];
 
@@ -261,7 +261,7 @@ $magicWords['nl'] = [
 	'geocode' => [ 0, 'geocoderen' ],
 	'geodistance' => [ 0, 'geoafstand' ],
 	'finddestination' => [ 0, 'bestemmingzoeken' ],
-	'coordinates' => [ 0, 'coordinaten' ],
+	'coordinatez' => [ 0, 'coordinaten' ],
 	'distance' => [ 0, 'afstand' ],
 	'mapsdoc' => [ 0, 'kaartdoc' ],
 ];
@@ -269,7 +269,7 @@ $magicWords['nl'] = [
 /** Polish (polski) */
 $magicWords['pl'] = [
 	'display_map' => [ 0, 'wyświetl_mapę' ],
-	'coordinates' => [ 0, 'współrzędne' ],
+	'coordinatez' => [ 0, 'współrzędne' ],
 	'distance' => [ 0, 'odległość' ],
 ];
 
@@ -286,7 +286,7 @@ $magicWords['pt'] = [
 	'geocode' => [ 0, 'geocódigo' ],
 	'geodistance' => [ 0, 'geodistância' ],
 	'finddestination' => [ 0, 'encontrardestino' ],
-	'coordinates' => [ 0, 'coordenadas' ],
+	'coordinatez' => [ 0, 'coordenadas' ],
 	'distance' => [ 0, 'distância' ],
 ];
 
@@ -299,14 +299,14 @@ $magicWords['ru'] = [
 	'geocode' => [ 0, 'геокод' ],
 	'geodistance' => [ 0, 'георасстояние' ],
 	'finddestination' => [ 0, 'найти_местоположение' ],
-	'coordinates' => [ 0, 'координаты' ],
+	'coordinatez' => [ 0, 'координаты' ],
 	'distance' => [ 0, 'расстояние' ],
 ];
 
 /** Sinhala (සිංහල) */
 $magicWords['si'] = [
 	'finddestination' => [ 0, 'ගමනාන්තය_සෙවීම', 'finddestination' ],
-	'coordinates' => [ 0, 'ඛණ්ඩාංක', 'coordinates' ],
+	'coordinatez' => [ 0, 'ඛණ්ඩාංක', 'coordinatez' ],
 	'distance' => [ 0, 'දුර', 'distance' ],
 ];
 
@@ -315,7 +315,7 @@ $magicWords['sr-ec'] = [
 	'display_map' => [ 0, 'прикажи_мапу' ],
 	'display_point' => [ 0, 'прикажи_тачку', 'прикажи_тачке' ],
 	'finddestination' => [ 0, 'пронађиодредиште', 'пронађи_одредиште' ],
-	'coordinates' => [ 0, 'координате' ],
+	'coordinatez' => [ 0, 'координате' ],
 	'distance' => [ 0, 'раздаљина' ],
 ];
 
@@ -326,7 +326,7 @@ $magicWords['sr-el'] = [
 	'geocode' => [ 0, 'geografski_kod' ],
 	'geodistance' => [ 0, 'geografska_razdaljina' ],
 	'finddestination' => [ 0, 'pronađi_odredište' ],
-	'coordinates' => [ 0, 'koordinate' ],
+	'coordinatez' => [ 0, 'koordinate' ],
 	'distance' => [ 0, 'razdaljina' ],
 ];
 
@@ -342,20 +342,20 @@ $magicWords['uk'] = [
 	'display_points' => [ 0, 'показати_точки' ],
 	'geodistance' => [ 0, 'геовідстань' ],
 	'finddestination' => [ 0, 'знайти_місцезнаходження' ],
-	'coordinates' => [ 0, 'координати' ],
+	'coordinatez' => [ 0, 'координати' ],
 	'distance' => [ 0, 'відстань' ],
 ];
 
 /** Uzbek (oʻzbekcha/ўзбекча) */
 $magicWords['uz'] = [
-	'coordinates' => [ 0, 'koordinatalar' ],
+	'coordinatez' => [ 0, 'koordinatalar' ],
 ];
 
 /** Vietnamese (Tiếng Việt) */
 $magicWords['vi'] = [
 	'display_map' => [ 0, 'hiển_thị_bản_đồ', 'hiểnthịbảnđồ' ],
 	'geocode' => [ 0, 'mã_hóa_địa_lý', 'mãhóađịalý', 'mã_hoá_địa_lý', 'mãhoáđịalý', 'mã_hóa_địa_lí', 'mãhóađịalí', 'mã_hoá_địa_lí', 'mãhoáđịalí' ],
-	'coordinates' => [ 0, 'tọa_độ', 'tọađộ' ],
+	'coordinatez' => [ 0, 'tọa_độ', 'tọađộ' ],
 ];
 
 /** Simplified Chinese (中文（简体）‎) */
@@ -367,7 +367,7 @@ $magicWords['zh-hans'] = [
 	'geocode' => [ 0, '地理编码' ],
 	'geodistance' => [ 0, '地理距离' ],
 	'finddestination' => [ 0, '寻找目的地' ],
-	'coordinates' => [ 0, '坐标' ],
+	'coordinatez' => [ 0, '坐标' ],
 	'distance' => [ 0, '距离' ],
 	'mapsdoc' => [ 0, '地图文档' ],
 ];
@@ -381,7 +381,7 @@ $magicWords['zh-hant'] = [
 	'geocode' => [ 0, '地理編碼' ],
 	'geodistance' => [ 0, '地理距離' ],
 	'finddestination' => [ 0, '搜尋目的地' ],
-	'coordinates' => [ 0, '坐標' ],
+	'coordinatez' => [ 0, '坐標' ],
 	'distance' => [ 0, '距離' ],
 	'mapsdoc' => [ 0, '地圖檔案' ],
 ];
