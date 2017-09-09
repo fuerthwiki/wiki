@@ -181,6 +181,9 @@ $smwgLinksInValues = true;
 
 $wgDefaultUserOptions['thumbsize'] = 2; //180px
 
+## Enables Signiture-Button also for Articles (#37)
+## see https://www.mediawiki.org/wiki/Manual:$wgExtraSignatureNamespaces
+$wgExtraSignatureNamespaces = array( NS_MAIN, NS_HELP );
 
 # Enabled Extensions. Most extensions are enabled by including the base extension file here
 # but check specific extension documentation for more details
