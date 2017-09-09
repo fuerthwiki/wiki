@@ -12,6 +12,7 @@ return array(
     'Wikimedia\\Assert\\Test\\' => array($vendorDir . '/wikimedia/assert/tests/phpunit'),
     'Wikimedia\\Assert\\' => array($vendorDir . '/wikimedia/assert/src'),
     'Webmozart\\Assert\\' => array($vendorDir . '/webmozart/assert/src'),
+    'WNBY\\' => array($baseDir . '/extensions/WhatsNearby/src'),
     'ValueValidators\\' => array($vendorDir . '/data-values/interfaces/src/ValueValidators', $vendorDir . '/data-values/validators/src'),
     'ValueParsers\\' => array($vendorDir . '/data-values/interfaces/src/ValueParsers', $vendorDir . '/data-values/common/src/ValueParsers'),
     'ValueFormatters\\' => array($vendorDir . '/data-values/interfaces/src/ValueFormatters', $vendorDir . '/data-values/common/src/ValueFormatters'),

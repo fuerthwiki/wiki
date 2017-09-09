@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "97d1f4561841d30931604d48a5350e65",
+    "content-hash": "c277bce74eeaa6cc230bfbc2a5a25b79",
     "packages": [
         {
             "name": "composer/installers",
@@ -734,25 +734,25 @@
         },
         {
             "name": "mediawiki/maps",
-            "version": "4.2.1",
+            "version": "4.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/JeroenDeDauw/Maps.git",
-                "reference": "d985439e4c72e033c74064781ac7b20aa3ed06e5"
+                "reference": "34a6ca46b4e7d1b044154538c1642c08a4b251cd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JeroenDeDauw/Maps/zipball/d985439e4c72e033c74064781ac7b20aa3ed06e5",
-                "reference": "d985439e4c72e033c74064781ac7b20aa3ed06e5",
+                "url": "https://api.github.com/repos/JeroenDeDauw/Maps/zipball/34a6ca46b4e7d1b044154538c1642c08a4b251cd",
+                "reference": "34a6ca46b4e7d1b044154538c1642c08a4b251cd",
                 "shasum": ""
             },
             "require": {
                 "composer/installers": "^1.0.1",
-                "data-values/geo": "~2.0|~1.0",
-                "jeroen/file-fetcher": "~3.1",
+                "data-values/geo": "~2.0",
+                "jeroen/file-fetcher": "~3.1|~4.0",
                 "jeroen/simple-cache": "~2.0",
                 "mediawiki/validator": "~2.2",
-                "php": ">=5.5"
+                "php": ">=5.6"
             },
             "replace": {
                 "mediawiki/semantic-maps": "*"
@@ -767,7 +767,7 @@
             "type": "mediawiki-extension",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "4.2.x-dev"
+                    "dev-master": "4.3.x-dev"
                 }
             },
             "autoload": {
@@ -811,7 +811,7 @@
                 "mediawiki",
                 "osm"
             ],
-            "time": "2017-05-19T23:24:04+00:00"
+            "time": "2017-06-10T04:51:25+00:00"
         },
         {
             "name": "mediawiki/parser-hooks",
@@ -928,62 +928,6 @@
                 "wiki"
             ],
             "time": "2017-06-07T21:54:08+00:00"
-        },
-        {
-            "name": "mediawiki/semantic-forms",
-            "version": "3.7",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/wikimedia/mediawiki-extensions-SemanticForms.git",
-                "reference": "7e9e627853dea94d6b1344383513927fd037903b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/wikimedia/mediawiki-extensions-SemanticForms/zipball/7e9e627853dea94d6b1344383513927fd037903b",
-                "reference": "7e9e627853dea94d6b1344383513927fd037903b",
-                "shasum": ""
-            },
-            "require": {
-                "composer/installers": "1.*,>=1.0.1",
-                "php": ">=5.3.0"
-            },
-            "require-dev": {
-                "jakub-onderka/php-parallel-lint": "0.9.2"
-            },
-            "suggest": {
-                "mediawiki/open-layers": "Allow us to use ResourceLoader for OpenLayers."
-            },
-            "type": "mediawiki-extension",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.6.x-dev"
-                },
-                "installer-paths": {
-                    "../{$name}": [
-                        "mediawiki/open-layers"
-                    ]
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GPL-2.0+"
-            ],
-            "authors": [
-                {
-                    "name": "Yaron Koren",
-                    "homepage": "http://yaronkoren.com/"
-                }
-            ],
-            "description": "Forms for creating and editing wiki pages.",
-            "homepage": "https://www.mediawiki.org/wiki/Extension:Semantic_Forms",
-            "keywords": [
-                "Forms",
-                "SF",
-                "Semantic Forms",
-                "mediawiki",
-                "wiki"
-            ],
-            "time": "2016-09-07T14:11:41+00:00"
         },
         {
             "name": "mediawiki/semantic-media-wiki",
@@ -1223,6 +1167,62 @@
                 "validator"
             ],
             "time": "2016-10-10T08:33:58+00:00"
+        },
+        {
+            "name": "mediawiki/whats-nearby",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/SemanticMediaWiki/WhatsNearby.git",
+                "reference": "01f04b0f64fa8e7d751c47511a1a26b44996fadd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/SemanticMediaWiki/WhatsNearby/zipball/01f04b0f64fa8e7d751c47511a1a26b44996fadd",
+                "reference": "01f04b0f64fa8e7d751c47511a1a26b44996fadd",
+                "shasum": ""
+            },
+            "require": {
+                "composer/installers": "1.*,>=1.0.1",
+                "mediawiki/maps": "~3.5|~4.0",
+                "onoi/shared-resources": "~0.1",
+                "php": ">=5.3.0"
+            },
+            "type": "mediawiki-extension",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "DefaultSettings.php",
+                    "WhatsNearby.php"
+                ],
+                "psr-4": {
+                    "WNBY\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0+"
+            ],
+            "authors": [
+                {
+                    "name": "mwjames",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Provide geolocation information to templates",
+            "homepage": "https://www.semantic-mediawiki.org/wiki/Extension:WhatsNearby",
+            "keywords": [
+                "geolocation",
+                "maps",
+                "mediawiki",
+                "semantic queries",
+                "semantic templates"
+            ],
+            "time": "2017-08-21T05:48:01+00:00"
         },
         {
             "name": "nicmart/tree",
@@ -1932,20 +1932,20 @@
         },
         {
             "name": "symfony/css-selector",
-            "version": "v3.3.6",
+            "version": "v3.3.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/css-selector.git",
-                "reference": "4d882dced7b995d5274293039370148e291808f2"
+                "reference": "c5f5263ed231f164c58368efbce959137c7d9488"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/css-selector/zipball/4d882dced7b995d5274293039370148e291808f2",
-                "reference": "4d882dced7b995d5274293039370148e291808f2",
+                "url": "https://api.github.com/repos/symfony/css-selector/zipball/c5f5263ed231f164c58368efbce959137c7d9488",
+                "reference": "c5f5263ed231f164c58368efbce959137c7d9488",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.5.9"
+                "php": "^5.5.9|>=7.0.8"
             },
             "type": "library",
             "extra": {
@@ -1981,7 +1981,7 @@
             ],
             "description": "Symfony CssSelector Component",
             "homepage": "https://symfony.com",
-            "time": "2017-05-01T15:01:29+00:00"
+            "time": "2017-07-29T21:54:42+00:00"
         },
         {
             "name": "wikimedia/assert",
@@ -3125,22 +3125,22 @@
         },
         {
             "name": "phpspec/prophecy",
-            "version": "v1.7.0",
+            "version": "v1.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpspec/prophecy.git",
-                "reference": "93d39f1f7f9326d746203c7c056f300f7f126073"
+                "reference": "c9b8c6088acd19d769d4cc0ffa60a9fe34344bd6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/93d39f1f7f9326d746203c7c056f300f7f126073",
-                "reference": "93d39f1f7f9326d746203c7c056f300f7f126073",
+                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/c9b8c6088acd19d769d4cc0ffa60a9fe34344bd6",
+                "reference": "c9b8c6088acd19d769d4cc0ffa60a9fe34344bd6",
                 "shasum": ""
             },
             "require": {
                 "doctrine/instantiator": "^1.0.2",
                 "php": "^5.3|^7.0",
-                "phpdocumentor/reflection-docblock": "^2.0|^3.0.2",
+                "phpdocumentor/reflection-docblock": "^2.0|^3.0.2|^4.0",
                 "sebastian/comparator": "^1.1|^2.0",
                 "sebastian/recursion-context": "^1.0|^2.0|^3.0"
             },
@@ -3151,7 +3151,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.6.x-dev"
+                    "dev-master": "1.7.x-dev"
                 }
             },
             "autoload": {
@@ -3184,7 +3184,7 @@
                 "spy",
                 "stub"
             ],
-            "time": "2017-03-02T20:05:34+00:00"
+            "time": "2017-09-04T11:05:03+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -4014,20 +4014,20 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.3.6",
+            "version": "v3.3.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "ddc23324e6cfe066f3dd34a37ff494fa80b617ed"
+                "reference": "1d8c2a99c80862bdc3af94c1781bf70f86bccac0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/ddc23324e6cfe066f3dd34a37ff494fa80b617ed",
-                "reference": "ddc23324e6cfe066f3dd34a37ff494fa80b617ed",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/1d8c2a99c80862bdc3af94c1781bf70f86bccac0",
+                "reference": "1d8c2a99c80862bdc3af94c1781bf70f86bccac0",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.5.9"
+                "php": "^5.5.9|>=7.0.8"
             },
             "require-dev": {
                 "symfony/console": "~2.8|~3.0"
@@ -4065,7 +4065,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2017-07-23T12:43:26+00:00"
+            "time": "2017-07-29T21:54:42+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -4237,7 +4237,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "mediawiki/whats-nearby": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

@@ -330,6 +330,10 @@ $wgMFNearby = true;
 
 # GeoData
 require_once "$IP/extensions/GeoData/GeoData.php";
+$wgMaxCoordinatesPerPage = 100;
 
 # PageImages (add Images to "Nearby")
 require_once "$IP/extensions/PageImages/PageImages.php";
+
+# Shut off WhatsNearbys non working geoip service
+$wnbyExternalGeoipService = false;

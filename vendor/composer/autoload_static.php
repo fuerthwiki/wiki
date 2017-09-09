@@ -12,20 +12,22 @@ class ComposerStaticInit_mediawiki_vendor
         '90559502573a0d473dc66fde5c0ff7e2' => __DIR__ . '/..' . '/data-values/common/Common.php',
         '0dd9431cbbfa9ed9cb9d565d7129dbaf' => __DIR__ . '/..' . '/data-values/validators/Validators.php',
         'af3cc937b8a54e5b4209c82d6cfe8889' => __DIR__ . '/..' . '/param-processor/param-processor/DefaultConfig.php',
-        '94e265ce14c952a920a4ea5f7e8e9baa' => __DIR__ . '/..' . '/mediawiki/parser-hooks/ParserHooks.php',
         '5a04c63399fef01344b45823e301d04d' => __DIR__ . '/..' . '/onoi/shared-resources/Resources.php',
+        '94e265ce14c952a920a4ea5f7e8e9baa' => __DIR__ . '/..' . '/mediawiki/parser-hooks/ParserHooks.php',
         'f4c767faab43077fd89ff7cf99ffb4b8' => __DIR__ . '/..' . '/serialization/serialization/Serialization.php',
         'a24b5daa493ecb5e767c7d1592a8da36' => __DIR__ . '/..' . '/mediawiki/at-ease/src/Functions.php',
-        'cd9b6b6b76aed1304a64986142337d3a' => __DIR__ . '/../..' . '/extensions/SemanticMediaWiki/SemanticMediaWiki.php',
         'c3ae67574219cc56cab6c30ef8877b85' => __DIR__ . '/../..' . '/extensions/Validator/Validator.php',
         '5a494680c593293bd6035e42e2a6825c' => __DIR__ . '/..' . '/data-values/geo/Geo.php',
+        'cd9b6b6b76aed1304a64986142337d3a' => __DIR__ . '/../..' . '/extensions/SemanticMediaWiki/SemanticMediaWiki.php',
+        '9ebf2cbcc0b7687b276c44d77096b002' => __DIR__ . '/../..' . '/extensions/Maps/Maps.php',
         'c3f7f0e81464740a933532e81fa26cc7' => __DIR__ . '/..' . '/wikimedia/base-convert/src/Functions.php',
         'd55c27a601de788b19a09b7d057d07ae' => __DIR__ . '/..' . '/wikimedia/relpath/src/RelPath.php',
         'fe1bcd0336136e435eaf197895daf81a' => __DIR__ . '/..' . '/nikic/php-parser/lib/bootstrap.php',
-        '9ebf2cbcc0b7687b276c44d77096b002' => __DIR__ . '/../..' . '/extensions/Maps/Maps.php',
         '43b3c7644dd913f46db744c4ac998fef' => __DIR__ . '/../..' . '/extensions/SemanticResultFormats/SemanticResultFormats.php',
         '02d63a16591d28134871cab9deee4744' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/DefaultSettings.php',
         '49b46b7a2828914e66c76de75c8414c0' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/SemanticExtraSpecialProperties.php',
+        '3f7316cd177c514142102ba88e247cb4' => __DIR__ . '/../..' . '/extensions/WhatsNearby/DefaultSettings.php',
+        '5b8cdfb67fbb2963b8a77a0e3f67cf4d' => __DIR__ . '/../..' . '/extensions/WhatsNearby/WhatsNearby.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -40,6 +42,7 @@ class ComposerStaticInit_mediawiki_vendor
             'Wikimedia\\Assert\\Test\\' => 22,
             'Wikimedia\\Assert\\' => 17,
             'Webmozart\\Assert\\' => 17,
+            'WNBY\\' => 5,
         ),
         'V' => 
         array (
@@ -131,6 +134,10 @@ class ComposerStaticInit_mediawiki_vendor
         'Webmozart\\Assert\\' => 
         array (
             0 => __DIR__ . '/..' . '/webmozart/assert/src',
+        ),
+        'WNBY\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/extensions/WhatsNearby/src',
         ),
         'ValueValidators\\' => 
         array (
@@ -790,7 +797,6 @@ class ComposerStaticInit_mediawiki_vendor
         'Maps\\ImageOverlayParser' => __DIR__ . '/../..' . '/extensions/Maps/includes/parsers/ImageOverlayParser.php',
         'Maps\\LineParser' => __DIR__ . '/../..' . '/extensions/Maps/includes/parsers/LineParser.php',
         'Maps\\LocationParser' => __DIR__ . '/../..' . '/extensions/Maps/includes/parsers/LocationParser.php',
-        'Maps\\OptionsObject' => __DIR__ . '/../..' . '/extensions/Maps/includes/Element.php',
         'Maps\\PolygonParser' => __DIR__ . '/../..' . '/extensions/Maps/includes/parsers/PolygonParser.php',
         'Maps\\RectangleParser' => __DIR__ . '/../..' . '/extensions/Maps/includes/parsers/RectangleParser.php',
         'Maps\\SemanticMaps' => __DIR__ . '/../..' . '/extensions/Maps/src/SemanticMaps.php',
@@ -1611,6 +1617,7 @@ class ComposerStaticInit_mediawiki_vendor
         'Psr\\Log\\Test\\LoggerInterfaceTest' => __DIR__ . '/..' . '/psr/log/Psr/Log/Test/LoggerInterfaceTest.php',
         'RunningStat\\PSquare' => __DIR__ . '/..' . '/wikimedia/running-stat/src/PSquare.php',
         'RunningStat\\RunningStat' => __DIR__ . '/..' . '/wikimedia/running-stat/src/RunningStat.php',
+        'SESP\\Annotator\\BaseAnnotator' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/Annotator/BaseAnnotator.php',
         'SESP\\Annotator\\ExifDataAnnotator' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/Annotator/ExifDataAnnotator.php',
         'SESP\\Annotator\\ExtraPropertyAnnotator' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/Annotator/ExtraPropertyAnnotator.php',
         'SESP\\Annotator\\ShortUrlAnnotator' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/Annotator/ShortUrlAnnotator.php',
@@ -1619,6 +1626,7 @@ class ComposerStaticInit_mediawiki_vendor
         'SESP\\Definition\\DefinitionReader' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/Definition/DefinitionReader.php',
         'SESP\\HookRegistry' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/HookRegistry.php',
         'SESP\\PropertyRegistry' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/PropertyRegistry.php',
+        'SESP\\Setup' => __DIR__ . '/../..' . '/extensions/SemanticExtraSpecialProperties/src/Setup.php',
         'SMKMLPrinter' => __DIR__ . '/../..' . '/extensions/Maps/SemanticMaps/src/queryprinters/SM_KMLPrinter.php',
         'SMMapPrinter' => __DIR__ . '/../..' . '/extensions/Maps/SemanticMaps/src/queryprinters/SM_MapPrinter.php',
         'SMQueryHandler' => __DIR__ . '/../..' . '/extensions/Maps/SemanticMaps/src/queryprinters/SM_QueryHandler.php',
@@ -2548,6 +2556,9 @@ class ComposerStaticInit_mediawiki_vendor
         'ValueValidators\\TitleValidator' => __DIR__ . '/..' . '/data-values/validators/src/TitleValidator.php',
         'ValueValidators\\ValueValidator' => __DIR__ . '/..' . '/data-values/interfaces/src/ValueValidators/ValueValidator.php',
         'ValueValidators\\ValueValidatorObject' => __DIR__ . '/..' . '/data-values/interfaces/src/ValueValidators/ValueValidatorObject.php',
+        'WNBY\\HookRegistry' => __DIR__ . '/../..' . '/extensions/WhatsNearby/src/HookRegistry.php',
+        'WNBY\\NearbyParserFunction' => __DIR__ . '/../..' . '/extensions/WhatsNearby/src/NearbyParserFunction.php',
+        'WNBY\\ParserFunctionFactory' => __DIR__ . '/../..' . '/extensions/WhatsNearby/src/ParserFunctionFactory.php',
         'Webmozart\\Assert\\Assert' => __DIR__ . '/..' . '/webmozart/assert/src/Assert.php',
         'Wikimedia\\Assert\\Assert' => __DIR__ . '/..' . '/wikimedia/assert/src/Assert.php',
         'Wikimedia\\Assert\\AssertionException' => __DIR__ . '/..' . '/wikimedia/assert/src/AssertionException.php',
