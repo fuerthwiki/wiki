@@ -34,6 +34,7 @@ $wgSitename      = "FürthWiki";
 ## http://www.mediawiki.org/wiki/Manual:Short_URL
 $wgScriptPath       = "/wiki";
 $wgScriptExtension  = ".php";
+$wgArticlePath      = "{$wgScriptPath}/index.php/$1";
 
 ## The protocol and server name to use in fully-qualified URLs
 $wgServer           = $SECRET_wgServer;
