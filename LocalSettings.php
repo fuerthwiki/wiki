@@ -345,3 +345,10 @@ $wnbyExternalGeoipService = false;
 ## custom extension to add special-pages to the mobile menu
 ## see https://github.com/mojoaxel/MobileSpecialPages
 wfLoadExtension( 'MobileSpecialPages' );
+$wgMobileSpecialPages['discovery'] = array(
+	'RECENTCHANGES' => array(),
+	'IMAGELIST' => array()
+);
+$wgMobileSpecialPages['sitelinks'] = array(
+	'verein' => array('Förderverein', '/verein/')
+);
