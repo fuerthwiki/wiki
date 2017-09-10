@@ -1,3 +1,6 @@
 [submodule "extensions/MobileFrontend"]
 	path = extensions/MobileFrontend
 	url = git@bitbucket.org:FuerthWiki/mobilefrontend.git
+[submodule "extensions/MobileSpecialPages"]
+	path = extensions/MobileSpecialPages
+	url = git@github.com:mojoaxel/MobileSpecialPages.git

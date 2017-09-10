@@ -341,3 +341,7 @@ require_once "$IP/extensions/PageImages/PageImages.php";
 
 # Shut off WhatsNearbys non working geoip service
 $wnbyExternalGeoipService = false;
+
+## custom extension to add special-pages to the mobile menu
+## see https://github.com/mojoaxel/MobileSpecialPages
+wfLoadExtension( 'MobileSpecialPages' );
