@@ -350,5 +350,6 @@ $wgMobileSpecialPages['discovery'] = array(
 	'IMAGELIST' => array()
 );
 $wgMobileSpecialPages['sitelinks'] = array(
-	'verein' => array('Förderverein', '/verein/')
+	'verein' => array('Förderverein', '/verein/'),
+	'contact' => array('Kontakt', 'mailto:vorstand@fuerthwiki.de')
 );
