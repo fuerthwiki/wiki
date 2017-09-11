@@ -1,0 +1,48 @@
+{
+  "name": "Stadtwiki Fürth",
+  "short_name": "FürthWiki",
+  "description": "Ein Stadtwiki für Fürth in Bayern",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/wiki/",
+  "start_url": "/wiki/index.php/Hauptseite?mobileaction=toggle_view_mobile",
+  "theme_color": "#060",
+  "background_color": "#FFF",
+  "icons": [{
+    "src": "/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=48",
+    "sizes": "48x48",
+    "type": "image/png"
+  }, {
+    "src": "/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=72",
+    "sizes": "72x72",
+    "type": "image/png"
+  }, {
+    "src": "/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=96",
+    "sizes": "96x96",
+    "type": "image/png"
+  }, {
+    "src": "/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=128",
+    "sizes": "128x128",
+    "type": "image/png"
+  }, {
+    "src": "/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=144",
+    "sizes": "144x144",
+    "type": "image/png"
+  }, {
+    "src": "/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=168",
+    "sizes": "168x168",
+    "type": "image/png"
+  }, {
+    "src": "/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=192",
+    "sizes": "192x192",
+    "type": "image/png"
+  }, {
+    "src": "/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=256",
+    "sizes": "256x256",
+    "type": "image/png"
+  }, {
+    "src": "/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=600",
+    "sizes": "600x600",
+    "type": "image/png"
+  }]
+}

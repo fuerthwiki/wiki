@@ -38,6 +38,7 @@ $wgArticlePath      = "{$wgScriptPath}/index.php/$1";
 
 ## The protocol and server name to use in fully-qualified URLs
 $wgServer           = $SECRET_wgServer;
+$wgCanonicalServer = 'https:$SECRET_wgServer';
 
 ## Wiki editor by default
 $wgDefaultUserOptions['usebetatoolbar'] = 1;
@@ -353,3 +354,28 @@ $wgMobileSpecialPages['sitelinks'] = array(
 	'verein' => array('Förderverein', '/verein/'),
 	'contact' => array('Kontakt', 'mailto:vorstand@fuerthwiki.de')
 );
+
+## Web App settings
+## see https://bitbucket.org/FuerthWiki/wiki/issues/47
+$wgHooks['BeforePageDisplayMobile'][] = 'addAppIcons';
+function addAppIcons( OutputPage &$out, Skin &$skin ) {
+	$out->addMeta('viewport', 'width=device-width');
+	$out->addMeta('mobile-web-app-capable', 'yes');
+
+	$out->addLink(array("rel"=>"icon", "sizes"=>"128x128", "href"=>"/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=128"));
+	$out->addLink(array("rel"=>"icon", "sizes"=>"192x192", "href"=>"/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=192"));
+
+	$out->addLink(array("rel"=>"apple-touch-icon", "sizes"=>"128x128", "href"=>"/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=128"));
+	$out->addLink(array("rel"=>"apple-touch-icon-precomposed", "sizes"=>"128x128", "href"=>"/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=128"));
+};
+$wgHooks['BeforePageDisplay'][] = 'addWebAppManifest';
+function addWebAppManifest( OutputPage &$out, Skin &$skin ) {
+	## change theme color for mobile browsers
+	$out->addMeta('theme-color', '#060');
+
+	## Add a link to the Web App manifest to the page-header
+	$linkarr['rel'] = 'manifest';
+	$linkarr['href'] = '/wiki/manifest.json';
+	$out->addLink( $linkarr );
+	return true;
+};
