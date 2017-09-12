@@ -333,10 +333,6 @@ wfLoadExtension( 'MobileFrontend' );
 $wgMFAutodetectMobileView = false;
 $wgMFNearby = true;
 
-# GeoData
-require_once "$IP/extensions/GeoData/GeoData.php";
-$wgMaxCoordinatesPerPage = 100;
-
 # PageImages (add Images to "Nearby")
 require_once "$IP/extensions/PageImages/PageImages.php";
 
@@ -347,7 +343,15 @@ $wnbyExternalGeoipService = false;
 ## see https://github.com/mojoaxel/MobileSpecialPages
 wfLoadExtension( 'MobileSpecialPages' );
 $wgMobileSpecialPages['discovery'] = array(
+	// Add "In der Nähe" entry using the css-classes from the original nearby entry.
+	'nearme' => array(
+		'In der Nähe',
+		'/wiki/index.php/FürthWiki:In_der_Nähe',
+		'mw-ui-icon mw-ui-icon-before mw-ui-icon-nearby nearme'
+	),
+	// Enable the custom entry "Spezial:Letzte_Änderungen"
 	'RECENTCHANGES' => array(),
+	// Enable the custom entry "Spezial:Dateien"
 	'IMAGELIST' => array()
 );
 $wgMobileSpecialPages['sitelinks'] = array(
