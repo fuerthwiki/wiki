@@ -4,3 +4,6 @@
 [submodule "extensions/MobileSpecialPages"]
 	path = extensions/MobileSpecialPages
 	url = git@github.com:mojoaxel/MobileSpecialPages.git
+[submodule "extensions/ProgressiveWebApp"]
+	path = extensions/ProgressiveWebApp
+	url = git@github.com:mojoaxel/ProgressiveWebApp.git
