@@ -1,9 +1,12 @@
 [submodule "extensions/MobileFrontend"]
 	path = extensions/MobileFrontend
-	url = git@bitbucket.org:FuerthWiki/mobilefrontend.git
+	url = git@github.com:fuerthwiki/MobileFrontend.git
 [submodule "extensions/MobileSpecialPages"]
 	path = extensions/MobileSpecialPages
-	url = git@github.com:mojoaxel/MobileSpecialPages.git
+	url = git@github.com:fuerthwiki/MobileSpecialPages.git
 [submodule "extensions/ProgressiveWebApp"]
 	path = extensions/ProgressiveWebApp
-	url = git@github.com:mojoaxel/ProgressiveWebApp.git
+	url = git@github.com:fuerthwiki/ProgressiveWebApp.git
+[submodule "extensions/WhatsNearby"]
+	path = extensions/WhatsNearby
+	url = git@github.com:fuerthwiki/WhatsNearby.git
