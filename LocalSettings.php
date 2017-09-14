@@ -38,7 +38,7 @@ $wgArticlePath      = "{$wgScriptPath}/index.php/$1";
 
 ## The protocol and server name to use in fully-qualified URLs
 $wgServer           = $SECRET_wgServer;
-$wgCanonicalServer = 'https:$SECRET_wgServer';
+$wgCanonicalServer = 'https:'.$SECRET_wgServer;
 
 ## Wiki editor by default
 $wgDefaultUserOptions['usebetatoolbar'] = 1;
@@ -363,14 +363,68 @@ $wgMobileSpecialPages['sitelinks'] = array(
 ## see https://bitbucket.org/FuerthWiki/wiki/issues/47
 $wgHooks['BeforePageDisplayMobile'][] = 'addAppIcons';
 function addAppIcons( OutputPage &$out, Skin &$skin ) {
-	$out->addMeta('viewport', 'width=device-width');
+	$out->addMeta('viewport', 'initial-scale=1,minimum-scale=1,maximum-scale=1');
 	$out->addMeta('mobile-web-app-capable', 'yes');
+	$out->addMeta('apple-mobile-web-app-capable', 'yes');
+	$out->addMeta('apple-mobile-web-app-status-bar-style', 'black');
+	$out->addMeta('format-detection', 'telephone=no');
+	$out->addMeta('apple-mobile-web-app-title', 'FürthWiki');
 
-	$out->addLink(array("rel"=>"icon", "sizes"=>"128x128", "href"=>"/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=128"));
-	$out->addLink(array("rel"=>"icon", "sizes"=>"192x192", "href"=>"/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=192"));
 
-	$out->addLink(array("rel"=>"apple-touch-icon", "sizes"=>"128x128", "href"=>"/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=128"));
-	$out->addLink(array("rel"=>"apple-touch-icon-precomposed", "sizes"=>"128x128", "href"=>"/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=128"));
+	function getIconUrl($size) {
+		return "/wiki/thumb.php?f=Logo_F%C3%BCrthWiki_withBackground.png&width=".$size;
+	}
+
+	function addIconLink($rel, $size) {
+		$out->addLink(array(
+			"rel" => $rel,
+			"sizes" => $size."x".$size,
+			"href" => getIconUrl($size)
+		));
+	}
+
+	function addStartupimageLink($rel, $media) {
+		$out->addLink(array(
+			"rel" => $rel,
+			"media" => $media,
+			"href" => getIconUrl($size)
+		));
+	}
+
+	function addIconLinks($rel, $sizes) {
+		foreach ($sizes as $size) addIconLink($rel, $size);
+	}
+
+	function addStartupimageLinks($rel, $sizes) {
+		foreach ($sizes as $size) addIconLink($rel, $size);
+	}
+
+	addIconLinks("icon", [ 192, 128 ]);
+	addIconLinks("apple-touch-icon-precomposed", [ 152, 144, 128, 114, 72, 57 ]);
+	addIconLinks("apple-touch-icon", [ 196, 180, 152, 144, 128, 120, 114, 76, 72, 60, 57 ]);
+
+
+	$out->addLink(array("rel"=>"apple-touch-startup-image" "href"=>"/launch.png">
+
+	// iPhone SPLASHSCREEN-->
+	$out->addLink(array("rel"=>"apple-touch-startup-image" "href"=>"apple-touch-startup-image-320x460.png" media="(device-width: 320px)" >
+	// iPhone (Retina) SPLASHSCREEN-->
+	$out->addLink(array("rel"=>"apple-touch-startup-image" "href"=>"apple-touch-startup-image-640x920.png" media="(device-width: 320px) and (device-height: 460px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image">
+	// iPhone 5 (Retina) SPLASHSCREEN-->
+	$out->addLink(array("rel"=>"apple-touch-startup-image" "href"=>"apple-touch-startup-image-640x1096.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" rel="apple-touch-startup-image">
+	// iPad (non-Retina) (Portrait)
+	$out->addLink(array("rel"=>"apple-touch-startup-image" "href"=>"apple-touch-startup-image-768x1004.png" media="screen and (min-device-width: 481px) and (max-device-width: 1024px) and (orientation:portrait)" rel="apple-touch-startup-image" />
+	// iPad (non-Retina) (Landscape)
+	$out->addLink(array("rel"=>"apple-touch-startup-image" "href"=>"apple-touch-startup-image-1024x748.png" media="screen and (min-device-width: 481px) and (max-device-width: 1024px) and (orientation:landscape)" rel="apple-touch-startup-image" />
+	// iPad (Retina) (Portrait)
+	$out->addLink(array("rel"=>"apple-touch-startup-image" "href"=>"apple-touch-startup-image-1536x2008.png" media="screen and (min-device-width: 481px) and (max-device-width: 1024px) and (orientation:portrait) and (-webkit-min-device-pixel-ratio: 2)" rel="apple-touch-startup-image" />
+	// iPad (Retina) (Landscape)
+	$out->addLink(array("rel"=>"apple-touch-startup-image" "href"=>"apple-touch-startup-image-2048x1496.png" media="screen and (min-device-width: 481px) and (max-device-width: 1024px) and (orientation:landscape) and (-webkit-min-device-pixel-ratio: 2)" rel="apple-touch-startup-image" />
+
+
+
+
+
 };
 $wgHooks['BeforePageDisplay'][] = 'addWebAppManifest';
 function addWebAppManifest( OutputPage &$out, Skin &$skin ) {
