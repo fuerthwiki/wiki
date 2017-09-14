@@ -25,7 +25,7 @@ $specialPageAliases['ar'] = array(
 	'ProofreadIndexOaiSchema' => array( 'سكيما_فهرس_تصحيح_أو_إيه_آي' ),
 );
 
-/** Egyptian Spoken Arabic (مصرى) */
+/** Egyptian Arabic (مصرى) */
 $specialPageAliases['arz'] = array(
 	'IndexPages' => array( 'صفحات_الفهرس' ),
 	'PagesWithoutScans' => array( 'صفحات_من_غير_فحص' ),
@@ -36,6 +36,12 @@ $specialPageAliases['arz'] = array(
 /** Assamese (অসমীয়া) */
 $specialPageAliases['as'] = array(
 	'IndexPages' => array( 'সমল_পৃষ্ঠাসমূহ' ),
+);
+
+/** Western Balochi (بلوچی رخشانی) */
+$specialPageAliases['bgn'] = array(
+	'IndexPages' => array( 'تاکدیمانی_لڑلیست' ),
+	'PagesWithoutScans' => array( 'بی_سکن_ئین_دیمان' ),
 );
 
 /** Breton (brezhoneg) */
@@ -59,8 +65,10 @@ $specialPageAliases['de'] = array(
 
 /** Zazaki (Zazaki) */
 $specialPageAliases['diq'] = array(
-	'IndexPages' => array( 'Pelaİndeks' ),
-	'PagesWithoutScans' => array( 'PeréBéCıgeyrayışi' ),
+	'IndexPages' => array( 'Perraİndeks' ),
+	'PagesWithoutScans' => array( 'PerréBéCıgeyrayışi' ),
+	'ProofreadIndexOai' => array( 'TimarkerdışaİndeksOai' ),
+	'ProofreadIndexOaiSchema' => array( 'TimarkerdışaİndeksOaiŞema' ),
 );
 
 /** Estonian (eesti) */
@@ -116,6 +124,7 @@ $specialPageAliases['ko'] = array(
 $specialPageAliases['lb'] = array(
 	'IndexPages' => array( 'Säiten_indexéieren' ),
 	'PagesWithoutScans' => array( 'Säiten_ouni_Scan' ),
+	'ProofreadIndexOai' => array( 'Index_iwwerliesen' ),
 );
 
 /** Macedonian (македонски) */
@@ -150,6 +159,12 @@ $specialPageAliases['nl'] = array(
 	'PagesWithoutScans' => array( 'PaginasZonderScans', 'Pagina\'sZonderScans' ),
 );
 
+/** Portuguese (português) */
+$specialPageAliases['pt'] = array(
+	'IndexPages' => array( 'Páginas_índice' ),
+	'PagesWithoutScans' => array( 'Páginas_sem_digitalizações' ),
+);
+
 /** Sicilian (sicilianu) */
 $specialPageAliases['scn'] = array(
 	'IndexPages' => array( 'PagineIndicizzate' ),
@@ -167,7 +182,7 @@ $specialPageAliases['tr'] = array(
 	'PagesWithoutScans' => array( 'TaramasızSayfalar' ),
 );
 
-/** vèneto (vèneto) */
+/** Venetian (vèneto) */
 $specialPageAliases['vec'] = array(
 	'IndexPages' => array( 'PagineDeIndice' ),
 	'PagesWithoutScans' => array( 'PagineSensaScansion' ),

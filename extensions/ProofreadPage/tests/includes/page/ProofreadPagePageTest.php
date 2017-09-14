@@ -1,5 +1,7 @@
 <?php
 
+use ProofreadPage\Page\PageContent;
+
 /**
  * @group ProofreadPage
  * @covers ProofreadPagePage
@@ -9,7 +11,7 @@ class ProofreadPagePageTest extends ProofreadPageTestCase {
 	/**
 	 * Constructor of a new ProofreadPagePage
 	 * @param $title Title|string
-	 * @param $content ProofreadPageContent|null
+	 * @param $content PageContent|null
 	 * @param $index ProofreadIndexPage|null
 	 * @return ProofreadPagePage
 	 */
@@ -18,6 +20,16 @@ class ProofreadPagePageTest extends ProofreadPageTestCase {
 			$title = Title::makeTitle( 250, $title );
 		}
 		return new ProofreadPagePage( $title, $index );
+	}
+
+	public function testEquals() {
+		$page = self::newPagePage( 'Test.djvu' );
+		$page2 = self::newPagePage( 'Test.djvu' );
+		$page3 = self::newPagePage( 'Test2.djvu' );
+		$this->assertTrue( $page->equals( $page2 ) );
+		$this->assertTrue( $page2->equals( $page ) );
+		$this->assertFalse( $page->equals( $page3 ) );
+		$this->assertFalse( $page3->equals( $page ) );
 	}
 
 	public function testGetTitle() {

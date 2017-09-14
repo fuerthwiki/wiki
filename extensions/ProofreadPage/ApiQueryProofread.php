@@ -54,7 +54,7 @@ class ApiQueryProofread extends ApiQueryBase {
 		$qualityLevels = array_flip( $qualityCategories );
 
 		// <Reedy> johnduhart, it'd seem sane rather than duplicating the functionality
-		$params = new FauxRequest( array(
+		$params = new DerivativeRequest( $this->getRequest(), array(
 			'action' => 'query',
 			'prop' => 'categories',
 			'pageids' => implode( '|', $pageIds ),
@@ -64,7 +64,15 @@ class ApiQueryProofread extends ApiQueryBase {
 
 		$api = new ApiMain($params);
 		$api->execute();
-		$data = $api->getResultData();
+		if ( defined( 'ApiResult::META_CONTENT' ) ) {
+			$data = $api->getResult()->getResultData();
+			$pages = ApiResult::stripMetadataNonRecursive(
+				(array)$data['query']['pages']
+			);
+		} else {
+			$data = $api->getResultData();
+			$pages = $data['query']['pages'];
+		}
 		unset( $api );
 
 		if ( array_key_exists( 'error', $data ) ) {
@@ -72,7 +80,7 @@ class ApiQueryProofread extends ApiQueryBase {
 		}
 
 		$result = $this->getResult();
-		foreach ( $data['query']['pages'] as $pageid => $data) {
+		foreach ( $pages as $pageid => $data) {
 			if ( !array_key_exists( 'categories', $data ) ) {
 				continue;
 			}
@@ -99,17 +107,29 @@ class ApiQueryProofread extends ApiQueryBase {
 		return array();
 	}
 
+	/**
+	 * @deprecated since MediaWiki core 1.25
+	 */
 	public function getDescription() {
 		return 'Returns information about the current proofread status of the given pages.';
 	}
 
+	/**
+	 * @deprecated since MediaWiki core 1.25
+	 */
 	public function getExamples() {
 		return array(
 			'api.php?action=query&generator=allpages&gapnamespace=' . ProofreadPage::getPageNamespaceId() . '&prop=proofread'
 		);
 	}
 
-	public function getVersion() {
-		return __CLASS__ . ': $Id$';
+	/**
+	 * @see ApiBase::getExamplesMessages()
+	 */
+	protected function getExamplesMessages() {
+		return array(
+			'action=query&generator=allpages&gapnamespace=250&prop=proofread'
+				=> 'apihelp-query+proofread-example-1',
+		);
 	}
 }

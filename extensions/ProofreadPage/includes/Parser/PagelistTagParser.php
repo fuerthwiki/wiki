@@ -2,8 +2,12 @@
 
 namespace ProofreadPage\Parser;
 
+use ProofreadIndexPage;
 use ProofreadPage;
-use Title;
+use ProofreadPage\FileNotFoundException;
+use ProofreadPage\Pagination\FilePagination;
+use ProofreadPage\Pagination\PageList;
+use ProofreadPage\Pagination\PageNumber;
 
 /**
  * @licence GNU GPL v2+
@@ -17,60 +21,64 @@ class PagelistTagParser extends TagParser {
 	 */
 	public function render( $input, array $args ) {
 		$title = $this->parser->getTitle();
-		if ( !$title->inNamespace( ProofreadPage::getIndexNamespaceId() ) ) {
+		if ( !$title->inNamespace( $this->context->getIndexNamespaceId() ) ) {
 			return '';
 		}
-		$imageTitle = Title::makeTitleSafe( NS_IMAGE, $title->getText() );
-		if ( !$imageTitle ) {
-			return '<strong class="error">' . wfMessage( 'proofreadpage_nosuch_file' )->inContentLanguage()->escaped() . '</strong>';
+		$index = ProofreadIndexPage::newFromTitle( $title );
+		$pageList = new PageList( $args );
+		try {
+			$image = $this->context->getFileProvider()->getForIndexPage( $index );
+		} catch( FileNotFoundException $e ) {
+			return $this->formatError( 'proofreadpage_nosuch_file' );
+		}
+		if( !$image->isMultipage() ) {
+			return $this->formatError( 'proofreadpage_nosuch_file' );
 		}
 
-		$image = wfFindFile( $imageTitle );
-		if ( !( $image && $image->isMultipage() && $image->pageCount() ) ) {
-			return '<strong class="error">' . wfMessage( 'proofreadpage_nosuch_file' )->inContentLanguage()->escaped() . '</strong>';
-		}
+		$pagination = new FilePagination( $index, $pageList, $image, $this->context );
+		$count = $pagination->getNumberOfPages();
 
 		$return = '';
-
-		$name = $imageTitle->getDBkey();
-		$count = $image->pageCount();
-
 		$from = array_key_exists( 'from', $args ) ? $args['from'] : 1;
 		$to = array_key_exists( 'to', $args ) ? $args['to'] : $count;
 
 		if( !is_numeric( $from ) || !is_numeric( $to ) ) {
-			return '<strong class="error">' . wfMessage( 'proofreadpage_number_expected' )->inContentLanguage()->escaped() . '</strong>';
+			return $this->formatError( 'proofreadpage_number_expected' );
 		}
 		if( ( $from > $to ) || ( $from < 1 ) || ( $to < 1 ) || ( $to > $count ) ) {
-			return '<strong class="error">' . wfMessage( 'proofreadpage_invalid_interval' )->inContentLanguage()->escaped() . '</strong>';
+			return $this->formatError( 'proofreadpage_invalid_interval' );
 		}
 
-		for ( $i = $from; $i < $to + 1; $i++ ) {
-			list( $view, $links, $mode ) = ProofreadPage::pageNumber( $i, $args );
+		for ( $i = $from; $i <= $to; $i++ ) {
+			$pageNumber = $pagination->getDisplayedPageNumber( $i );
+			$mode = $pageNumber->getDisplayMode();
+			$view = $pageNumber->getFormattedPageNumber( $title->getPageLanguage() );
 
-			if ( $mode == 'highroman' || $mode == 'roman' ) {
+			if (
+				$mode === PageNumber::DISPLAY_HIGHROMAN ||
+				$mode === PageNumber::DISPLAY_ROMAN
+			) {
 				$view = '&#160;' . $view;
 			}
 
-			$n = strlen( $count ) - mb_strlen( $view );
-			$language = $this->parser->getTargetLanguage();
-			if ( $n && ( $mode == 'normal' || $mode == 'empty' ) ) {
+			$paddingSize = strlen( $count ) - mb_strlen( $view );
+			if ( $paddingSize > 0 && $mode == PageNumber::DISPLAY_NORMAL && $pageNumber->isNumeric() ) {
 				$txt = '<span style="visibility:hidden;">';
-				$pad = $language->formatNum( 0, true );
-				for ( $j = 0; $j < $n; $j++ ) {
-					$txt = $txt . $pad;
+				$pad = $title->getPageLanguage()->formatNum( 0, true );
+				for ( $j = 0; $j < $paddingSize; $j++ ) {
+					$txt .= $pad;
 				}
 				$view = $txt . '</span>' . $view;
 			}
-			$title = ProofreadPage::getPageTitle( $name, $i );
+			$pageTitle = $pagination->getPage( $i )->getTitle();
 
-			if ( !$links || !$title ) {
+			if ( $pageNumber->isEmpty() || !$title ) {
 				$return .= $view . ' ';
 			} else {
-				$return .= '[[' . $title->getPrefixedText() . '|' . $view . ']] ';
+				$return .= '[[' . $pageTitle->getPrefixedText() . '|' . $view . ']] '; //TODO: use linker?
 			}
 		}
-		$return = $this->parser->recursiveTagParse( $return );
-		return $return;
+
+		return trim( $this->parser->recursiveTagParse( $return ) );
 	}
 }

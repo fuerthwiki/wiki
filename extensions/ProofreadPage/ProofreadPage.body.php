@@ -21,6 +21,8 @@
 
 use ProofreadPage\Context;
 use ProofreadPage\Page\PageContentBuilder;
+use ProofreadPage\FileNotFoundException;
+use ProofreadPage\Pagination\PageNotInPaginationException;
 
 /*
  @todo :
@@ -65,28 +67,6 @@ class ProofreadPage {
 			);
 		}
 		return $res;
-	}
-
-	/**
-	 * Returns titles of a page namespace page from name of scan and page number
-	 * If the title with an internationalized number doesn't exist and a page with
-	 * arabic number exists, the title for the arabic number is returned
-	 * @param $scan string scan name
-	 * @param $number int page number
-	 * @return Title|null
-	 */
-	public static function getPageTitle( $scan, $number ) {
-		global $wgContLang;
-
-		$i18nNumber = $wgContLang->formatNum( $number, true );
-		$title = Title::makeTitleSafe( self::getPageNamespaceId(), $scan . '/' . $i18nNumber );
-		if ( $i18nNumber != $number && !$title->exists() ) {
-			$arabicTitle = Title::makeTitleSafe( self::getPageNamespaceId(), $scan . '/' . $number );
-			if ( $arabicTitle->exists() ) {
-				return $arabicTitle;
-			}
-		}
-		return $title;
 	}
 
 	/**
@@ -141,6 +121,7 @@ class ProofreadPage {
 	public static function onParserFirstCallInit( Parser $parser ) {
 		$parser->setHook( 'pagelist', array( 'ProofreadPage\Parser\ParserEntryPoint', 'renderPagelistTag' ) );
 		$parser->setHook( 'pages', array( 'ProofreadPage\Parser\ParserEntryPoint', 'renderPagesTag' ) );
+		$parser->setHook( 'pagequality', array( 'ProofreadPage\Parser\ParserEntryPoint', 'renderPagequalityTag' ) );
 		return true;
 	}
 
@@ -287,67 +268,6 @@ class ProofreadPage {
 		$link = Linker::link( $title, $out->msg( 'proofreadpage_image_message' )->text(), array(), array(), 'known' );
 		$out->addHTML( $link );
 		return true;
-	}
-
-	/**
-	 * @param $i int
-	 * @param $args array
-	 * @return array
-	 */
-	public static function pageNumber( $i, $args ) {
-		global $wgContLang;
-		$mode = 'normal'; // default
-		$offset = 0;
-		$links = true;
-		foreach ( $args as $num => $param ) {
-			if ( ( preg_match( "/^([0-9]*)to([0-9]*)$/", $num, $m ) && ( $i >= $m[1] && $i <= $m[2] ) )
-			     || ( is_numeric( $num ) && ( $i == $num ) ) ) {
-				$params = explode( ';', $param );
-				foreach ( $params as $iparam ) {
-					switch( $iparam ) {
-					case 'roman':
-						$mode = 'roman';
-						break;
-					case 'highroman':
-						$mode = 'highroman';
-						break;
-					case 'empty':
-						$links = false;
-						break;
-					default:
-						if ( !is_numeric( $iparam ) ) {
-							$mode = $iparam;
-						}
-					}
-				}
-			}
-
-			if ( is_numeric( $num ) && ( $i >= $num ) )  {
-				$params = explode( ';', $param );
-				foreach ( $params as $iparam ) {
-					if ( is_numeric( $iparam ) ) {
-						$offset = $num - $iparam;
-					}
-				}
-			}
-
-		}
-		$view = ( $i - $offset );
-		switch( $mode ) {
-		case 'highroman':
-			$view = Language::romanNumeral( $view );
-			break;
-		case 'roman':
-				$view = strtolower( Language::romanNumeral( $view ) );
-			break;
-		case 'normal':
-		case 'empty':
-			$view = '' . $wgContLang->formatNum( $view, true );
-			break;
-		default:
-			$view = $mode;
-		}
-		return array( $view, $links, $mode );
 	}
 
 	/**
@@ -528,34 +448,15 @@ class ProofreadPage {
 	public static function updatePrIndex( $index, $deletedPage = null ) {
 		$indexTitle = $index->getTitle();
 		$indexId = $index->getID();
-		$pageNamespaceId = self::getPageNamespaceId();
-
-		$n = 0;
 
 		// read the list of pages
 		$pages = array();
-		list( $links, $params ) = ProofreadIndexPage::newFromTitle( $indexTitle )->getPages();
-		if( $links == null ) {
-			$imageTitle = Title::makeTitleSafe( NS_IMAGE, $indexTitle->getText() );
-			if ( $imageTitle ) {
-				$image = wfFindFile( $imageTitle );
-				if ( $image && $image->isMultipage() && $image->pageCount() ) {
-					$n = $image->pageCount();
-					for ( $i = 1; $i <= $n; $i++ ) {
-						$page = self::getPageTitle( $indexTitle->getText(), $i );
-						if( $page !== null && ( $deletedPage === null || !$page->equals( $deletedPage ) ) ) {
-							array_push( $pages, $page->getDBKey() );
-						}
-					}
-				}
-			}
-		} else {
-			$n = count( $links );
-			for ( $i = 0; $i < $n; $i++ ) {
-				$page = $links[$i][0];
-				if( $deletedPage === null || !$page->equals( $deletedPage ) ) {
-					array_push( $pages, $page->getDBKey() );
-				}
+		$pagination = Context::getDefaultContext()->getPaginationFactory()->getPaginationForIndexPage(
+			ProofreadIndexPage::newFromTitle( $indexTitle )
+		);
+		foreach( $pagination as $page ) {
+			if ( $deletedPage === null || !$page->getTitle()->equals( $deletedPage ) ) {
+				array_push( $pages, $page->getTitle()->getDBKey() );
 			}
 		}
 
@@ -583,7 +484,7 @@ class ProofreadPage {
 		$n4 = ProofreadPageDbConnector::queryCount( $queryArr, 'proofreadpage_quality4_category' );
 		$n1 = $total - $n0 - $n2 - $n3 - $n4;
 
-		$replace = ProofreadIndexDbConnector::setIndexData( $n, $n0, $n1, $n2, $n3, $n4, $indexId );
+		ProofreadIndexDbConnector::setIndexData( $pagination->getNumberOfPages(), $n0, $n1, $n2, $n3, $n4, $indexId );
 	}
 
 	/**
@@ -607,6 +508,8 @@ class ProofreadPage {
 		$indextitle = ProofreadPageDbConnector::getIndexTitleForPageId( $id );
 
 		if( isset( $out->is_toc ) && $out->is_toc ) {
+			$n = 0;
+
 			if ( $indextitle ) {
 				$row = ProofreadIndexDbConnector::getIndexDataFromIndexTitle( $indextitle );
 				if( $row ) {
@@ -664,16 +567,18 @@ class ProofreadPage {
 		$q3 = $n3 * 100 / $n;
 		$q4 = $n4 * 100 / $n;
 		$qe = $ne * 100 / $n;
-		$void_cell = $ne ? "<td align=center style='border-style:dotted;border-width:1px;' width=\"{$qe}\"></td>" : '';
-		$output = "<table class=\"pr_quality\" style=\"line-height:40%;\" border=0 cellpadding=0 cellspacing=0 ><tr>
-<td align=center >&#160;</td>
-<td align=center class='quality4' width=\"$q4\"></td>
-<td align=center class='quality3' width=\"$q3\"></td>
-<td align=center class='quality2' width=\"$q2\"></td>
-<td align=center class='quality1' width=\"$q1\"></td>
-<td align=center class='quality0' width=\"$q0\"></td>
-$void_cell
-</tr></table>";
+		$void_cell = $ne ? '<td class="qualitye" style="width:' . $qe . '%;"></td>' : '';
+		$textualAlternative = wfMessage( 'proofreadpage-indexquality-alt', $q4, $q3, $q1 );
+		$output = '<table class="pr_quality" title="' . $textualAlternative . '">
+<tr>
+<td class="quality4" style="width:' . $q4 . '%;"></td>
+<td class="quality3" style="width:' . $q3 . '%;"></td>
+<td class="quality2" style="width:' . $q2 . '%;"></td>
+<td class="quality1" style="width:' . $q1 . '%;"></td>
+<td class="quality0" style="width:' . $q0 . '%;"></td>
+' . $void_cell . '
+</tr>
+</table>';
 		$out->setSubtitle( $out->getSubtitle() . $output );
 		return true;
 	}
@@ -694,7 +599,7 @@ $void_cell
 		$article = $editPage->getArticle();
 		$user = $article->getContext()->getUser();
 		$oldContent = $article->getPage()->getContent( Revision::FOR_THIS_USER, $user );
-		$newContent = $contentHandler->unserializeContent( $text, $editPage->getTitle(), $editPage->contentFormat );
+		$newContent = $contentHandler->unserializeContent( $text, $editPage->contentFormat );
 
 		if ( $oldContent === null ) {
 			$oldContent = $contentHandler->makeEmptyContent();
@@ -819,8 +724,8 @@ $void_cell
 		$page = ProofreadPagePage::newFromTitle( $title );
 
 		//Image link
-		$image = $page->getImage();
-		if ( $image ) {
+		try {
+			$image = Context::getDefaultContext()->getFileProvider()->getForPagePage( $page );
 			$imageUrl = null;
 			if ( $image->isMultipage() ) {
 				$transformAttributes = array(
@@ -844,31 +749,38 @@ $void_cell
 				$links['namespaces']['proofreadPageScanLink'] = array(
 					'class' => '',
 					'href' => $imageUrl,
-				'text' => wfMessage( 'proofreadpage_image' )->plain()
+					'text' => wfMessage( 'proofreadpage_image' )->plain()
 				);
 			}
-		}
+		} catch( FileNotFoundException $e ) {}
 
 		//Prev, Next and Index links
 		$indexPage = $page->getIndex();
 		if ( $indexPage ) {
-			list( $prevTitle, $nextTitle ) = $indexPage->getPreviousAndNextPages( $page->getTitle() );
+			$pagination = Context::getDefaultContext()->getPaginationFactory()->getPaginationForIndexPage( $indexPage );
+			try {
+				$pageNumber = $pagination->getPageNumber( $page );
 
-			if ( $prevTitle !== null ) {
-				$links['namespaces']['proofreadPagePrevLink'] = array(
-					'class' => ( $skin->skinname === 'vector' ) ? 'icon' : '',
-					'href' => self::getLinkUrlForTitle( $prevTitle ),
-					'text' => wfMessage( 'proofreadpage_prevpage' )->plain()
-				);
-			}
+				try {
+					$prevPage  = $pagination->getPage( $pageNumber - 1 );
+					$prevTitle = $prevPage->getTitle();
+					$links['namespaces']['proofreadPagePrevLink'] = array(
+						'class' => ( $skin->skinname === 'vector' ) ? 'icon' : '',
+						'href' => self::getLinkUrlForTitle( $prevTitle ),
+						'text' => wfMessage( 'proofreadpage_prevpage' )->plain()
+					);
+				} catch( OutOfBoundsException $e ) {} //if the previous page does not exits
 
-			if ( $nextTitle !== null ) {
-				$links['namespaces']['proofreadPageNextLink'] = array(
-					'class' => ( $skin->skinname === 'vector' ) ? 'icon' : '',
-					'href' => self::getLinkUrlForTitle( $nextTitle ),
-					'text' => wfMessage( 'proofreadpage_nextpage' )->plain()
-				);
-			}
+				try {
+					$nextPage  = $pagination->getPage( $pageNumber + 1 );
+					$nextTitle = $nextPage->getTitle();
+					$links['namespaces']['proofreadPageNextLink'] = array(
+						'class' => ( $skin->skinname === 'vector' ) ? 'icon' : '',
+						'href' => self::getLinkUrlForTitle( $nextTitle ),
+						'text' => wfMessage( 'proofreadpage_nextpage' )->plain()
+					);
+				} catch( OutOfBoundsException $e ) {} //if the next page does not exits
+			} catch( PageNotInPaginationException $e ) {}
 
 			$links['namespaces']['proofreadPageIndexLink'] = array(
 				'class' => ( $skin->skinname === 'vector' ) ? 'icon' : '',
@@ -904,7 +816,11 @@ $void_cell
 
 		$api = new ApiMain( $params );
 		$api->execute();
-		$data = $api->getResultData();
+		if ( defined( 'ApiResult::META_CONTENT' ) ) {
+			$data = $api->getResult()->getResultData();
+		} else {
+			$data = $api->getResultData();
+		}
 		unset( $api );
 
 		if ( array_key_exists( 'error', $data ) ) {
@@ -928,5 +844,60 @@ $void_cell
 		} else {
 			return $title->getLinkUrl( 'action=edit&redlink=1' );
 		}
+	}
+
+	public static function onSkinMinervaDefaultModules( Skin $skin, array& $modules ) {
+		if(
+			$skin->getTitle()->inNamespace( self::getIndexNamespaceId() ) ||
+			$skin->getTitle()->inNamespace( self::getPageNamespaceId() )
+		) {
+			unset( $modules['editor'] );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Extension registration callback
+	 */
+	public static function onRegister() {
+		global $wgContentHandlers;
+
+		// L10n
+		include_once( __DIR__ . '/ProofreadPage.namespaces.php' );
+
+		// Content handler
+		define( 'CONTENT_MODEL_PROOFREAD_PAGE', 'proofread-page' );
+		$wgContentHandlers[CONTENT_MODEL_PROOFREAD_PAGE] = '\ProofreadPage\Page\PageContentHandler';
+	}
+
+	/**
+	 * Allow the extension to extend core's PHPUnit test suite
+	 * @param $files string[] The test files
+	 */
+	public static function onUnitTestsList( array &$files ) {
+		$dir = __DIR__ . '/tests/includes/';
+
+		$files[] = $dir . 'FileProviderMock.php';
+		$files[] = $dir . 'ProofreadPageTestCase.php';
+		$files[] = $dir . 'FileProviderTest.php';
+		$files[] = $dir . 'DiffFormatterUtilsTest.php';
+		$files[] = $dir . 'ContextTest.php';
+
+		$files[] = $dir . 'index/ProofreadIndexPageTest.php';
+
+		$files[] = $dir . 'Pagination/PageNumberTest.php';
+		$files[] = $dir . 'Pagination/PageListTest.php';
+		$files[] = $dir . 'Pagination/PagePaginationTest.php';
+		$files[] = $dir . 'Pagination/FilePaginationTest.php';
+		$files[] = $dir . 'Pagination/PaginationFactoryTest.php';
+
+		$files[] = $dir . 'page/PageLevelTest.php';
+		$files[] = $dir . 'page/PageContentTest.php';
+		$files[] = $dir . 'page/PageContentHandlerTest.php';
+		$files[] = $dir . 'page/ProofreadPagePageTest.php';
+		$files[] = $dir . 'page/PageContentBuilderTest.php';
+
+		return true;
 	}
 }

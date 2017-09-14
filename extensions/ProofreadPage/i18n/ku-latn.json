@@ -1,8 +1,15 @@
 {
-    "@metadata": {
-        "authors": [
-            "George Animal"
-        ]
-    },
-    "proofreadpage_image": "Wêne"
+	"@metadata": {
+		"authors": [
+			"George Animal",
+			"Bikarhêner"
+		]
+	},
+	"proofreadpage_image": "Wêne",
+	"proofreadpage_quality0_category": "Bênivîs",
+	"proofreadpage_quality1_category": "Nehatiye rastkirin",
+	"proofreadpage_quality2_category": "Bigelş",
+	"proofreadpage_quality3_category": "Rastkirin",
+	"proofreadpage_quality4_category": "Hatiye rastkirin",
+	"proofreadpage_quality1_message": "Ev rûpel nehate lêkolînkirin"
 }

@@ -1,8 +1,12 @@
 {
-    "@metadata": {
-        "authors": [
-            "Snakesteuben"
-        ]
-    },
-    "proofreadpage_nextpage": "Folgjende side"
+	"@metadata": {
+		"authors": [
+			"Snakesteuben",
+			"Robin0van0der0vliet"
+		]
+	},
+	"proofreadpage_image": "Ôfbylding",
+	"proofreadpage_nextpage": "Folgjende side",
+	"proofreadpage_quality2_category": "Unfolslein",
+	"proofreadpage_specialpage_label_key": "Sykje:"
 }

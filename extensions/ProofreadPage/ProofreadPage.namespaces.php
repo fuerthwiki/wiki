@@ -161,6 +161,14 @@ $proofreadPageNamespacesNames['frr'] = array(
 	'index_talk' => 'Index_Diskussion'
 );
 
+/** Galician (Galego) */
+$proofreadPageNamespacesNames['gl'] = array(
+	'page' => 'Páxina',
+	'page_talk' => 'Conversa_páxina',
+	'index' => 'Índice',
+	'index_talk' => 'Conversa_índice'
+);
+
 /** Gujarati (ગુજરાતી) */
 $proofreadPageNamespacesNames['gu'] = array(
 	'page' => 'પૃષ્ઠ',
@@ -234,6 +242,14 @@ $proofreadPageNamespacesNames['kn'] = array(
 	'index_talk' =>  'ಪರಿವಿಡಿ_ಚರ್ಚೆ'
 );
 
+/** Korean (한국어) */
+$proofreadPageNamespacesNames['ko'] = array(
+	'page' => '페이지',
+	'page_talk' => '페이지토론',
+	'index' => '색인',
+	'index_talk' => '색인토론',
+);
+
 /** Latin (Latina) */
 $proofreadPageNamespacesNames['la'] = array(
 	'page' => 'Pagina',
@@ -272,6 +288,14 @@ $proofreadPageNamespacesNames['no'] = array(
 	'page_talk' => 'Sidediskusjon',
 	'index' => 'Indeks',
 	'index_talk' => 'Indeksdiskusjon'
+);
+
+/** Oriya (ଓଡ଼ିଆ) */
+$proofreadPageNamespacesNames['or'] = array(
+	'page' => 'ପୃଷ୍ଠା',
+	'page_talk' => 'ପୃଷ୍ଠା_ଆଲୋଚନା',
+	'index' => 'ସୂଚୀ',
+	'index_talk' => 'ସୂଚୀ_ଆଲୋଚନା'
 );
 
 /** Polish (polski) */

@@ -43,7 +43,7 @@ class PagesWithoutScans extends QueryPage {
 	 * @return mixed
 	 */
 	function disambiguation_templates( $dbr ) {
-		$dMsgText = wfMsgForContent('proofreadpage-disambiguationspage');
+		$dMsgText = wfMessage( 'proofreadpage-disambiguationspage' )->inContentLanguage()->text();
 
 		$linkBatch = new LinkBatch;
 
@@ -145,5 +145,9 @@ class PagesWithoutScans extends QueryPage {
 		return $title->exists()
 				? "({$hlink}) {$dm}{$plink} {$dm}[{$size}]"
 				: "<s>({$hlink}) {$dm}{$plink} {$dm}[{$size}]</s>";
+	}
+
+	protected function getGroupName() {
+		return 'maintenance';
 	}
 }

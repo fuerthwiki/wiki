@@ -1,45 +1,31 @@
 <?php
-/**
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- * http://www.gnu.org/copyleft/gpl.html
- *
- * @file
- * @ingroup Extensions
- */
+
+namespace ProofreadPage;
 
 /**
+ * @licence GNU GPL v2+
+ *
  * Class that contain init system of the ProofreadPage extension
  */
 class ProofreadPageInit {
 
 	/**
-	* the default namespace id for each namespaces
-	* Called by the SetupAfterCache hook
-	*/
+	 * the default namespace id for each namespaces
+	 * Called by the SetupAfterCache hook
+	 */
 	protected static $defaultNamespaceIds = array(
 		'page' => 250,
 		'index' => 252
 	);
 
 	/**
-	 * init namespaces used by ProofreadPage
-	 * @return bool false if there is an error, true if not
+	 * Initialize namespaces used by ProofreadPage
+	 * @return bool true
 	 */
 	public static function initNamespaces() {
 		self::initNamespace( 'page' );
 		self::initNamespace( 'index' );
+
 		return true;
 	}
 
@@ -48,7 +34,7 @@ class ProofreadPageInit {
 	 * @param $key string the key of the namespace in the i18n file
 	 */
 	protected static function initNamespace( $key ) {
-		global $wgExtraNamespaces, $wgProofreadPageNamespaceIds;
+		global $wgContentNamespaces, $wgExtraNamespaces, $wgProofreadPageNamespaceIds;
 
 		if ( isset( $wgProofreadPageNamespaceIds[$key] ) ) {
 			if ( !is_numeric( $wgProofreadPageNamespaceIds[$key] ) ) {
@@ -68,6 +54,10 @@ class ProofreadPageInit {
 				} //else: the relevant error message is output by getNamespaceId
 			}
 		}
+
+		// Also Add Page/Index namespace to $wgContentNamespaces
+		$wgContentNamespaces[] = $wgProofreadPageNamespaceIds[$key];
+
 	}
 
 	/**
@@ -105,6 +95,7 @@ class ProofreadPageInit {
 		$wgExtraNamespaces[$id + 1] = self::getNamespaceName( $key . '_talk' );
 		$wgCanonicalNamespaceNames[$id] = $wgExtraNamespaces[$id]; //Very hugly but needed because initNamespaces() is called after the add of $wgExtraNamespaces into $wgCanonicalNamespaceNames
 		$wgCanonicalNamespaceNames[$id + 1] = $wgExtraNamespaces[$id + 1];
+
 		return true;
 	}
 
@@ -121,6 +112,7 @@ class ProofreadPageInit {
 		if ( $lang === '' ) {
 			$lang = $wgLanguageCode;
 		}
+
 		return isset( $proofreadPageNamespacesNames[$lang][$key] )
 				? $proofreadPageNamespacesNames[$lang][$key]
 				: $proofreadPageNamespacesNames['en'][$key];
@@ -138,6 +130,7 @@ class ProofreadPageInit {
 		if ( !isset( $wgProofreadPageNamespaceIds[$key] ) ) {
 			die( 'Namespace with id ' . self::$defaultNamespaceIds[$key] . ' is already set ! ProofreadPage can\'t use his id in order to create ' . self::getNamespaceName( $key, 'en' ) . ' namespace. Update your LocalSettings.php adding $wgProofreadPageNamespaceIds[' . $key . '] = /* NUMERICAL ID OF THE ' . self::getNamespaceName( $key, 'en' ) . ' NAMESPACE */; AFTER the inclusion of Proofread Page' ); //The only case where $wgProofreadPageNamespaceIds is not set is when a namespace with the default id already exist and is not a prp namespace.
 		}
+
 		return $wgProofreadPageNamespaceIds[$key];
 	}
 }
