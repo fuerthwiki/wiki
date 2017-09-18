@@ -1,4 +1,4 @@
-var version = 'v201709112301::';
+var version = 'v201709182039::';
 
 self.addEventListener("install", function(event) {
 	console.log('WORKER: install event in progress.');
