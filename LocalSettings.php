@@ -322,6 +322,7 @@ require_once "$IP/extensions/ProofreadPage/ProofreadPage.php";
 # SearchStats
 require_once "$IP/extensions/SearchStats/SearchStats.php";
 
+wfLoadExtension( 'CodeEditor' );
 
 wfLoadExtension( 'HitCounters' );
 
@@ -330,7 +331,8 @@ wfLoadExtension( 'PageForms' );
 wfLoadExtension( 'CollapsibleVector' );
 
 wfLoadExtension( 'MobileFrontend' );
-$wgMFAutodetectMobileView = true;
+$wgMFAutodetectMobileView = false;
+$wgMFShowMobileViewToTablets = false;
 
 # PageImages (add Images to "Nearby")
 require_once "$IP/extensions/PageImages/PageImages.php";
