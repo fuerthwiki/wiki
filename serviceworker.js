@@ -36,7 +36,7 @@ self.addEventListener("activate", function(event) {
 
 
 self.addEventListener('fetch', function(event) {
-	console.log('WORKER: fetch: ', event.request.url);
+	//console.log('WORKER: fetch: ', event.request.url);
 
   event.respondWith(
     fetch(event.request).catch(function() {
