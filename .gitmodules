@@ -10,3 +10,6 @@
 [submodule "extensions/WhatsNearby"]
 	path = extensions/WhatsNearby
 	url = git@github.com:fuerthwiki/WhatsNearby.git
+	[submodule "extensions/MobileTabsPlugin"]
+		path = extensions/MobileTabsPlugin
+		url = git@github.com:fuerthwiki/MobileTabsPlugin.git

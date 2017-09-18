@@ -267,6 +267,7 @@ require_once("$IP/extensions/Variables/Variables.php");
 # Content extensions
 require_once("$IP/extensions/Widgets/Widgets.php");
 require_once("$IP/extensions/Tabs/Tabs.php");
+wfLoadExtension( 'MobileTabsPlugin' );
 
 # CategoryTree extension
 $wgUseAjax = true;
