@@ -247,9 +247,7 @@ require_once("$IP/extensions/Validator/Validator.php");
 #require_once( "$IP/extensions/SemanticBundle/SemanticBundleSettings.php" );
 #require_once( "$IP/extensions/SemanticBundle/SemanticBundle.php" );
 require_once("$IP/extensions/SemanticMediaWiki/SemanticMediaWiki.php");
-
-# Maps and Semantic Maps
-//require_once("$IP/extensions/Maps/Maps.php");
+//$egGoogleJsApiKey = "xxxxxxxxxxxxxxxxxxxxxxx";
 
 # Semantic Result Formats and Forms
 enableSemantics( 'fuerthwiki.de' );
@@ -322,6 +320,11 @@ require_once "$IP/extensions/ProofreadPage/ProofreadPage.php";
 
 # SearchStats
 require_once "$IP/extensions/SearchStats/SearchStats.php";
+
+## add a magic word __NOTITLE__
+## see https://www.mediawiki.org/wiki/Extension:NoTitle/de
+require_once "$IP/extensions/NoTitle/NoTitle.php";
+$wgRestrictDisplayTitle = false;
 
 wfLoadExtension( 'CodeEditor' );
 
