@@ -354,6 +354,12 @@ $wgMobileSpecialPages['discovery'] = array(
 		'/wiki/index.php/FürthWiki:In_der_Nähe',
 		'mw-ui-icon mw-ui-icon-before mw-ui-icon-nearby nearme'
 	),
+	// Add link to all maps
+	'maps' => array(
+		'Karten',
+		'/wiki/index.php/FürthWiki:Maps',
+		'mw-ui-icon mw-ui-icon-before mw-ui-icon-maps maps'
+	),
 	// Enable the custom entry "Spezial:Letzte_Änderungen"
 	'RECENTCHANGES' => array(),
 	// Enable the custom entry "Spezial:Dateien"
