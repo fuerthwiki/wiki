@@ -331,6 +331,7 @@ wfLoadExtension( 'CodeEditor' );
 wfLoadExtension( 'HitCounters' );
 
 wfLoadExtension( 'PageForms' );
+#$wgAmericanDates = true;
 
 wfLoadExtension( 'CollapsibleVector' );
 
