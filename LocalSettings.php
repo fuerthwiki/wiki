@@ -335,8 +335,8 @@ wfLoadExtension( 'PageForms' );
 wfLoadExtension( 'CollapsibleVector' );
 
 wfLoadExtension( 'MobileFrontend' );
-$wgMFAutodetectMobileView = false;
-$wgMFShowMobileViewToTablets = false;
+$wgMFAutodetectMobileView = true;
+$wgMFShowMobileViewToTablets = true;
 
 # PageImages (add Images to "Nearby")
 require_once "$IP/extensions/PageImages/PageImages.php";
