@@ -175,10 +175,8 @@ $wgExtraNamespaces =
 	      200 => "Objekt",
 	      201 => "Objekt_Diskussion",
 );
-
 $smwgNamespacesWithSemanticLinks[200] = true;
 $smwgNamespacesWithSemanticLinks[201] = true;
-$smwgLinksInValues = true;
 
 $wgDefaultUserOptions['thumbsize'] = 2; //180px
 
@@ -244,13 +242,13 @@ require_once("$IP/extensions/Cite/Cite.php");
 require_once("$IP/extensions/Validator/Validator.php");
 
 # Semantic Mediawiki
-#require_once( "$IP/extensions/SemanticBundle/SemanticBundleSettings.php" );
-#require_once( "$IP/extensions/SemanticBundle/SemanticBundle.php" );
 require_once("$IP/extensions/SemanticMediaWiki/SemanticMediaWiki.php");
 //$egGoogleJsApiKey = "xxxxxxxxxxxxxxxxxxxxxxx";
 
 # Semantic Result Formats and Forms
 enableSemantics( 'fuerthwiki.de' );
+$smwgLinksInValues = SMW_LINV_OBFU;
+
 $GLOBALS['sespSpecialProperties'] = array(
     '_VIEWS',
     '_EXIFDATA',
