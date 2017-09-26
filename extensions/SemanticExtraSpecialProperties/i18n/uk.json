@@ -4,14 +4,20 @@
 			"Andriykopanytsia",
 			"Steve.rusyn",
 			"SteveR",
-			"Ата"
+			"Ата",
+			"Piramidion",
+			"Base"
 		]
 	},
 	"sesp-desc": "Додає деякі додаткові спеціальні властивості для всіх сторінок",
+	"sesp-property-unknown-label": "Невідома назва чи псевдонім",
 	"sesp-property-author": "Автор сторінки",
 	"sesp-property-first-author": "Творець сторінки",
 	"sesp-property-revision-id": "ID версії",
 	"sesp-property-page-id": "ID сторінки",
+	"sesp-property-page-id-desc": "«$1» визначає MediaWiki-ідентифікатор сторінки, і забезпечується розширенням [https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Extra_Special_Properties SESP].",
+	"sesp-property-page-len": "Довжина сторінки",
+	"sesp-property-page-len-desc": "«$1» визначає довжину сторінки в байтах, і забезпечується розширенням [https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Extra_Special_Properties SESP].",
 	"sesp-property-view-count": "Кількість переглядів сторінки",
 	"sesp-property-subpages": "Підсторінка",
 	"sesp-property-revisions": "Кількість версій",
@@ -21,5 +27,8 @@
 	"sesp-property-shorturl": "Коротке посилання",
 	"sesp-property-user-registration-date": "Дата реєстрації користувача",
 	"sesp-property-user-edit-count": "Кількість редагувань користувача",
-	"sesp-property-exif-data": "Дані exif"
+	"sesp-property-exif-data": "Дані exif",
+	"sesp-exif-languagecode": "Exif:Код мови",
+	"sesp-exif-label": "Exif:Мітка",
+	"sesp-exif-iimcategory": "Exif:Iim-категорія"
 }

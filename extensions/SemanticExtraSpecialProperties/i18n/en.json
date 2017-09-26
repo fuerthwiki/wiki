@@ -7,11 +7,14 @@
 		]
 	},
 	"sesp-desc": "Adds some extra special properties to all pages",
+	"sesp-property-unknown-label": "Unknown label or alias",
 	"sesp-property-author": "Page author",
 	"sesp-property-first-author": "Page creator",
 	"sesp-property-revision-id": "Revision ID",
 	"sesp-property-page-id": "Page ID",
+	"sesp-property-page-id-desc": "\"$1\" identifies the MediaWiki ID of a page and is provided by the [https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Extra_Special_Properties SESP] extension.",
 	"sesp-property-page-len": "Page length",
+	"sesp-property-page-len-desc": "\"$1\" identifies the length of a page in bytes and is provided by the [https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Extra_Special_Properties SESP] extension.",
 	"sesp-property-view-count": "Number of page views",
 	"sesp-property-subpages": "Subpage",
 	"sesp-property-revisions": "Number of revisions",
@@ -21,5 +24,8 @@
 	"sesp-property-shorturl": "Short URL",
 	"sesp-property-user-registration-date": "User registration date",
 	"sesp-property-user-edit-count": "User edit count",
-	"sesp-property-exif-data": "Exif data"
+	"sesp-property-exif-data": "Exif data",
+	"sesp-exif-languagecode": "Exif:Language code",
+	"sesp-exif-label": "Exif:Label",
+	"sesp-exif-iimcategory": "Exif:Iim Category"
 }

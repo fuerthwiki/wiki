@@ -2,9 +2,6 @@
 
 namespace SESP;
 
-use SESP\PropertyRegistry;
-use SESP\Annotator\ExtraPropertyAnnotator;
-use SESP\Annotator\ShortUrlAnnotator;
 use Hooks;
 
 /**
@@ -18,7 +15,7 @@ class HookRegistry {
 	/**
 	 * @var array
 	 */
-	private $handlers = array();
+	private $handlers = [];
 
 	/**
 	 * @since 1.0
@@ -83,14 +80,16 @@ class HookRegistry {
 	 */
 	public static function onBeforeConfigCompletion( &$config ) {
 
+		$exemptionlist = [
+			'___EUSER', '___CUSER', '___SUBP', '___REVID', '___VIEWS',
+			'___NREV', '___NTREV', '___USEREDITCNT', '___EXIFDATA'
+		];
+
 		// Exclude listed properties from indexing
 		if ( isset( $config['smwgFulltextSearchPropertyExemptionList'] ) ) {
 			$config['smwgFulltextSearchPropertyExemptionList'] = array_merge(
 				$config['smwgFulltextSearchPropertyExemptionList'],
-				array(
-					'___EUSER', '___CUSER', '___SUBP', '___REVID', '___VIEWS',
-					'___NREV', '___NTREV', '___USEREDITCNT', '___EXIFDATA'
-				)
+				$exemptionlist
 			);
 		}
 
@@ -100,35 +99,65 @@ class HookRegistry {
 		if ( isset( $config['smwgQueryDependencyPropertyExemptionlist'] ) ) {
 			$config['smwgQueryDependencyPropertyExemptionlist'] = array_merge(
 				$config['smwgQueryDependencyPropertyExemptionlist'],
-				array(
-					'___REVID', '___VIEWS', '___NREV', '___NTREV',
-					'___USEREDITCNT', '___EXIFDATA'
-				)
+				$exemptionlist
 			);
 		}
 	}
 
 	private function registerCallbackHandlers( $configuration ) {
 
-		$this->handlers['smwInitProperties'] = function () {
-			return PropertyRegistry::getInstance()->registerPropertiesAndAliases();
-		};
+		$applicationFactory = \SMW\ApplicationFactory::getInstance();
 
-		$this->handlers['SMW::SQLStore::updatePropertyTableDefinitions'] = function ( &$propertyTableDefinitions ) use( $configuration ) {
-			return PropertyRegistry::getInstance()->registerAsFixedTables( $propertyTableDefinitions, $configuration );
-		};
+		$appFactory = new AppFactory(
+			$configuration,
+			$applicationFactory->getCache()
+		);
 
-		$this->handlers['SMWStore::updateDataBefore'] = function ( $store, $semanticData ) use ( $configuration ) {
+		$appFactory->setLogger(
+			$applicationFactory->getMediaWikiLogger( 'sesp' )
+		);
 
-			$appFactory = new AppFactory( $configuration['wgShortUrlPrefix'] );
+		$propertyRegistry = new PropertyRegistry(
+			$appFactory
+		);
 
-			$propertyAnnotator = new ExtraPropertyAnnotator(
-				$semanticData,
-				$appFactory,
-				$configuration
+		/**
+		 * @see https://www.semantic-mediawiki.org/wiki/Hooks/SMW::Property::initProperties
+		 */
+		$this->handlers['SMW::Property::initProperties'] = function ( $basePropertyRegistry ) use ( $propertyRegistry ) {
+
+			$propertyRegistry->registerOn(
+				$basePropertyRegistry
 			);
 
-			return $propertyAnnotator->addAnnotation();
+			return true;
+		};
+
+		/**
+		 * @see https://www.semantic-mediawiki.org/wiki/Hooks/SMW::SQLStore::AddCustomFixedPropertyTables
+		 */
+		$this->handlers['SMW::SQLStore::AddCustomFixedPropertyTables'] = function( array &$customFixedProperties, &$fixedPropertyTablePrefix ) use( $propertyRegistry ) {
+
+			$propertyRegistry->registerAsFixedProperties(
+				$customFixedProperties,
+				$fixedPropertyTablePrefix
+			);
+
+			return true;
+		};
+
+		/**
+		 * @see https://www.semantic-mediawiki.org/wiki/Hooks/SMWStore::updateDataBefore
+		 */
+		$this->handlers['SMWStore::updateDataBefore'] = function ( $store, $semanticData ) use ( $appFactory ) {
+
+			$extraPropertyAnnotator = new ExtraPropertyAnnotator(
+				$appFactory
+			);
+
+			$extraPropertyAnnotator->addAnnotation( $semanticData );
+
+			return true;
 		};
 	}
 

@@ -7,11 +7,14 @@
 		]
 	},
 	"sesp-desc": "Añade algunas propiedades adicionales especiales a todas las páginas",
+	"sesp-property-unknown-label": "Etiqueta o alias desconocidos",
 	"sesp-property-author": "Autor de la página",
 	"sesp-property-first-author": "Creador de la página",
 	"sesp-property-revision-id": "Id. de modificación",
 	"sesp-property-page-id": "Id. de página",
+	"sesp-property-page-id-desc": "«$1», provista por la extensión [https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Extra_Special_Properties SESP], localiza el identificador MediaWiki de una página.",
 	"sesp-property-page-len": "Longitud de página",
+	"sesp-property-page-len-desc": "«$1», provista por la extensión [https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Extra_Special_Properties SESP], identifica la longitud de una página en bytes.",
 	"sesp-property-view-count": "Número de vistas de página",
 	"sesp-property-subpages": "Subpágina",
 	"sesp-property-revisions": "Número de revisiones",
@@ -21,5 +24,7 @@
 	"sesp-property-shorturl": "Enlace corto",
 	"sesp-property-user-registration-date": "Fecha de registro del usuario",
 	"sesp-property-user-edit-count": "Número de ediciones del usuario",
-	"sesp-property-exif-data": "Datos EXIF"
+	"sesp-property-exif-data": "Datos EXIF",
+	"sesp-exif-languagecode": "Exif:Código de idioma",
+	"sesp-exif-label": "Exif:Etiqueta"
 }
