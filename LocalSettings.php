@@ -303,9 +303,7 @@ $wgGroupPermissions['sysop']['interwiki'] = true;
 
 # PDFextension
 require_once "$IP/extensions/Collection/Collection.php";
-
-# Chat extension
-#require_once "$IP/extensions/MediaWikiChat/MediaWikiChat.php";
+wfLoadExtension( 'PdfHandler' );
 
 require_once("$IP/extensions/ReplaceText/ReplaceText.php");
 
