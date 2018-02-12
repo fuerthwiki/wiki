@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFRadioButtonInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFRadioButtonInput class.
- *
  * @ingroup PFFormInput
  */
 class PFRadioButtonInput extends PFEnumInput {
@@ -20,7 +16,9 @@ class PFRadioButtonInput extends PFEnumInput {
 		global $wgPageFormsTabIndex, $wgPageFormsFieldNum, $wgPageFormsShowOnSelect;
 
 		// Standardize $cur_value
-		if ( is_null( $cur_value ) ) { $cur_value = ''; }
+		if ( is_null( $cur_value ) ) {
+			$cur_value = '';
+		}
 
 		if ( ( $possible_values = $other_args['possible_values'] ) == null ) {
 			// If it's a Boolean property, display 'Yes' and 'No'
@@ -53,7 +51,7 @@ class PFRadioButtonInput extends PFEnumInput {
 			} elseif ( count( $possible_values ) == 0 ) {
 				$cur_value = '';
 			} else {
-				$cur_value = reset($possible_values);
+				$cur_value = reset( $possible_values );
 			}
 		}
 
@@ -79,7 +77,7 @@ class PFRadioButtonInput extends PFEnumInput {
 			$isChecked = false;
 			if ( $cur_value == $possible_value ) {
 				$isChecked = true;
-				//$radiobutton_attrs['checked'] = true;
+				// $radiobutton_attrs['checked'] = true;
 			}
 			if ( $is_disabled ) {
 				$radiobutton_attrs['disabled'] = true;
@@ -102,7 +100,7 @@ class PFRadioButtonInput extends PFEnumInput {
 				// attribute if the value is blank - which
 				// somehow leads to the string "on" being passed
 				// to the page.
-				//Html::input( $input_name, $possible_value, 'radio', $radiobutton_attrs ) . " $label" ) . "\n";
+				// Html::input( $input_name, $possible_value, 'radio', $radiobutton_attrs ) . " $label" ) . "\n";
 				Xml::radio( $input_name, $possible_value, $isChecked, $radiobutton_attrs ) . " $label" ) . "\n";
 		}
 
@@ -138,6 +136,7 @@ class PFRadioButtonInput extends PFEnumInput {
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		return self::getHTML(

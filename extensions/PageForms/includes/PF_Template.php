@@ -64,7 +64,7 @@ class PFTemplate {
 				return;
 			}
 		}
-		return $this->loadTemplateFieldsSMWAndOther();
+		$this->loadTemplateFieldsSMWAndOther();
 	}
 
 	/**
@@ -177,6 +177,9 @@ class PFTemplate {
 	 * For a field name and its attached property name located in the
 	 * template text, create an PFTemplateField object out of it, and
 	 * add it to $this->mTemplateFields.
+	 * @param string $fieldName
+	 * @param string $propertyName
+	 * @param bool $isList
 	 */
 	function loadPropertySettingInTemplate( $fieldName, $propertyName, $isList ) {
 		global $wgContLang;
@@ -334,7 +337,10 @@ class PFTemplate {
 				$text .= "List ($delimiter) of ";
 			}
 			$text .= $field->getFieldType();
-			if ( count( $field->getPossibleValues() ) > 0 ) {
+			if ( $field->getHierarchyStructure() ) {
+				$hierarchyStructureString = $field->getHierarchyStructure();
+				$text .= " (hierarchy;allowed values=$hierarchyStructureString)";
+			} elseif ( count( $field->getPossibleValues() ) > 0 ) {
 				$allowedValuesString = implode( ',', $field->getPossibleValues() );
 				$text .= " (allowed values=$allowedValuesString)";
 			}
@@ -359,6 +365,7 @@ class PFTemplate {
 	 * Creates the text of a template, when called from
 	 * Special:CreateTemplate, Special:CreateClass or the Page Schemas
 	 * extension.
+	 * @return string
 	 */
 	public function createText() {
 		// Avoid PHP 7.1 warning from passing $this by reference
@@ -372,9 +379,13 @@ $templateHeader
 
 END;
 		$text .= '{{' . $this->mTemplateName;
-		if ( count( $this->mTemplateFields ) > 0 ) { $text .= "\n"; }
+		if ( count( $this->mTemplateFields ) > 0 ) {
+			$text .= "\n";
+		}
 		foreach ( $this->mTemplateFields as $field ) {
-			if ( $field->getFieldName() == '' ) continue;
+			if ( $field->getFieldName() == '' ) {
+				continue;
+			}
 			$text .= "|" . $field->getFieldName() . "=\n";
 		}
 		if ( defined( 'CARGO_VERSION' ) && !defined( 'SMW_VERSION' ) && $this->mCargoTable != '' ) {
@@ -418,7 +429,9 @@ END;
 		$setText = '';
 
 		// Topmost part of table depends on format.
-		if ( !$this->mTemplateFormat ) $this->mTemplateFormat = 'standard';
+		if ( !$this->mTemplateFormat ) {
+			$this->mTemplateFormat = 'standard';
+		}
 		if ( $this->mTemplateFormat == 'standard' ) {
 			$tableText = '{| class="wikitable"' . "\n";
 		} elseif ( $this->mTemplateFormat == 'infobox' ) {
@@ -436,7 +449,9 @@ END;
 		}
 
 		foreach ( $this->mTemplateFields as $i => $field ) {
-			if ( $field->getFieldName() == '' ) continue;
+			if ( $field->getFieldName() == '' ) {
+				continue;
+			}
 
 			$fieldParam = '{{{' . $field->getFieldName() . '|}}}';
 			if ( is_null( $field->getNamespace() ) ) {
@@ -447,9 +462,9 @@ END;
 			$separator = '';
 
 			$fieldStart = $this->mFieldStart;
-			Hooks::run('PageForms::TemplateFieldStart', array( $field, &$fieldStart ) );
+			Hooks::run( 'PageForms::TemplateFieldStart', array( $field, &$fieldStart ) );
 			$fieldEnd = $this->mFieldEnd;
-			Hooks::run('PageForms::TemplateFieldEnd', array( $field, &$fieldEnd ) );
+			Hooks::run( 'PageForms::TemplateFieldEnd', array( $field, &$fieldEnd ) );
 
 			$fieldLabel = $field->getLabel();
 			if ( $fieldLabel == '' ) {
@@ -494,7 +509,7 @@ END;
 			if ( $this->mTemplateFormat == 'standard' || $this->mTemplateFormat == 'infobox' ) {
 				if ( $fieldDisplay == 'hidden' ) {
 				} elseif ( $fieldDisplay == 'nonempty' ) {
-					//$tableText .= "{{!}} ";
+					// $tableText .= "{{!}} ";
 				} else {
 					$tableText .= "| ";
 				}

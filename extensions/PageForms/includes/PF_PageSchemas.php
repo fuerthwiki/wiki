@@ -19,20 +19,23 @@ class PFPageSchemas extends PSExtensionHandler {
 	/**
 	 * Creates an object to hold form-wide information, based on an XML
 	 * object from the Page Schemas extension.
+	 * @param string $tagName
+	 * @param string $xml
+	 * @return string[]|null
 	 */
 	public static function createPageSchemasObject( $tagName, $xml ) {
 		$pfarray = array();
 
-		if( $tagName == "standardInputs" ) {
+		if ( $tagName == "standardInputs" ) {
 			foreach ( $xml->children() as $tag => $child ) {
-					foreach ( $child->children() as $tag => $formelem ) {
-						if ( $tag == $tagName ) {
-							foreach( $formelem->attributes() as $attr => $name) {
-								$pfarray[$attr] = (string)$formelem->attributes()->$attr;
-							}
+				foreach ( $child->children() as $tag => $formelem ) {
+					if ( $tag == $tagName ) {
+						foreach ( $formelem->attributes() as $attr => $name ) {
+							$pfarray[$attr] = (string)$formelem->attributes()->$attr;
 						}
 					}
-					return $pfarray;
+				}
+				return $pfarray;
 			}
 		}
 
@@ -68,7 +71,7 @@ class PFPageSchemas extends PSExtensionHandler {
 							if ( (string)$prop->attributes()->name == '' ) {
 								$pfarray[$prop->getName()] = (string)$prop;
 							} else {
-							$pfarray[(string)$prop->attributes()->name] = (string)$prop;
+								$pfarray[(string)$prop->attributes()->name] = (string)$prop;
 							}
 						}
 					}
@@ -81,6 +84,7 @@ class PFPageSchemas extends PSExtensionHandler {
 
 	/**
 	 * Creates Page Schemas XML for form-wide information.
+	 * @return string
 	 */
 	public static function createSchemaXMLFromForm() {
 		global $wgRequest;
@@ -88,7 +92,7 @@ class PFPageSchemas extends PSExtensionHandler {
 		// Quick check: if the "form name" field hasn't been sent,
 		// it means the main "Form" checkbox wasn't selected; don't
 		// create any XML if so.
-		if ( !$wgRequest->getCheck( 'pf_form_name') ) {
+		if ( !$wgRequest->getCheck( 'pf_form_name' ) ) {
 			return '';
 		}
 
@@ -163,6 +167,7 @@ class PFPageSchemas extends PSExtensionHandler {
 
 	/**
 	 * Creates Page Schemas XML from form information on templates.
+	 * @return string[]
 	 */
 	public static function createTemplateXMLFromForm() {
 		global $wgRequest;
@@ -190,6 +195,7 @@ class PFPageSchemas extends PSExtensionHandler {
 
 	/**
 	 * Creates Page Schemas XML for form fields.
+	 * @return string[]
 	 */
 	public static function createFieldXMLFromForm() {
 		global $wgRequest;
@@ -229,6 +235,7 @@ class PFPageSchemas extends PSExtensionHandler {
 
 	/**
 	 * Creates Page Schemas XML for page sections
+	 * @return string[]
 	 */
 	public static function createPageSectionXMLFromForm() {
 		global $wgRequest;
@@ -299,7 +306,7 @@ class PFPageSchemas extends PSExtensionHandler {
 		$createTitle = PageSchemas::getValueFromObject( $form_array, 'CreateTitle' );
 		$editTitle = PageSchemas::getValueFromObject( $form_array, 'EditTitle' );
 
-		//Inputs
+		// Inputs
 		if ( !is_null( $pageSchemaObj ) ) {
 			$standardInputs = $pageSchemaObj->getObject( 'standardInputs' );
 		} else {
@@ -326,12 +333,12 @@ class PFPageSchemas extends PSExtensionHandler {
 
 		$text .= "Free text label: " . Html::input( 'pf_fi_free_text_label', ( ( empty( $freeTextLabel ) ) ? wfMessage( 'pf_form_freetextlabel' )->inContentLanguage()->text() : $freeTextLabel ), 'text' ) . "</p><p>";
 
-		//Inputs
+		// Inputs
 		$text .= "<p>Define form buttons and inputs (all will be enabled if none are selected): &nbsp;</p><p>";
 
 		// Free text
 		$text .= '<span>';
-		$text .= Html::input( 'pf_fi_free_text', '1', 'checkbox', array( 'id' => 'pf_fi_free_text', 'checked' => ( isset( $standardInputs['inputFreeText'])) ? $standardInputs['inputFreeText'] : null ) );
+		$text .= Html::input( 'pf_fi_free_text', '1', 'checkbox', array( 'id' => 'pf_fi_free_text', 'checked' => ( isset( $standardInputs['inputFreeText'] ) ) ? $standardInputs['inputFreeText'] : null ) );
 		$text .= Html::rawElement( 'label', array( 'for' => 'pf_fi_free_text' ), 'Free text input' );
 		$text .= "&nbsp;</span>";
 		// Summary
@@ -404,6 +411,8 @@ class PFPageSchemas extends PSExtensionHandler {
 	/**
 	 * Returns the HTML for inputs to define a single form field,
 	 * within the Page Schemas 'edit schema' page.
+	 * @param PFField $psField
+	 * @return array
 	 */
 	public static function getFieldEditingHTML( $psField ) {
 		$fieldValues = array();
@@ -589,6 +598,8 @@ class PFPageSchemas extends PSExtensionHandler {
 	/**
 	 * Return the list of pages that Page Forms could generate from
 	 * the current Page Schemas schema.
+	 * @param PFPageSchemas $pageSchemaObj
+	 * @return Title[]
 	 */
 	public static function getPagesToGenerate( $pageSchemaObj ) {
 		$psTemplates = $pageSchemaObj->getTemplates();
@@ -608,6 +619,8 @@ class PFPageSchemas extends PSExtensionHandler {
 	/**
 	 * Returns an array of PFTemplateField objects, representing the fields
 	 * of a template, based on the contents of a <PageSchema> tag.
+	 * @param PFTemplate $psTemplate
+	 * @return PFTemplateField[]
 	 */
 	public static function getFieldsFromTemplateSchema( $psTemplate ) {
 		$psFields = $psTemplate->getFields();
@@ -655,6 +668,11 @@ class PFPageSchemas extends PSExtensionHandler {
 	/**
 	 * Creates a form page, when called from the 'generatepages' page
 	 * of Page Schemas.
+	 * @param string $formName
+	 * @param string $formTitle
+	 * @param array $formItems
+	 * @param array $formDataFromSchema
+	 * @param string $categoryName
 	 */
 	public static function generateForm( $formName, $formTitle,
 		$formItems, $formDataFromSchema, $categoryName ) {
@@ -687,8 +705,9 @@ class PFPageSchemas extends PSExtensionHandler {
 		}
 
 		$freeTextLabel = null;
-		if ( array_key_exists( 'freeTextLabel', $formDataFromSchema ) )
+		if ( array_key_exists( 'freeTextLabel', $formDataFromSchema ) ) {
 			$freeTextLabel = $formDataFromSchema['freeTextLabel'];
+		}
 
 		$form = PFForm::create( $formName, $formItems );
 		$form->setAssociatedCategory( $categoryName );
@@ -713,6 +732,8 @@ class PFPageSchemas extends PSExtensionHandler {
 
 	/**
 	 * Generate pages (form and templates) specified in the list.
+	 * @param PageSchemas $pageSchemaObj
+	 * @param array $selectedPages
 	 */
 	public static function generatePages( $pageSchemaObj, $selectedPages ) {
 		global $wgUser;
@@ -812,7 +833,7 @@ class PFPageSchemas extends PSExtensionHandler {
 				$psPageSection = $psFormItem['item'];
 				$form_section = self::getPageSection( $psPageSection );
 				$form_section->setSectionLevel( $psPageSection->getSectionLevel() );
-				$form_items[] = array( 'type' => 'section', 'name'=> $form_section->getSectionName(), 'item' => $form_section );
+				$form_items[] = array( 'type' => 'section', 'name' => $form_section->getSectionName(), 'item' => $form_section );
 			}
 
 		}
@@ -880,6 +901,8 @@ class PFPageSchemas extends PSExtensionHandler {
 
 	/**
 	 * Displays form details for one template in the Page Schemas XML.
+	 * @param string $templateXML
+	 * @return null|array
 	 */
 	public static function getTemplateDisplayValues( $templateXML ) {
 		$templateValues = self::getTemplateValues( $templateXML );
@@ -909,6 +932,8 @@ class PFPageSchemas extends PSExtensionHandler {
 
 	/**
 	 * Displays data on a single form input in the Page Schemas XML.
+	 * @param Node $fieldXML
+	 * @return array|null
 	 */
 	public static function getFieldDisplayValues( $fieldXML ) {
 		foreach ( $fieldXML->children() as $tag => $child ) {

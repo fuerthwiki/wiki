@@ -2,55 +2,117 @@
  * @author Yaron Koren
  */
 
+/* global L */
+
 function setupMapFormInput( inputDiv, mapService ) {
-	if ( mapService == "Google Maps" ) {
-		var mapCanvas = inputDiv.find('.pfMapCanvas')[0];
-		var mapOptions = {
+	var map, marker, markers, mapCanvas, mapOptions;
+	var numClicks = 0, timer = null;
+
+	if ( mapService === "Google Maps" ) {
+		mapCanvas = inputDiv.find('.pfMapCanvas')[0];
+		mapOptions = {
 			zoom: 1,
 			center: new google.maps.LatLng(0,0)
 		};
-		var map = new google.maps.Map(mapCanvas, mapOptions);
-		var marker;
+		map = new google.maps.Map(mapCanvas, mapOptions);
 		var geocoder = new google.maps.Geocoder();
-		var update_timeout;
 
 		// Let a click set the marker, while keeping the default
 		// behavior (zoom and center) for double clicks.
 		// Code copied from http://stackoverflow.com/a/8417447
 		google.maps.event.addListener( map, 'click', function( event ) {
-			update_timeout = setTimeout( function() {
+			timer = setTimeout( function() {
 				googleMapsSetMarker( event.latLng );
 			}, 200 );
 		});
 		google.maps.event.addListener( map, 'dblclick', function( event ) {
-			clearTimeout( update_timeout );
+			clearTimeout( timer );
 		});
-	} else { // if ( mapService == "OpenLayers" ) {
+	} else if (mapService === "Leaflet") {
+		mapCanvas = inputDiv.find('.pfMapCanvas').get(0);
+		mapOptions = {
+			zoom: 1,
+			center: [0, 0]
+		};
+		var layerOptions = {
+			attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+		};
+
+		map = L.map(mapCanvas, mapOptions);
+		new L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', layerOptions).addTo(map);
+
+		map.on( 'click', function( event ) {
+			// Place/move the marker only on a single click, not a
+			// double click (double clicks do a zoom).
+			// Code based on https://stackoverflow.com/a/7845282
+			numClicks++;
+			if (numClicks === 1) {
+				timer = setTimeout( function() {
+					leafletSetMarker( event.latlng );
+					numClicks = 0;
+				});
+			} else {
+				clearTimeout(timer);
+				numClicks = 0;
+			}
+		});
+	} else { // if ( mapService === "OpenLayers" ) {
 		var mapCanvasID = inputDiv.find('.pfMapCanvas').attr('id');
-		var map = new OpenLayers.Map( mapCanvasID );
+		map = new OpenLayers.Map( mapCanvasID );
 		map.addLayer( new OpenLayers.Layer.OSM() );
 		map.zoomTo(0);
-		var markers = new OpenLayers.Layer.Markers( "Markers" );
+		markers = new OpenLayers.Layer.Markers( "Markers" );
 		map.addLayer( markers );
 
 		map.events.register("click", map, function(e) {
-			var opx = map.getLayerPxFromViewPortPx(e.xy) ;
-			var loc = map.getLonLatFromPixel( opx );
-			openLayersSetMarker( loc );
+			numClicks++;
+			if (numClicks === 1) {
+				timer = setTimeout( function() {
+					var opx = map.getLayerPxFromViewPortPx(e.xy) ;
+					var loc = map.getLonLatFromPixel( opx );
+					openLayersSetMarker( loc );
+					numClicks = 0;
+				});
+			} else {
+				clearTimeout(timer);
+				numClicks = 0;
+			}
 		});
 	}
 
-	inputDiv.find('.pfUpdateMap').click( function() {
-		setMarkerFromInput();
-	});
-
-	inputDiv.find('.pfCoordsInput').keypress( function( e ) {
-		// Is this still necessary fro IE compatibility?
+	var coordsInput = inputDiv.find('.pfCoordsInput');
+	coordsInput.keypress( function( e ) {
+		// Is this still necessary for IE compatibility?
 		var keycode = (e.keyCode ? e.keyCode : e.which);
 		if ( keycode == 13 ) {
-			setMarkerFromInput();
+			setMarkerFromCoordinates();
 			// Prevent the form from getting submitted.
 			e.preventDefault();
+			$(this).removeClass( 'modifiedInput' )
+				.parent().find('.pfCoordsInputHelpers').remove();
+		}
+	});
+
+	coordsInput.keydown( function( e ) {
+		if ( ! coordsInput.hasClass( 'modifiedInput' ) ) {
+			coordsInput.addClass( 'modifiedInput' );
+			var checkMark = $('<a></a>').addClass( 'pfCoordsCheckMark' ).css( 'color', 'green' ).html( '&#10004;' );
+			var xMark = $('<a></a>').addClass( 'pfCoordsX' ).css( 'color', 'red' ).html( '&#10008;' );
+			var marksDiv = $('<span></span>').addClass( 'pfCoordsInputHelpers' )
+				.append( checkMark ).append( ' ' ).append( xMark );
+			coordsInput.parent().append( marksDiv );
+
+			checkMark.click( function() {
+				setMarkerFromCoordinates();
+				coordsInput.removeClass( 'modifiedInput' );
+				marksDiv.remove();
+			});
+
+			xMark.click( function() {
+				coordsInput.removeClass( 'modifiedInput' )
+					.val( coordsInput.attr('data-original-value') );
+				marksDiv.remove();
+			});
 		}
 	});
 
@@ -58,25 +120,35 @@ function setupMapFormInput( inputDiv, mapService ) {
 		// Is this still necessary fro IE compatibility?
 		var keycode = (e.keyCode ? e.keyCode : e.which);
 		if ( keycode == 13 ) {
-			doLookup();
+			setMarkerFromAddress();
 			// Prevent the form from getting submitted.
 			e.preventDefault();
 		}
 	});
 
 	inputDiv.find('.pfLookUpAddress').click( function() {
-		doLookup();
+		setMarkerFromAddress();
 	});
 
 
-	if ( inputDiv.find('.pfCoordsInput').val() != '' ) {
-		setMarkerFromInput();
-		map.setZoom(14);
+	if ( coordsInput.val() != '' ) {
+		setMarkerFromCoordinates();
+		map.setZoom( 14 );
 	}
 
-	function doLookup() {
-		var addressText = inputDiv.find('.pfAddressInput').val();
-		if ( mapService == "Google Maps" ) {
+	function setMarkerFromAddress() {
+		var currentMapName = coordsInput.attr('name');
+		var allFeedersForCurrentMap = jQuery('[data-feeds-to-map="' + currentMapName + '"]').map( function() {
+			return $( this ).val()
+		}).get();
+		if ( allFeedersForCurrentMap.length > 0 ) {
+			// Assemble a single string from all the address inputs that feed to this map.
+			var addressText = allFeedersForCurrentMap.join( ', ' );
+		} else {
+			// No other inputs feed to this map, so use the standard "Enter address here" input.
+			var addressText = inputDiv.find('.pfAddressInput').val();
+		}
+		if ( mapService === "Google Maps" ) {
 			geocoder.geocode( { 'address': addressText }, function(results, status) {
 				if (status == google.maps.GeocoderStatus.OK) {
 					map.setCenter(results[0].geometry.location);
@@ -86,37 +158,41 @@ function setupMapFormInput( inputDiv, mapService ) {
 					alert("Geocode was not successful for the following reason: " + status);
 				}
 			});
-		} else { // if ( mapService == "OpenLayers" ) {
+		//} else { // Leaflet, OpenLayers
 			// Do nothing, for now - address lookup/geocode is
-			// not yet enabled for OpenLayers.
+			// not yet enabled for Leaflet or OpenLayers.
 		}
 	}
 
-	function setMarkerFromInput() {
-		var coordsText = inputDiv.find('.pfCoordsInput').val();
+	function setMarkerFromCoordinates() {
+		var coordsText = coordsInput.val();
 		var coordsParts = coordsText.split(",");
 		if ( coordsParts.length != 2 ) {
-			inputDiv.find('.pfCoordsInput').val('');
+			coordsInput.val('');
 			return;
 		}
 		var lat = coordsParts[0].trim();
 		var lon = coordsParts[1].trim();
 		if ( !jQuery.isNumeric( lat ) || !jQuery.isNumeric( lon ) ) {
-			inputDiv.find('.pfCoordsInput').val('');
+			coordsInput.val('');
 			return;
 		}
 		if ( lat < -90 || lat > 90 || lon < -180 || lon > 180 ) {
-			inputDiv.find('.pfCoordsInput').val('');
+			coordsInput.val('');
 			return;
 		}
-		if ( mapService == "Google Maps" ) {
+		if ( mapService === "Google Maps" ) {
 			var gmPoint = new google.maps.LatLng( lat, lon );
 			googleMapsSetMarker( gmPoint );
 			map.setCenter( gmPoint );
-		} else { // if ( mapService == "OpenLayers" ) {
+		} else if ( mapService === "Leaflet" ){
+			var lPoint = L.latLng( lat, lon );
+			leafletSetMarker( lPoint );
+			map.setView( lPoint );
+		} else { // if ( mapService === "OpenLayers" ) {
 			var olPoint = toOpenLayersLonLat( map, lat, lon );
 			openLayersSetMarker( olPoint );
-			map.setCenter( olPoint, 14 );
+			map.setCenter( olPoint );
 		}
 	}
 
@@ -150,7 +226,33 @@ function setupMapFormInput( inputDiv, mapService ) {
 			marker.setPosition(location);
 		}
 		var stringVal = pfRoundOffDecimal( location.lat() ) + ', ' + pfRoundOffDecimal( location.lng() );
-		inputDiv.find('.pfCoordsInput').val( stringVal );
+		coordsInput.val( stringVal )
+			.attr( 'data-original-value', stringVal )
+			.removeClass( 'modifiedInput' )
+			.parent().find('.pfCoordsInputHelpers').remove();
+	}
+
+	function leafletSetMarker( location ) {
+		if ( marker == null) {
+			marker = L.marker( location ).addTo( map );
+		} else {
+			marker.setLatLng( location, { draggable: true } );
+		}
+		marker.dragging.enable();
+
+		function setInput() {
+			var stringVal = pfRoundOffDecimal( marker.getLatLng().lat ) + ', ' +
+				pfRoundOffDecimal( marker.getLatLng().lng );
+			coordsInput.val( stringVal )
+				.attr( 'data-original-value', stringVal )
+				.removeClass( 'modifiedInput' )
+				.parent().find('.pfCoordsInputHelpers').remove();
+		}
+
+		marker.off('dragend').on('dragend', function( event ) {
+			setInput();
+		});
+		setInput();
 	}
 
 	function openLayersSetMarker( location ) {
@@ -168,13 +270,19 @@ function setupMapFormInput( inputDiv, mapService ) {
 			new OpenLayers.Projection("EPSG:4326") // to WGS 1984
 		);
 		var stringVal = pfRoundOffDecimal( realLonLat.lat ) + ', ' + pfRoundOffDecimal( realLonLat.lon );
-		inputDiv.find('.pfCoordsInput').val( stringVal );
+		coordsInput.val( stringVal )
+			.attr( 'data-original-value', stringVal )
+			.removeClass( 'modifiedInput' )
+			.parent().find('.pfCoordsInputHelpers').remove();
 	}
 }
 
 jQuery(document).ready( function() {
 	jQuery(".pfGoogleMapsInput").each( function() {
 		setupMapFormInput( jQuery(this), "Google Maps" );
+	});
+	jQuery(".pfLeafletInput").each( function() {
+		setupMapFormInput( jQuery(this), "Leaflet" );
 	});
 	jQuery(".pfOpenLayersInput").each( function() {
 		setupMapFormInput( jQuery(this), "OpenLayers" );

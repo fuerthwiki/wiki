@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFListBoxInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFListBoxInput class.
- *
  * @ingroup PFFormInput
  */
 class PFListBoxInput extends PFMultiEnumInput {
@@ -29,6 +25,7 @@ class PFListBoxInput extends PFMultiEnumInput {
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		global $wgPageFormsTabIndex, $wgPageFormsFieldNum, $wgPageFormsShowOnSelect;
@@ -56,8 +53,7 @@ class PFListBoxInput extends PFMultiEnumInput {
 				array_key_exists( 'value_labels', $this->mOtherArgs ) &&
 				is_array( $this->mOtherArgs['value_labels'] ) &&
 				array_key_exists( $possible_value, $this->mOtherArgs['value_labels'] )
-			)
-			{
+			) {
 				$optionLabel = $this->mOtherArgs['value_labels'][$possible_value];
 			} else {
 				$optionLabel = $possible_value;

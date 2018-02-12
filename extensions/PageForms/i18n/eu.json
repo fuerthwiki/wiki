@@ -5,7 +5,8 @@
 			"Kobazulo",
 			"Xabier Armendaritz",
 			"Subi",
-			"Sator"
+			"Sator",
+			"Mikel Ibaiba"
 		]
 	},
 	"createproperty": "Propietatea sortu",
@@ -15,6 +16,7 @@
 	"createtemplate": "Txantiloia sortu",
 	"pf_createtemplate_namelabel": "Txantiloiaren izena:",
 	"pf_createtemplate_displaylabel": "Etiketa erakutsi:",
+	"pf_createtemplate_fieldishierarchy": "Eremuak hierarkia bat mantentzen du",
 	"pf_createtemplate_standardformat": "Taula",
 	"pf_createtemplate_deletefield": "Ezabatu",
 	"pf_createform_template": "Txantiloia:",
@@ -28,6 +30,7 @@
 	"createcategory": "Kategoria sortu",
 	"pf_createcategory_name": "Kategoriaren izena:",
 	"pf_createclass_create": "Sortu",
+	"pf_createclass_ishierarchy": "Hierarkia?",
 	"pf_formstart_createoredit": "Sortu edo aldatu",
 	"pf_formedit_createtitle": "$1 aldatu: $2",
 	"pf_editsource": "Aldatu iturburu kodea",
@@ -39,6 +42,7 @@
 	"pf_form_freetextlabel": "Testu askea",
 	"pf_blank_namespace": "Nagusia",
 	"pf-select2-searching": "Bilatzen...",
+	"pf-maps-lookupcoordinates": "Koordenatuak kalkulatu helbidea erabiliz",
 	"pf-datepicker-close": "Itxi",
 	"pf-datepicker-prev": "Aurrekoa",
 	"pf-datepicker-next": "Hurrengoa",

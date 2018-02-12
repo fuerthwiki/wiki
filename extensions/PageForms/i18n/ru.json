@@ -17,7 +17,9 @@
 			"Nemo bis",
 			"Дмитрий",
 			"INS Pirat",
-			"Kareyac"
+			"Kareyac",
+			"Alexey zakharenkov",
+			"Redredsonia"
 		]
 	},
 	"pageforms-desc": "Формы для создания и правки вики-страниц",
@@ -38,6 +40,8 @@
 	"pf_createtemplate_multipleinstance": "Этот шаблон может быть включен несколько раз на странице.",
 	"pf_createtemplate_connectingproperty": "Имя свойства для подключения полей этого шаблона к остальной части страницы:",
 	"pf_createtemplate_categorylabel": "Категория, определяемая шаблоном (необязательно):",
+	"pf_createtemplate_usecargo": "Использовать расширение Cargo для хранения данных этого шаблона",
+	"pf_createtemplate_cargotablelabel": "Название таблицы Cargo, заданной шаблоном:",
 	"pf_createtemplate_templatefields": "Поля шаблона",
 	"pf_createtemplate_fieldsdesc": "Для указания полей шаблона не требуется указывать их имена, просто введите индекс каждого поля (например, 1, 2, 3 и т. д.) вместо фактического имени.",
 	"pf_createtemplate_fieldname": "Имя поля:",
@@ -195,6 +199,7 @@
 	"pf_bad_number_error": "должно быть числом",
 	"pf_bad_date_error": "должно быть датой",
 	"uploadwindow": "Окно загрузки",
+	"pf-simpleupload": "Загрузить",
 	"pf_deletionlog": "Журнал удалений",
 	"pf-preview-header": "Предварительный просмотр формы",
 	"pf-preview-note": "Так форма будет выглядеть во время использованияː",
@@ -223,9 +228,8 @@
 	"pf-select2-searching": "Поиск…",
 	"pf-select2-input-too-short": "Пожалуйста, введите $1 или более символов",
 	"pf-select2-selection-too-big": "Это поле не может содержать более {{PLURAL:$1|$1 значения|$1 значений}}.",
-	"pf-maps-setmarker": "Установить маркер",
 	"pf-maps-enteraddress": "Введите здесь адрес",
-	"pf-maps-lookupcoordinates": "Найти координаты",
+	"pf-maps-lookupcoordinates": "Определить координаты с помощью адреса",
 	"pf-adminlinks-datastructure": "Структура данных",
 	"pf-datepicker-close": "Закрыть",
 	"pf-datepicker-prev": "Предыдущая",

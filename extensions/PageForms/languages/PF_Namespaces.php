@@ -64,7 +64,7 @@ $namespaceNames['en'] = array(
 
 $namespaceNames['es'] = array(
 	PF_NS_FORM           => 'Formulario',
-	PF_NS_FORM_TALK      => 'Discusión_formulario'
+	PF_NS_FORM_TALK      => 'Formulario_discusión'
 );
 
 /**
@@ -86,6 +86,15 @@ $namespaceNames['fi'] = array(
 $namespaceNames['fr'] = array(
 	PF_NS_FORM           => 'Formulaire',
 	PF_NS_FORM_TALK      => 'Discussion_formulaire'
+);
+
+/**
+ * Hebrew (עברית)
+ * @author FreedomFightrerSparrow
+ */
+$namespaceNames['he'] = array(
+	PF_NS_FORM           => 'טופס',
+	PF_NS_FORM_TALK      => 'שיחת_טופס'
 );
 
 /**

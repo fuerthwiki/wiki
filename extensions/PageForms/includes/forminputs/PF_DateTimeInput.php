@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFDateTimeInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFDateTimeInput class.
- *
  * @ingroup PFFormInput
  */
 class PFDateTimeInput extends PFDateInput {
@@ -112,7 +108,9 @@ class PFDateTimeInput extends PFDateInput {
 			$ampm24h_options = array( '', 'AM', 'PM' );
 			foreach ( $ampm24h_options as $value ) {
 				$text .= "				<option value=\"$value\"";
-				if ( $value == $ampm24h ) { $text .= " selected=\"selected\""; }
+				if ( $value == $ampm24h ) {
+					$text .= " selected=\"selected\"";
+				}
 				$text .= ">$value</option>\n";
 			}
 			$text .= "	</select>\n";
@@ -138,6 +136,7 @@ class PFDateTimeInput extends PFDateInput {
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		return self::getHTML(

@@ -60,11 +60,12 @@ class PFFormPrinter {
 		$this->registerInputType( 'PFRatingInput' );
 		// Add this if the Semantic Maps extension is not
 		// included, or if it's SM (really Maps) v4.0 or higher.
-		if( !$wgPageFormsDisableOutsideServices ) {
+		if ( !$wgPageFormsDisableOutsideServices ) {
 			if ( !defined( 'SM_VERSION' ) || version_compare( SM_VERSION, '4.0', '>=' ) ) {
 				$this->registerInputType( 'PFGoogleMapsInput' );
 			}
 			$this->registerInputType( 'PFOpenLayersInput' );
+			$this->registerInputType( 'PFLeafletInput' );
 		}
 
 		// All-purpose setup hook.
@@ -157,12 +158,12 @@ class PFFormPrinter {
 		//
 		// $initJSFunction = call_user_func( array( $inputTypeClass, 'getJsInitFunctionData' ) );
 		// if ( !is_null( $initJSFunction ) ) {
-		//		$wgPageFormsInitJSFunctions[] = $initJSFunction;
+		// 	$wgPageFormsInitJSFunctions[] = $initJSFunction;
 		// }
 		//
 		// $validationJSFunctions = call_user_func( array( $inputTypeClass, 'getJsValidationFunctionData' ) );
 		// if ( count( $validationJSFunctions ) > 0 ) {
-		//		$wgPageFormsValidationJSFunctions = array_merge( $wgPageFormsValidationJSFunctions, $initJSFunction );
+		// 	$wgPageFormsValidationJSFunctions = array_merge( $wgPageFormsValidationJSFunctions, $initJSFunction );
 		// }
 	}
 
@@ -244,6 +245,8 @@ class PFFormPrinter {
 
 	/**
 	 * Show the set of previous deletions for the page being edited.
+	 * @param OutputPage $out
+	 * @return true
 	 */
 	function showDeletionLog( $out ) {
 		LogEventsList::showLogExtract( $out, 'delete', $this->mPageTitle->getPrefixedText(),
@@ -262,6 +265,10 @@ class PFFormPrinter {
 	 * http://www.php.net/manual/en/function.str-replace.php#86177
 	 * - this might make sense in the PFUtils class, if it's useful in
 	 * other places.
+	 * @param string $search
+	 * @param string $replace
+	 * @param string $subject
+	 * @return string
 	 */
 	function strReplaceFirst( $search, $replace, $subject ) {
 		$firstChar = strpos( $subject, $search );
@@ -302,6 +309,9 @@ class PFFormPrinter {
 	/**
 	 * Creates the HTML for the inner table for every instance of a
 	 * multiple-instance template in the form.
+	 * @param bool $form_is_disabled
+	 * @param string $mainText
+	 * @return string
 	 */
 	function multipleTemplateInstanceTableHTML( $form_is_disabled, $mainText ) {
 		if ( $form_is_disabled ) {
@@ -312,7 +322,7 @@ class PFFormPrinter {
 		}
 
 		$text = <<<END
-			<table>
+			<table class="multipleTemplateInstance">
 			<tr>
 			<td class="instanceRearranger"></td>
 			<td class="instanceMain">$mainText</td>
@@ -328,6 +338,10 @@ END;
 	/**
 	 * Creates the HTML for a single instance of a multiple-instance
 	 * template.
+	 * @param PFTemplateInForm $template_in_form
+	 * @param bool $form_is_disabled
+	 * @param string &$section
+	 * @return string
 	 */
 	function multipleTemplateInstanceHTML( $template_in_form, $form_is_disabled, &$section ) {
 		// Add the character "a" onto the instance number of this input
@@ -363,6 +377,10 @@ END;
 	/**
 	 * Creates the end of the HTML for a multiple-instance template -
 	 * including the sections necessary for adding additional instances.
+	 * @param PFTemplateInForm $template_in_form
+	 * @param bool $form_is_disabled
+	 * @param string $section
+	 * @return string
 	 */
 	function multipleTemplateEndHTML( $template_in_form, $form_is_disabled, $section ) {
 		global $wgPageFormsTabIndex;
@@ -466,6 +484,8 @@ END;
 				$gridParamValues['type'] = 'textarea';
 			} elseif ( $inputType == 'checkbox' ) {
 				$gridParamValues['type'] = 'checkbox';
+			} elseif ( $inputType == 'date' ) {
+				$gridParamValues['type'] = 'date';
 			} elseif ( ( $possibleValues = $formField->getPossibleValues() ) != null ) {
 				array_unshift( $possibleValues, '' );
 				$completePossibleValues = array();
@@ -505,6 +525,9 @@ END;
 	/**
 	 * Get a string representing the current time, for the time zone
 	 * specified in the wiki.
+	 * @param string $includeTime
+	 * @param string $includeTimezone
+	 * @return string
 	 */
 	function getStringForCurrentTime( $includeTime, $includeTimezone ) {
 		global $wgLocaltimezone, $wgAmericanDates, $wgPageForms24HourTime;
@@ -557,6 +580,9 @@ END;
 	 * If the value passed in for a certain field, when a form is
 	 * submitted, is an array, then it might be from a checkbox
 	 * or date input - in that case, convert it into a string.
+	 * @param string $value
+	 * @param string $delimiter
+	 * @return string
 	 */
 	static function getStringFromPassedInArray( $value, $delimiter ) {
 		// If it's just a regular list, concatenate it.
@@ -590,14 +616,24 @@ END;
 			}
 			$year = $value['year'];
 			$hour = $minute = $second = $ampm24h = $timezone = null;
-			if ( isset( $value['hour'] ) ) $hour = $value['hour'];
-			if ( isset( $value['minute'] ) ) $minute = $value['minute'];
-			if ( isset( $value['second'] ) ) $second = $value['second'];
-			if ( isset( $value['ampm24h'] ) ) $ampm24h = $value['ampm24h'];
-			if ( isset( $value['timezone'] ) ) $timezone = $value['timezone'];
-			//if ( $month !== '' && $day !== '' && $year !== '' ) {
+			if ( isset( $value['hour'] ) ) {
+				$hour = $value['hour'];
+			}
+			if ( isset( $value['minute'] ) ) {
+				$minute = $value['minute'];
+			}
+			if ( isset( $value['second'] ) ) {
+				$second = $value['second'];
+			}
+			if ( isset( $value['ampm24h'] ) ) {
+				$ampm24h = $value['ampm24h'];
+			}
+			if ( isset( $value['timezone'] ) ) {
+				$timezone = $value['timezone'];
+			}
+			// if ( $month !== '' && $day !== '' && $year !== '' ) {
 			// We can accept either year, or year + month, or year + month + day.
-			//if ( $month !== '' && $day !== '' && $year !== '' ) {
+			// if ( $month !== '' && $day !== '' && $year !== '' ) {
 			if ( $year !== '' ) {
 				// special handling for American dates - otherwise, just
 				// the standard year/month/day (where month is a number)
@@ -652,6 +688,16 @@ END;
 	 *
 	 * It also does some related tasks, like figuring out the page name (if
 	 * only a page formula exists).
+	 * @param string $form_def
+	 * @param bool $form_submitted
+	 * @param bool $source_is_page
+	 * @param string|null $form_id
+	 * @param string|null $existing_page_content
+	 * @param string|null $page_name
+	 * @param string|null $page_name_formula
+	 * @param bool $is_query
+	 * @param bool $is_embedded
+	 * @return array
 	 */
 	function formHTML(
 		$form_def,
@@ -746,7 +792,7 @@ END;
 			// The handling of $wgReadOnly and $wgReadOnlyFile
 			// has to be done separately.
 			if ( wfReadOnly() ) {
-				$permissionErrors = array( array( 'readonlytext', array ( wfReadOnlyReason() ) ) );
+				$permissionErrors = array( array( 'readonlytext', array( wfReadOnlyReason() ) ) );
 			}
 			$userCanEditPage = count( $permissionErrors ) == 0;
 			Hooks::run( 'PageForms::UserCanEditPage', array( $this->mPageTitle, &$userCanEditPage ) );
@@ -767,14 +813,16 @@ END;
 			}
 		} else {
 			$form_is_disabled = true;
-			$wgOut->setPageTitle( wfMessage( 'badaccess' )->text() );
-			$wgOut->addWikiText( $wgOut->formatPermissionsErrorMessage( $permissionErrors, 'edit' ) );
-			$wgOut->addHTML( "\n<hr />\n" );
+			if ( $wgOut->getTitle() != null ) {
+				$wgOut->setPageTitle( wfMessage( 'badaccess' )->text() );
+				$wgOut->addWikiText( $wgOut->formatPermissionsErrorMessage( $permissionErrors, 'edit' ) );
+				$wgOut->addHTML( "\n<hr />\n" );
+			}
 		}
 
-//		$oldParser = $wgParser;
+		// $oldParser = $wgParser;
 
-//		$wgParser = unserialize( serialize( $oldParser ) ); // deep clone of parser
+		// $wgParser = unserialize( serialize( $oldParser ) ); // deep clone of parser
 		if ( !$wgParser->Options() ) {
 			$wgParser->Options( ParserOptions::newFromUser( $wgUser ) );
 		}
@@ -912,7 +960,6 @@ END;
 				// field processing
 				// =====================================================
 				} elseif ( $tag_title == 'field' ) {
-
 					// If the template is null, that (hopefully)
 					// means we're handling the free text field.
 					// Make the template a dummy variable.
@@ -1102,8 +1149,8 @@ END;
 						if ( $form_field->getDefaultValue() == 'current user' &&
 							// if the date is hidden, cur_value will already be set
 							// to the default value
-							( $cur_value === '' || $cur_value == 'current user' ) ) {
-
+							( $cur_value === '' || $cur_value == 'current user' )
+						) {
 							$cur_value_in_template = $wgUser->getName();
 							$cur_value = $cur_value_in_template;
 						}
@@ -1174,7 +1221,7 @@ END;
 								$is_checked = true;
 							}
 						} elseif ( count( $sub_components ) == 2 ) {
-							switch( $sub_components[0] ) {
+							switch ( $sub_components[0] ) {
 							case 'label':
 								$input_label = $wgParser->recursiveTagParse( $sub_components[1] );
 								break;
@@ -1266,12 +1313,12 @@ END;
 							}
 						}
 
-						if ( $section_end_loc === -1 ) {
-							$section_text = $existing_page_content;
-							$existing_page_content = '';
+						if ( $section_end_loc === -1 || $section_end_loc == null ) {
+							$section_text = substr( $existing_page_content, $section_start_loc );
+							$existing_page_content = substr( $existing_page_content, 0, $section_start_loc );
 						} else {
 							$section_text = substr( $existing_page_content, $section_start_loc, $section_end_loc - $section_start_loc );
-							$existing_page_content = substr( $existing_page_content, $section_end_loc );
+							$existing_page_content = substr( $existing_page_content, 0, $section_start_loc ) . substr( $existing_page_content, $section_end_loc );
 						}
 					}
 
@@ -1279,7 +1326,10 @@ END;
 					if ( ( ! $source_is_page ) && $wgRequest ) {
 						$text_per_section = $wgRequest->getArray( '_section' );
 						$section_text = $text_per_section[trim( $section_name )];
-						$wiki_page->addSection( $section_name, $page_section_in_form->getSectionLevel(), $section_text );
+
+						// $section_options will allow to pass additional options in the future without breaking backword compatibility
+						$section_options = array( 'hideIfEmpty' => $page_section_in_form->isHideIfEmpty() );
+						$wiki_page->addSection( $section_name, $page_section_in_form->getSectionLevel(), $section_text, $section_options );
 					}
 
 					$section_text = trim( $section_text );
@@ -1295,7 +1345,7 @@ END;
 					if ( $page_section_in_form->isHidden() ) {
 						$form_section_text = Html::hidden( $input_name, $section_text );
 					} else {
-						$sectionInput = new PFTextAreaInput( $input_number = null, $section_text, $input_name, ( $form_is_disabled || $page_section_in_form->isRestricted() ), $other_args );
+						$sectionInput = new PFTextAreaInput( $wgPageFormsFieldNum, $section_text, $input_name, ( $form_is_disabled || $page_section_in_form->isRestricted() ), $other_args );
 						$sectionInput->addJavaScript();
 						$form_section_text = $sectionInput->getHtmlText();
 					}
@@ -1357,6 +1407,9 @@ END;
 
 			if ( $tif && ( !$tif->allowsMultiple() || $tif->allInstancesPrinted() ) ) {
 				$template_text = $wiki_page->createTemplateCallsForTemplateName( $tif->getTemplateName() );
+				// Escape the '$' characters for the preg_replace() call.
+				$template_text = str_replace( '$', '\$', $template_text );
+
 				// If there is a placeholder in the text, we
 				// know that we are doing a replace.
 				if ( $existing_page_content && strpos( $existing_page_content, '{{{insertionpoint}}}', 0 ) !== false ) {
@@ -1535,8 +1588,11 @@ END;
 			$form_text .= Html::hidden( 'wpStarttime', wfTimestampNow() );
 			$article = new Article( $this->mPageTitle, 0 );
 			$form_text .= Html::hidden( 'wpEdittime', $article->getTimestamp() );
-
 			$form_text .= Html::hidden( 'wpEditToken', $wgUser->getEditToken() );
+			if ( defined( 'EditPage::UNICODE_CHECK' ) ) {
+				// MW 1.30+
+				$form_text .= Html::hidden( 'wpUnicodeCheck', EditPage::UNICODE_CHECK );
+			}
 		}
 
 		$form_text .= "\t</form>\n";
@@ -1557,13 +1613,16 @@ END;
 			$form_page_title = null;
 		}
 
-//		$wgParser = $oldParser;
+		// $wgParser = $oldParser;
 
 		return array( $form_text, $page_text, $form_page_title, $generated_page_name );
 	}
 
 	/**
 	 * Create the HTML to display this field within a form.
+	 * @param PFFormField $form_field
+	 * @param string $cur_value
+	 * @return string
 	 */
 	function formFieldHTML( $form_field, $cur_value ) {
 		global $wgPageFormsFieldNum;

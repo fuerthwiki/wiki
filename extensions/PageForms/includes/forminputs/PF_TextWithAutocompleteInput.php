@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFTextWithAutocompleteInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFTextWithAutocompleteInput class.
- *
  * @ingroup PFFormInput
  */
 class PFTextWithAutocompleteInput extends PFTextInput {
@@ -59,7 +55,6 @@ class PFTextWithAutocompleteInput extends PFTextInput {
 	public static function getOtherCargoTypeListsHandled() {
 		return array( 'String' );
 	}
-
 
 	public static function getAutocompletionTypeAndSource( &$field_args ) {
 		global $wgCapitalLinks;
@@ -138,15 +133,17 @@ class PFTextWithAutocompleteInput extends PFTextInput {
 		} elseif ( $autocompletionSource !== '' ) {
 			// @TODO - that count() check shouldn't be necessary
 			if ( array_key_exists( 'possible_values', $field_args ) &&
-			count( $field_args['possible_values'] ) > 0 ) {
+				count( $field_args['possible_values'] ) > 0
+			) {
 				$autocompleteValues = $field_args['possible_values'];
 			} elseif ( $autocompleteFieldType == 'values' ) {
 				$autocompleteValues = explode( ',', $field_args['values'] );
 			} else {
 				$autocompleteValues = PFValuesUtils::getAutocompleteValues( $autocompletionSource, $autocompleteFieldType );
 			}
-			if( count($autocompleteValues) > $wgPageFormsMaxLocalAutocompleteValues &&
-			$autocompleteFieldType != 'values' && !array_key_exists( 'values dependent on', $field_args ) && !array_key_exists( 'mapping template', $field_args ) ) {
+			if ( count( $autocompleteValues ) > $wgPageFormsMaxLocalAutocompleteValues &&
+				$autocompleteFieldType != 'values' && !array_key_exists( 'values dependent on', $field_args ) && !array_key_exists( 'mapping template', $field_args )
+			) {
 				$remoteDataType = $autocompleteFieldType;
 			} else {
 				$wgPageFormsAutocompleteValues[$autocompleteSettings] = $autocompleteValues;
@@ -250,6 +247,7 @@ class PFTextWithAutocompleteInput extends PFTextInput {
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		return self::getHTML(

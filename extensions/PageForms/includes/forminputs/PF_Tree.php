@@ -8,14 +8,15 @@
  * @author Yaron Koren
  */
 class PFTree {
-	var $title, $children;
+	public $title;
+	public $children;
 
-	function __construct( $curTitle ) {
+	public function __construct( $curTitle ) {
 		$this->title = $curTitle;
 		$this->children = array();
 	}
 
-	function addChild( $child ) {
+	public function addChild( $child ) {
 		$this->children[] = $child;
 	}
 
@@ -25,6 +26,8 @@ class PFTree {
 	 * by the "menuselect" input type in the Semantic Forms Inputs
 	 * extension - the difference here is that the text is manually
 	 * parsed, instead of being run through the MediaWiki parser.
+	 * @param string $wikitext
+	 * @return self
 	 */
 	public static function newFromWikiText( $wikitext ) {
 		// The top node, called "Top", will be ignored, because
@@ -36,7 +39,9 @@ class PFTree {
 			for ( $i = 0; $i < strlen( $line ) && $line[$i] == '*'; $i++ ) {
 				$numBullets++;
 			}
-			if ( $numBullets == 0 ) continue;
+			if ( $numBullets == 0 ) {
+				continue;
+			}
 			$lineText = trim( substr( $line, $numBullets ) );
 			$curParentNode = $fullTree->getLastNodeForLevel( $numBullets );
 			$curParentNode->addChild( new PFTree( $lineText ) );
@@ -44,7 +49,7 @@ class PFTree {
 		return $fullTree;
 	}
 
-	function getLastNodeForLevel( $level ) {
+	public function getLastNodeForLevel( $level ) {
 		if ( $level <= 1 || count( $this->children ) == 0 ) {
 			return $this;
 		}
@@ -53,10 +58,10 @@ class PFTree {
 	}
 
 	/**
-	 * @param $top_category String
+	 * @param string $top_category
 	 * @return mixed
 	 */
-	static function newFromTopCategory( $top_category ) {
+	public static function newFromTopCategory( $top_category ) {
 		$pfTree = new PFTree( $top_category );
 		$defaultDepth = 20;
 		$pfTree->populateChildren( $defaultDepth );
@@ -67,9 +72,11 @@ class PFTree {
 	 * Recursive function to populate a tree based on category information.
 	 */
 	private function populateChildren( $depth ) {
-		if ( $depth == 0 ) return;
+		if ( $depth == 0 ) {
+			return;
+		}
 		$subcats = self::getSubcategories( $this->title );
-		foreach( $subcats as $subcat ) {
+		foreach ( $subcats as $subcat ) {
 			$childTree = new PFTree( $subcat );
 			$childTree->populateChildren( $depth - 1 );
 			$this->addChild( $childTree );

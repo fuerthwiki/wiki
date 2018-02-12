@@ -13,7 +13,8 @@
 			"Woytecr",
 			"Alan ffm",
 			"Devwebtel",
-			"Vuh"
+			"Vuh",
+			"InternerowyGołąb"
 		]
 	},
 	"pageforms-desc": "Formularze do tworzenia i edycji stron wiki",
@@ -35,6 +36,7 @@
 	"pf_createtemplate_multipleinstance": "Ten szablon może być wstawiony na stronie wiele razy.",
 	"pf_createtemplate_connectingproperty": "Nazwa atrybutu łączącego pola szablonu z resztą strony:",
 	"pf_createtemplate_categorylabel": "Kategoria zdefiniowana przez szablon (opcjonalne):",
+	"pf_createtemplate_cargotablelabel": "Nazwa tabeli Cargo zdefiniowana przez szablon:",
 	"pf_createtemplate_templatefields": "Pola szablonu",
 	"pf_createtemplate_fieldsdesc": "Aby pola szablonu nie wymagały nazw pól, wprowadź indeks dla każdego pola (np. 1, 2, 3 itd.) jako nazwę.",
 	"pf_createtemplate_fieldname": "Nazwa pola:",
@@ -114,6 +116,7 @@
 	"pf_createclass_missingvalues": "Nie zostały wypełnione wszystkie wymagane pola.",
 	"pf_createclass_success": "Zostaną utworzone wybrane strony.",
 	"pf_createclass_create": "Utwórz",
+	"pf_createclass_ishierarchy": "Hierarchia?",
 	"formstart": "Dodaj stronę z formularzem",
 	"pf_formstart_badform": "Błąd – na $1 nie odnaleziono żadnego formularza",
 	"pf_formstart_badtitle": "Błąd – „$1” nie jest prawidłową nazwą strony.",
@@ -184,7 +187,6 @@
 	"pf-select2-searching": "Wyszukiwanie...",
 	"pf-select2-input-too-short": "Podaj $1 lub więcej znaków",
 	"pf-select2-selection-too-big": "To pole nie może mieć więcej niż {{PLURAL:$1| $1 wartość|$1 wartości}}.",
-	"pf-maps-setmarker": "Ustaw znacznik",
 	"pf-maps-enteraddress": "Wprowadź adres",
 	"pf-maps-lookupcoordinates": "Znajdź współrzędne",
 	"pf-adminlinks-datastructure": "Struktura danych",
