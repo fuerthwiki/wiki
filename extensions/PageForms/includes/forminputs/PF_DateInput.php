@@ -83,6 +83,10 @@ class PFDateInput extends PFFormInput {
 		// exactly one altogether, we'll guess that it's a month only.
 		$numSpecialChars = substr_count( $date, ' ' ) + substr_count( $date, '/' ) + substr_count( $date, '-' );
 		if ( $numSpecialChars == 1 ) {
+      if ( substr_count( $date, '/' ) == 1) {
+        $year = explode('/', $date)[0];
+        $month = explode('/', $date)[1];
+      }
 			return array( $year, $month, null );
 		}
 
