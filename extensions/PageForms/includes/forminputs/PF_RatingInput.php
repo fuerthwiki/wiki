@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFRatingInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFRatingInput class.
- *
  * @ingroup PFFormInput
  */
 class PFRatingInput extends PFFormInput {
@@ -50,9 +46,10 @@ class PFRatingInput extends PFFormInput {
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
-		global $wgPageFormsFieldNum, $wgPageFormsShowOnSelect;
+		global $wgPageFormsFieldNum;
 
 		$className = 'pfRating';
 		if ( $this->mIsMandatory ) {
@@ -66,7 +63,7 @@ class PFRatingInput extends PFFormInput {
 			'class' => $className,
 			// Not useful, since the rating can't be modified
 			// via the keyboard.
-			//'tabindex' => $wgPageFormsTabIndex,
+			// 'tabindex' => $wgPageFormsTabIndex,
 			'data-curvalue' => $this->mCurrentValue
 
 		);

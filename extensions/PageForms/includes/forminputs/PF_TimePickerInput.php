@@ -1,41 +1,28 @@
 <?php
 
 /**
- * File holding the PFTimePickerInput class
- *
  * @author Stephan Gambke
  * @file
  * @ingroup SemanticFormsInputs
  */
 
 /**
- * The PFTimePickerInput class.
- *
  * @ingroup SemanticFormsInputs
  */
 class PFTimePickerInput extends PFFormInput {
 
 	/**
-	 * Constructor.
-	 *
-	 * @param String $input_number
-	 *		The number of the input in the form.
-	 * @param String $cur_value
-	 *		The current value of the input field.
-	 * @param String $input_name
-	 *		The name of the input.
-	 * @param String $disabled
-	 *		Is this input disabled?
-	 * @param Array $other_args
-	 *		An associative array of other parameters that were present in the
-	 *		input definition.
+	 * @param string $input_number The number of the input in the form.
+	 * @param string $cur_value The current value of the input field.
+	 * @param string $input_name The name of the input.
+	 * @param bool $disabled Is this input disabled?
+	 * @param array $other_args An associative array of other parameters that were present in the
+	 *  input definition.
 	 */
 	public function __construct( $input_number, $cur_value, $input_name, $disabled, $other_args ) {
-
 		parent::__construct( $input_number, $cur_value, $input_name, $disabled, $other_args );
 
 		$this->addJsInitFunctionData( 'PF_TP_init', $this->setupJsInitAttribs() );
-
 	}
 
 	/**
@@ -65,8 +52,6 @@ class PFTimePickerInput extends PFFormInput {
 		if ( array_key_exists( 'mintime', $this->mOtherArgs )
 			&& ( preg_match( '/^\d+:\d\d$/', trim( $this->mOtherArgs['mintime'] ) ) == 1 ) ) {
 			$minTime = trim( $this->mOtherArgs['mintime'] );
-//		} elseif ( $sfigSettings->timePickerMinTime != null ) {
-//			$minTime = $sfigSettings->timePickerMinTime;
 		} else {
 			$minTime = '00:00';
 		}
@@ -75,8 +60,6 @@ class PFTimePickerInput extends PFFormInput {
 		if ( array_key_exists( 'maxtime', $this->mOtherArgs )
 			&& ( preg_match( '/^\d+:\d\d$/', trim( $this->mOtherArgs['maxtime'] ) ) == 1 ) ) {
 			$maxTime = trim( $this->mOtherArgs['maxtime'] );
-//		} elseif ( $sfigSettings->timePickerMaxTime != null ) {
-//			$maxTime = $sfigSettings->timePickerMaxTime;
 		} else {
 			$maxTime = '23:59';
 		}
@@ -121,15 +104,15 @@ class PFTimePickerInput extends PFFormInput {
 	 * Ideally this HTML code should provide a basic functionality even if the
 	 * browser is not Javascript capable. I.e. even without Javascript the user
 	 * should be able to input values.
-	 *
+	 * @return string
 	 */
-	public function getHtmlText(){
+	public function getHtmlText() {
 		// create visible input field (for display) and invisible field (for data)
 		$html = PFDatePickerInput::genericTextHTML( $this->mCurrentValue, $this->mInputName, $this->mIsDisabled, $this->mOtherArgs, 'input_' . $this->mInputNumber );
 
 		// wrap in span (e.g. used for mandatory inputs)
 		if ( ! array_key_exists( 'part of dtp', $this->mOtherArgs ) ) {
-			$html = '<span class="inputSpan' . ( array_key_exists( 'mandatory', $this->mOtherArgs )? ' mandatoryFieldSpan' : '') . '">' .$html . '</span>';
+			$html = '<span class="inputSpan' . ( array_key_exists( 'mandatory', $this->mOtherArgs ) ? ' mandatoryFieldSpan' : '' ) . '">' .$html . '</span>';
 		}
 
 		return $html;
@@ -138,6 +121,7 @@ class PFTimePickerInput extends PFFormInput {
 	/**
 	 * Returns the set of SMW property types which this input can
 	 * handle, but for which it isn't the default input.
+	 * @return string[]
 	 */
 	public static function getOtherPropTypesHandled() {
 		return array( '_str', '_dat' );
@@ -147,11 +131,9 @@ class PFTimePickerInput extends PFFormInput {
 	 * Returns the set of parameters for this form input.
 	 *
 	 * TODO: Specify parameters specific for menuselect.
+	 * @return array[]
 	 */
 	public static function getParameters() {
-
-		global $sfigSettings;
-
 		$params = parent::getParameters();
 		$params['mintime'] = array(
 			'name' => 'mintime',

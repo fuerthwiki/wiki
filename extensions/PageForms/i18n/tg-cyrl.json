@@ -1,10 +1,11 @@
 {
 	"@metadata": {
 		"authors": [
-			"Ibrahim"
+			"Ibrahim",
+			"ToJack"
 		]
 	},
-	"createproperty": "Вижагӣ бисозед",
+	"createproperty": "Сохтани хусусият",
 	"pf_createproperty_allowedvalsinput": "Агар мехоҳед ин вуруди танҳои миқдорҳои мушаххаси миҷоз дошта бошад, феҳристи миқдорҳои миҷозро ворид кунед ва онҳоро бо вергул ҷудо созед (агар миқдор вергул дошта бошад, онро бо \"\\,\" иваз кунед):",
 	"pf_createproperty_propname": "Номи моликият:",
 	"pf_createproperty_proptype": "Навъ:",

@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFDateInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFDateInput class.
- *
  * @ingroup PFFormInput
  */
 class PFDateInput extends PFFormInput {
@@ -38,7 +34,7 @@ class PFDateInput extends PFFormInput {
 				// Pad out month to always be two digits.
 				$month_value = ( $wgAmericanDates == true ) ? $name : str_pad( $i, 2, '0', STR_PAD_LEFT );
 			}
-			$optionAttrs = array ( 'value' => $month_value );
+			$optionAttrs = array( 'value' => $month_value );
 			if ( $name == $cur_month || $i == $cur_month ) {
 				$optionAttrs['selected'] = 'selected';
 			}
@@ -87,6 +83,10 @@ class PFDateInput extends PFFormInput {
 		// exactly one altogether, we'll guess that it's a month only.
 		$numSpecialChars = substr_count( $date, ' ' ) + substr_count( $date, '/' ) + substr_count( $date, '-' );
 		if ( $numSpecialChars == 1 ) {
+      if ( substr_count( $date, '/' ) == 1) {
+        $year = explode('/', $date)[0];
+        $month = explode('/', $date)[1];
+      }
 			return array( $year, $month, null );
 		}
 
@@ -138,6 +138,7 @@ class PFDateInput extends PFFormInput {
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		return self::getHTML(

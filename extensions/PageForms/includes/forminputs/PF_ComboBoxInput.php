@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFComboBoxInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFComboBoxInput class.
- *
  * @ingroup PFFormInput
  */
 class PFComboBoxInput extends PFFormInput {
@@ -60,7 +56,7 @@ class PFComboBoxInput extends PFFormInput {
 				$image_param = $other_args['image'];
 				$wgPageFormsEDSettings[$name]['image'] = $image_param;
 				global $edgValues;
-				for ($i = 0; $i < count($edgValues[$image_param]); $i++) {
+				for ( $i = 0; $i < count( $edgValues[$image_param] ); $i++ ) {
 					$image = $edgValues[$image_param][$i];
 					if ( strpos( $image, "http" ) !== 0 ) {
 						$file = wfFindFile( $image );
@@ -76,16 +72,19 @@ class PFComboBoxInput extends PFFormInput {
 			if ( array_key_exists( 'description', $other_args ) ) {
 				$wgPageFormsEDSettings[$name]['description'] = $other_args['description'];
 				if ( !array_key_exists( 'size', $other_args ) ) {
-					$size = '80';//Set larger default size if description is also there
+					// Set larger default size if description is also there
+					$size = '80';
 				}
 			}
 		} else {
 			list( $autocompleteSettings, $remoteDataType ) = self::setAutocompleteValues( $other_args );
 		}
 
+		$input_id = 'input_' . $wgPageFormsFieldNum;
+
 		$inputAttrs = array(
 			'type' => 'text',
-			'id' => "input_$wgPageFormsFieldNum",
+			'id' => $input_id,
 			'name' => $input_name,
 			'class' => $className,
 			'tabindex' => $wgPageFormsTabIndex,
@@ -106,11 +105,21 @@ class PFComboBoxInput extends PFFormInput {
 		if ( !is_null( $remoteDataType ) ) {
 			$inputAttrs['autocompletedatatype'] = $remoteDataType;
 		}
- 		if ( array_key_exists( 'namespace', $other_args ) ) {
- 			$inputAttrs['data-namespace'] = $other_args['namespace'];
- 		}
+		if ( array_key_exists( 'namespace', $other_args ) ) {
+			$inputAttrs['data-namespace'] = $other_args['namespace'];
+		}
 
-		$inputText = Html::rawElement( 'input', $inputAttrs);
+		$inputText = Html::rawElement( 'input', $inputAttrs );
+
+		if ( array_key_exists( 'uploadable', $other_args ) && $other_args['uploadable'] == true ) {
+			if ( array_key_exists( 'default filename', $other_args ) ) {
+				$default_filename = $other_args['default filename'];
+			} else {
+				$default_filename = '';
+			}
+
+			$inputText .= PFTextInput::uploadableHTML( $input_id, $delimiter = null, $default_filename, $cur_value, $other_args );
+		}
 
 		$divClass = 'ui-widget';
 		if ( $is_mandatory ) {
@@ -165,11 +174,22 @@ class PFComboBoxInput extends PFFormInput {
 			'type' => 'boolean',
 			'description' => wfMessage( 'pf_forminputs_existingvaluesonly' )->text()
 		);
+		$params[] = array(
+			'name' => 'uploadable',
+			'type' => 'boolean',
+			'description' => wfMessage( 'pf_forminputs_uploadable' )->text()
+		);
+		$params[] = array(
+			'name' => 'default filename',
+			'type' => 'string',
+			'description' => wfMessage( 'pf_forminputs_defaultfilename' )->text()
+		);
 		return $params;
 	}
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		return self::getHTML(

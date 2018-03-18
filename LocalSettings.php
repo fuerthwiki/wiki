@@ -252,7 +252,6 @@ $smwgLinksInValues = SMW_LINV_OBFU;
 $GLOBALS['sespSpecialProperties'] = array(
     '_VIEWS',
     '_EXIFDATA',
-    '_EXIF',
 );
 
 # Programmer extensions

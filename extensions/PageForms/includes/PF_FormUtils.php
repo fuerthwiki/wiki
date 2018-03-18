@@ -18,6 +18,8 @@ class PFFormUtils {
 	/**
 	 * Add a hidden input for each field in the template call that's
 	 * not handled by the form itself
+	 * @param PFTemplateInForm|null $template_in_form
+	 * @return string
 	 */
 	static function unhandledFieldsHTML( $template_in_form ) {
 		// This shouldn't happen, but sometimes this value is null.
@@ -112,8 +114,9 @@ class PFFormUtils {
 				$is_checked = true;
 			}
 		}
-		if ( $label == null )
+		if ( $label == null ) {
 			$label = $wgParser->recursiveTagParse( wfMessage( 'watchthis' )->text() );
+		}
 		$attrs += array(
 			'id' => 'wpWatchthis',
 			'accesskey' => wfMessage( 'accesskey-watch' )->text(),
@@ -134,6 +137,11 @@ class PFFormUtils {
 
 	/**
 	 * Helper function to display a simple button
+	 * @param string $name
+	 * @param string $value
+	 * @param string $type
+	 * @param array $attrs
+	 * @return string
 	 */
 	static function buttonHTML( $name, $value, $type, $attrs ) {
 		return "\t\t" . Html::input( $name, $value, $type, $attrs ) . "\n";
@@ -230,10 +238,9 @@ class PFFormUtils {
 		}
 		if ( $wgTitle == null ) {
 			$cancel = '';
-		}
-		// If we're on the special 'FormEdit' page, just send the user
-		// back to the previous page they were on.
-		elseif ( $wgTitle->isSpecial( 'FormEdit' ) ) {
+		} elseif ( $wgTitle->isSpecial( 'FormEdit' ) ) {
+			// If we're on the special 'FormEdit' page, just send the user
+			// back to the previous page they were on.
 			$stepsBack = 1;
 			// For IE, we need to go back twice, past the redirect.
 			if ( array_key_exists( 'HTTP_USER_AGENT', $_SERVER ) &&
@@ -272,7 +279,7 @@ class PFFormUtils {
 	static function formBottom( $form_submitted, $is_disabled ) {
 		global $wgUser;
 
-		$summary_text = PFFormUtils::summaryInputHTML( $is_disabled );
+		$summary_text = self::summaryInputHTML( $is_disabled );
 		$text = <<<END
 	<br /><br />
 	<div class='editOptions'>
@@ -280,11 +287,11 @@ $summary_text	<br />
 
 END;
 		if ( $wgUser->isAllowed( 'minoredit' ) ) {
-			$text .= PFFormUtils::minorEditInputHTML( $form_submitted, $is_disabled, false );
+			$text .= self::minorEditInputHTML( $form_submitted, $is_disabled, false );
 		}
 
 		if ( $wgUser->isLoggedIn() ) {
-			$text .= PFFormUtils::watchInputHTML( $form_submitted, $is_disabled );
+			$text .= self::watchInputHTML( $form_submitted, $is_disabled );
 		}
 
 		$text .= <<<END
@@ -292,10 +299,10 @@ END;
 	<div class='editButtons'>
 
 END;
-		$text .= PFFormUtils::saveButtonHTML( $is_disabled );
-		$text .= PFFormUtils::showPreviewButtonHTML( $is_disabled );
-		$text .= PFFormUtils::showChangesButtonHTML( $is_disabled );
-		$text .= PFFormUtils::cancelLinkHTML( $is_disabled );
+		$text .= self::saveButtonHTML( $is_disabled );
+		$text .= self::showPreviewButtonHTML( $is_disabled );
+		$text .= self::showChangesButtonHTML( $is_disabled );
+		$text .= self::cancelLinkHTML( $is_disabled );
 		$text .= <<<END
 	</div><!-- editButtons -->
 	</div><!-- editOptions -->
@@ -327,6 +334,7 @@ END;
 
 	/**
 	 * Used by 'RunQuery' page
+	 * @return string
 	 */
 	static function queryFormBottom() {
 		return self::runQueryButtonHTML( false );
@@ -352,6 +360,10 @@ END;
 
 	/**
 	 * Parse the form definition and return it
+	 * @param Parser $parser
+	 * @param string|null $form_def
+	 * @param string|null $form_id
+	 * @return string
 	 */
 	public static function getFormDefinition( Parser $parser, $form_def = null, $form_id = null ) {
 		if ( $form_id !== null ) {
@@ -399,12 +411,10 @@ END;
 				$markerIndex = count( $items );
 				$items[] = $matches[0];
 				return "$rnd-item-$markerIndex-$rnd";
-
 			},
 
 			$form_def
 		);
-
 
 		// parse wiki-text
 		if ( isset( $parser->mInParse ) && $parser->mInParse === true ) {
@@ -418,7 +428,7 @@ END;
 		$form_def = preg_replace_callback(
 			"/{$rnd}-item-(\d+)-{$rnd}/",
 			function ( array $matches ) use ( $items ) {
-				$markerIndex = (int) $matches[1];
+				$markerIndex = (int)$matches[1];
 				return $items[$markerIndex];
 			},
 			$form_def
@@ -437,6 +447,9 @@ END;
 
 	/**
 	 * Get a form definition from cache
+	 * @param string $form_id
+	 * @param Parser $parser
+	 * @return string|null
 	 */
 	protected static function getFormDefinitionFromCache( $form_id, Parser $parser ) {
 		global $wgPageFormsCacheFormDefinitions;
@@ -467,6 +480,9 @@ END;
 
 	/**
 	 * Store a form definition in cache
+	 * @param string $form_id
+	 * @param string $form_def
+	 * @param Parser $parser
 	 */
 	protected static function cacheFormDefinition( $form_id, $form_def, Parser $parser ) {
 		global $wgPageFormsCacheFormDefinitions;
@@ -504,12 +520,12 @@ END;
 	 * Deletes the form definition associated with the given wiki page
 	 * from the main cache.
 	 *
-	 * Hooks: ArticlePurge, ArticleSave
+	 * Hooks: ArticlePurge, PageContentSave
 	 *
-	 * @param Page $wikipage
+	 * @param WikiPage $wikipage
 	 * @return bool
 	 */
-	public static function purgeCache( Page $wikipage ) {
+	public static function purgeCache( WikiPage $wikipage ) {
 		if ( !$wikipage->getTitle()->inNamespace( PF_NS_FORM ) ) {
 			return true;
 		}
@@ -539,13 +555,13 @@ END;
 
 	/**
 	 *  Get the cache object used by the form cache
+	 * @return BagOStuff
 	 */
 	public static function getFormCache() {
 		global $wgPageFormsFormCacheType, $wgParserCacheType;
-		$ret = wfGetCache( ( $wgPageFormsFormCacheType !== null ) ? $wgPageFormsFormCacheType : $wgParserCacheType  );
+		$ret = wfGetCache( ( $wgPageFormsFormCacheType !== null ) ? $wgPageFormsFormCacheType : $wgParserCacheType );
 		return $ret;
 	}
-
 
 	/**
 	 * Get a cache key.
@@ -563,11 +579,13 @@ END;
 		}
 	}
 
-	/*
+	/**
 	 * Get section header HTML
+	 * @param string $header_name
+	 * @param int $header_level
+	 * @return string
 	 */
 	static function headerHTML( $header_name , $header_level = 2 ) {
-
 		global $wgPageFormsTabIndex;
 
 		$wgPageFormsTabIndex++;
@@ -587,6 +605,10 @@ END;
 	/**
 	 * Get the changed index if a new template or section was
 	 * inserted before the end, or one was deleted in the form
+	 * @param int $i
+	 * @param int|null $new_item_loc
+	 * @param int|null $deleted_item_loc
+	 * @return int
 	 */
 	static function getChangedIndex( $i, $new_item_loc, $deleted_item_loc ) {
 		$old_i = $i;

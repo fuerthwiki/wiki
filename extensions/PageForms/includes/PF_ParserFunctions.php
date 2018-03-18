@@ -16,8 +16,8 @@ use MediaWiki\MediaWikiServices;
  * {{#default_form:formName}}
  *
  * This function sets the specified form to be the default form for pages
- * in that category. It is a substitute for the now-deprecated "Has
- * default form" special property.
+ * in that category, namespace or page. If called without an argument,
+ * it specifies that the relevant page(s) should have no form.
  *
  * '#forminput' is called as:
  *
@@ -83,7 +83,7 @@ use MediaWiki\MediaWikiServices;
  * parameters. Its behavior is quite similar to that of 'formlink' as well;
  * the only difference is that, when the 'target' is an existing page, it
  * creates a link directly to that page, instead of to a form to edit the
- * page. 
+ * page.
  *
  *
  * '#queryformlink' links to Special:RunQuery, instead of Special:FormEdit.
@@ -104,11 +104,10 @@ use MediaWiki\MediaWikiServices;
  * together using the 'new_delimiter' string. Both 'delimiter' and
  * 'new_delimiter' default to commas.
  *
- * Example: to take a semicolon-delimited list, and place the attribute
- * 'Has color' around each element in the list, you could call the
- * following:
+ * Example: to take a semicolon-delimited list, and make each element
+ * in the list a link, you could call the following:
  *
- * {{#arraymap:blue;red;yellow|;|x|[[Has color::x]]|;}}
+ * {{#arraymap:blue;red;yellow|;|x|[[x]]|;}}
  *
  *
  * '#arraymaptemplate' is called as:
@@ -139,8 +138,8 @@ use MediaWiki\MediaWikiServices;
  * 'query string' variable.
  *
  * The parameters of #autoedit are called in the same format as those
- * of #formlink. The one addition, 'reload', will, if added, cause the page
- * to reload after the user clicks the button or link.
+ * of #formlink. The one addition, 'reload', causes the page to reload
+ * after the user clicks the button or link.
  *
  * @author Yaron Koren
  * @author Sergey Chernyshev
@@ -155,9 +154,9 @@ class PFParserFunctions {
 
 	// static variable to guarantee that Javascript for autocompletion
 	// only gets added to the page once
-	static $num_autocompletion_inputs = 0;
+	private static $num_autocompletion_inputs = 0;
 
-	static function renderDefaultform( &$parser ) {
+	public static function renderDefaultForm( &$parser ) {
 		$curTitle = $parser->getTitle();
 
 		$params = func_get_args();
@@ -188,39 +187,45 @@ class PFParserFunctions {
 		// It's not a category - display nothing.
 	}
 
-	static function renderFormLink ( &$parser ) {
+	public static function renderFormLink( &$parser ) {
 		$params = func_get_args();
 		array_shift( $params ); // We don't need the parser.
-
-		// hack to remove newline from beginning of output, thanks to
-		// http://jimbojw.com/wiki/index.php?title=Raw_HTML_Output_from_a_MediaWiki_Parser_Function
-		return $parser->insertStripItem( self::createFormLink( $parser, $params, 'formlink' ), $parser->mStripState );
+		$str = self::createFormLink( $parser, $params, 'formlink' );
+		return array( $str, 'noparse' => true, 'isHTML' => true );
 	}
 
-	static function renderFormRedLink ( &$parser ) {
+	public static function renderFormRedLink( &$parser ) {
 		$params = func_get_args();
 		array_shift( $params ); // We don't need the parser.
-
-		// hack to remove newline from beginning of output, thanks to
-		// http://jimbojw.com/wiki/index.php?title=Raw_HTML_Output_from_a_MediaWiki_Parser_Function
-		return $parser->insertStripItem( self::createFormLink( $parser, $params, 'formredlink' ), $parser->mStripState );
+		$str = self::createFormLink( $parser, $params, 'formredlink' );
+		return array( $str, 'noparse' => true, 'isHTML' => true );
 	}
 
-	static function renderQueryFormLink ( &$parser ) {
+	public static function renderQueryFormLink( &$parser ) {
 		$params = func_get_args();
 		array_shift( $params ); // We don't need the parser.
-
-		// hack to remove newline from beginning of output, thanks to
-		// http://jimbojw.com/wiki/index.php?title=Raw_HTML_Output_from_a_MediaWiki_Parser_Function
-		return $parser->insertStripItem( self::createFormLink( $parser, $params, 'queryformlink' ), $parser->mStripState );
+		$str = self::createFormLink( $parser, $params, 'queryformlink' );
+		return array( $str, 'noparse' => true, 'isHTML' => true );
 	}
 
-	static function renderFormInput( &$parser ) {
+	private static function convertQueryString( $queryString, $inQueryArr ) {
+		// Change HTML-encoded ampersands directly to URL-encoded
+		// ampersands, so that the string doesn't get split up on the '&'.
+		$queryString = str_replace( '&amp;', '%26', $queryString );
+		// "Decode" any other HTML tags.
+		$queryString = html_entity_decode( $queryString, ENT_QUOTES );
+
+		parse_str( $queryString, $arr );
+
+		return PFUtils::array_merge_recursive_distinct( $inQueryArr, $arr );
+	}
+
+	public static function renderFormInput( &$parser ) {
 		$params = func_get_args();
 		array_shift( $params ); // don't need the parser
 
 		// Set defaults.
-		$inFormName = $inValue = $inButtonStr = $inQueryStr = '';
+		$inFormName = $inValue = $inButtonStr = '';
 		$inQueryArr = array();
 		$inAutocompletionSource = '';
 		$inSize = 25;
@@ -254,15 +259,7 @@ class PFParserFunctions {
 			} elseif ( $paramName == 'button text' ) {
 				$inButtonStr = $value;
 			} elseif ( $paramName == 'query string' ) {
-				// Change HTML-encoded ampersands directly to
-				// URL-encoded ampersands, so that the string
-				// doesn't get split up on the '&'.
-				$inQueryStr = str_replace( '&amp;', '%26', $value );
-				// "Decode" any other HTML tags.
-				$inQueryStr = html_entity_decode( $inQueryStr, ENT_QUOTES );
-
-				parse_str( $inQueryStr, $arr );
-				$inQueryArr = PFUtils::array_merge_recursive_distinct( $inQueryArr, $arr );
+				$inQueryArr = self::convertQueryString( $value, $inQueryArr );
 			} elseif ( $paramName == 'autocomplete on category' ) {
 				$inAutocompletionSource = $value;
 				$autocompletionType = 'category';
@@ -277,7 +274,7 @@ class PFParserFunctions {
 			} elseif ( $paramName == 'no autofocus' ) {
 				$inAutofocus = false;
 			} else {
-				$value = urlencode($value);
+				$value = urlencode( $value );
 				parse_str( "$paramName=$value", $arr );
 				$inQueryArr = PFUtils::array_merge_recursive_distinct( $inQueryArr, $arr );
 			}
@@ -306,16 +303,13 @@ class PFParserFunctions {
 			$inputID = 'input_' . $input_num;
 			$formInputAttrs['id'] = $inputID;
 			$formInputAttrs['class'] = 'autocompleteInput createboxInput formInput';
-			global $wgPageFormsMaxLocalAutocompleteValues;
-			$autocompletion_values = PFValuesUtils::getAutocompleteValues( $inAutocompletionSource, $autocompletionType );
-			if ( count( $autocompletion_values ) > $wgPageFormsMaxLocalAutocompleteValues ) {
-				$formInputAttrs['autocompletesettings'] = $inAutocompletionSource;
-				$formInputAttrs['autocompletedatatype'] = $autocompletionType;
-			} else {
-				global $wgPageFormsAutocompleteValues;
-				$wgPageFormsAutocompleteValues[$inputID] = $autocompletion_values;
-				$formInputAttrs['autocompletesettings'] = $inputID;
-			}
+			// This code formerly only used remote autocompletion
+			// when the number of autocompletion values was above
+			// a certain limit - as happens in regular forms -
+			// but local autocompletion didn't always work,
+			// apparently due to page caching.
+			$formInputAttrs['autocompletesettings'] = $inAutocompletionSource;
+			$formInputAttrs['autocompletedatatype'] = $autocompletionType;
 		}
 
 		// The value has already been HTML-encoded as a parameter,
@@ -382,15 +376,17 @@ class PFParserFunctions {
 				) . "\n";
 		}
 
-		// Hack to remove newline from beginning of output, thanks to
-		// http://jimbojw.com/wiki/index.php?title=Raw_HTML_Output_from_a_MediaWiki_Parser_Function
-		return $parser->insertStripItem( $str, $parser->mStripState );
+		return array( $str, 'noparse' => true, 'isHTML' => true );
 	}
 
 	/**
 	 * {{#arraymap:value|delimiter|var|formula|new_delimiter}}
+	 * @param Parser &$parser
+	 * @param PPFrame $frame
+	 * @param array $args
+	 * @return string
 	 */
-	static function renderArrayMap( &$parser, $frame, $args ) {
+	public static function renderArrayMap( &$parser, $frame, $args ) {
 		// Set variables.
 		$value = isset( $args[0] ) ? trim( $frame->expand( $args[0] ) ) : '';
 		$delimiter = isset( $args[1] ) ? trim( $frame->expand( $args[1] ) ) : ',';
@@ -414,12 +410,16 @@ class PFParserFunctions {
 		// non-null, and the new, mapped value is non-null as well.
 		foreach ( $values_array as $old_value ) {
 			$old_value = trim( $old_value );
-			if ( $old_value == '' ) continue;
+			if ( $old_value == '' ) {
+				continue;
+			}
 			$result_value = $frame->expand( $formula, PPFrame::NO_ARGS | PPFrame::NO_TEMPLATES );
 			$result_value = str_replace( $var, $old_value, $result_value );
 			$result_value = $parser->preprocessToDom( $result_value, $frame->isTemplate() ? Parser::PTD_FOR_INCLUSION : 0 );
 			$result_value = trim( $frame->expand( $result_value ) );
-			if ( $result_value == '' ) continue;
+			if ( $result_value == '' ) {
+				continue;
+			}
 			$results_array[] = $result_value;
 		}
 		return implode( $new_delimiter, $results_array );
@@ -427,8 +427,12 @@ class PFParserFunctions {
 
 	/**
 	 * {{#arraymaptemplate:value|template|delimiter|new_delimiter}}
+	 * @param Parser &$parser
+	 * @param PPFrame $frame
+	 * @param array $args
+	 * @return string
 	 */
-	static function renderArrayMapTemplate( &$parser, $frame, $args ) {
+	public static function renderArrayMapTemplate( &$parser, $frame, $args ) {
 		// Set variables.
 		$value = isset( $args[0] ) ? trim( $frame->expand( $args[0] ) ) : '';
 		$template = isset( $args[1] ) ? trim( $frame->expand( $args[1] ) ) : '';
@@ -449,7 +453,9 @@ class PFParserFunctions {
 		$results_array = array();
 		foreach ( $values_array as $old_value ) {
 			$old_value = trim( $old_value );
-			if ( $old_value == '' ) continue;
+			if ( $old_value == '' ) {
+				continue;
+			}
 			$bracketed_value = $frame->virtualBracketedImplode( '{{', '|', '}}',
 				$template, '1=' . $old_value );
 			// Special handling if preprocessor class is set to
@@ -463,8 +469,7 @@ class PFParserFunctions {
 		return implode( $new_delimiter, $results_array );
 	}
 
-
-	static function renderAutoEdit( &$parser ) {
+	public static function renderAutoEdit( &$parser ) {
 		global $wgContentNamespaces;
 
 		$parser->getOutput()->addModules( 'ext.pageforms.autoedit' );
@@ -504,14 +509,7 @@ class PFParserFunctions {
 					$summary = $parser->recursiveTagParse( $value );
 					break;
 				case 'query string' :
-
-					// Change HTML-encoded ampersands directly to
-					// URL-encoded ampersands, so that the string
-					// doesn't get split up on the '&'.
-					$inQueryStr = str_replace( '&amp;', '%26', $value );
-
-					parse_str( $inQueryStr, $arr );
-					$inQueryArr = PFUtils::array_merge_recursive_distinct( $inQueryArr, $arr );
+					$inQueryArr = self::convertQueryString( $value, $inQueryArr );
 					break;
 
 				case 'ok text':
@@ -537,7 +535,14 @@ class PFParserFunctions {
 						// #autoedit be called for non-
 						// content namespaces like
 						// "Template" or "Talk".
-						if ( !in_array( $targetTitle->getNamespace(), $wgContentNamespaces ) ) {
+						// $wgContentNamespaces mostly
+						// fits our needs, though it's
+						// slightly too restrictive.
+						$allowedNamespaces = array_merge(
+							$wgContentNamespaces,
+							array( NS_CATEGORY )
+						);
+						if ( !in_array( $targetTitle->getNamespace(), $allowedNamespaces ) ) {
 							return '<div class="error">Error: Invalid namespace "' .
 								$targetTitle->getNsText() . '"; only content namespaces are allowed for #autoedit.</div>';
 						}
@@ -555,7 +560,6 @@ class PFParserFunctions {
 
 		// query string has to be turned into hidden inputs.
 		if ( !empty( $inQueryArr ) ) {
-
 			$query_components = explode( '&', http_build_query( $inQueryArr, '', '&' ) );
 
 			foreach ( $query_components as $query_component ) {
@@ -608,10 +612,10 @@ class PFParserFunctions {
 		return $parser->insertStripItem( $output, $parser->mStripState );
 	}
 
-	static function createFormLink( &$parser, $params, $parserFunctionName ) {
+	private static function createFormLink( &$parser, $params, $parserFunctionName ) {
 		// Set defaults.
 		$inFormName = $inLinkStr = $inExistingPageLinkStr = $inLinkType =
-			$inTooltip = $inQueryStr = $inTargetName = '';
+			$inTooltip = $inTargetName = '';
 		if ( $parserFunctionName == 'queryformlink' ) {
 			$inLinkStr = wfMessage( 'runquery' )->parse();
 		}
@@ -648,13 +652,7 @@ class PFParserFunctions {
 			} elseif ( $param_name == 'link type' ) {
 				$inLinkType = $value;
 			} elseif ( $param_name == 'query string' ) {
-				// Change HTML-encoded ampersands directly to
-				// URL-encoded ampersands, so that the string
-				// doesn't get split up on the '&'.
-				$inQueryStr = str_replace( '&amp;', '%26', $value );
-
-				parse_str( $inQueryStr, $arr );
-				$inQueryArr = PFUtils::array_merge_recursive_distinct( $inQueryArr, $arr );
+				$inQueryArr = self::convertQueryString( $value, $inQueryArr );
 			} elseif ( $param_name == 'tooltip' ) {
 				$inTooltip = Sanitizer::decodeCharReferences( $value );
 			} elseif ( $param_name == 'target' ) {
@@ -737,7 +735,6 @@ class PFParserFunctions {
 			// Special handling for the buttons - query string
 			// has to be turned into hidden inputs.
 			if ( $inLinkType == 'button' || $inLinkType == 'post button' ) {
-
 				$query_components = explode( '&', http_build_query( $inQueryArr, '', '&' ) );
 
 				foreach ( $query_components as $query_component ) {
@@ -784,7 +781,7 @@ class PFParserFunctions {
 		return $str;
 	}
 
-	static function loadScriptsForPopupForm( &$parser ) {
+	private static function loadScriptsForPopupForm( &$parser ) {
 		$parser->getOutput()->addModules( 'ext.pageforms.popupformedit' );
 		return true;
 	}

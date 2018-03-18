@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFTokensInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFTokensInput class.
- *
  * @ingroup PFFormInput
  */
 class PFTokensInput extends PFFormInput {
@@ -85,7 +81,7 @@ class PFTokensInput extends PFFormInput {
 				$image_param = $other_args['image'];
 				$wgPageFormsEDSettings[$name]['image'] = $image_param;
 				global $edgValues;
-				for ($i = 0; $i < count($edgValues[$image_param]); $i++) {
+				for ( $i = 0; $i < count( $edgValues[$image_param] ); $i++ ) {
 					$image = $edgValues[$image_param][$i];
 					if ( strpos( $image, "http" ) !== 0 ) {
 						$file = wfFindFile( $image );
@@ -150,11 +146,21 @@ class PFTokensInput extends PFFormInput {
 		if ( array_key_exists( 'max values', $other_args ) ) {
 			$inputAttrs['maxvalues'] = $other_args['max values'];
 		}
- 		if ( array_key_exists( 'namespace', $other_args ) ) {
- 			$inputAttrs['data-namespace'] = $other_args['namespace'];
- 		}
+		if ( array_key_exists( 'namespace', $other_args ) ) {
+			$inputAttrs['data-namespace'] = $other_args['namespace'];
+		}
 
 		$text = "\n\t" . Html::input( $input_name, $cur_value, 'text', $inputAttrs ) . "\n";
+
+		if ( array_key_exists( 'uploadable', $other_args ) && $other_args['uploadable'] == true ) {
+			if ( array_key_exists( 'default filename', $other_args ) ) {
+				$default_filename = $other_args['default filename'];
+			} else {
+				$default_filename = '';
+			}
+
+			$text .= PFTextInput::uploadableHTML( $input_id, $delimiter, $default_filename, $cur_value, $other_args );
+		}
 
 		$spanClass = 'inputSpan';
 		if ( $is_mandatory ) {
@@ -164,7 +170,6 @@ class PFTokensInput extends PFFormInput {
 
 		return $text;
 	}
-
 
 	public static function getParameters() {
 		$params = parent::getParameters();
@@ -189,12 +194,23 @@ class PFTokensInput extends PFFormInput {
 			'description' => wfMessage( 'pf_forminputs_maxvalues' )->text()
 		);
 		$params = array_merge( $params, PFTextWithAutocompleteInput::getAutocompletionParameters() );
+		$params[] = array(
+			'name' => 'uploadable',
+			'type' => 'boolean',
+			'description' => wfMessage( 'pf_forminputs_uploadable' )->text()
+		);
+		$params[] = array(
+			'name' => 'default filename',
+			'type' => 'string',
+			'description' => wfMessage( 'pf_forminputs_defaultfilename' )->text()
+		);
 
 		return $params;
 	}
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		return self::getHTML(

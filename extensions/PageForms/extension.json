@@ -1,7 +1,7 @@
 {
 	"@Note": "When updating this file please also update PageForms.php with the same changes.",
 	"name": "Page Forms",
-	"version": "4.1.2",
+	"version": "4.2.1",
 	"author": [
 		"Yaron Koren",
 		"Stephan Gambke",
@@ -138,6 +138,7 @@
 		"PFTokensInput": "includes/forminputs/PF_TokensInput.php",
 		"PFGoogleMapsInput": "includes/forminputs/PF_GoogleMapsInput.php",
 		"PFOpenLayersInput": "includes/forminputs/PF_OpenLayersInput.php",
+		"PFLeafletInput": "includes/forminputs/PF_LeafletInput.php",
 		"PFRegExpInput": "includes/forminputs/PF_RegExpInput.php",
 		"PFRatingInput": "includes/forminputs/PF_RatingInput.php",
 		"PFWikiPage": "includes/wikipage/PF_WikiPage.php",
@@ -160,9 +161,7 @@
 			"dependencies": [
 				"jquery.ui.core",
 				"jquery.ui.autocomplete",
-				"jquery.ui.button",
 				"jquery.ui.sortable",
-				"jquery.ui.widget",
 				"ext.pageforms.fancybox",
 				"ext.pageforms.autogrow",
 				"mediawiki.util",
@@ -178,6 +177,7 @@
 				"pf_bad_email_error",
 				"pf_bad_number_error",
 				"pf_bad_date_error",
+				"pf_modified_input_error",
 				"pf_pipe_error"
 			]
 		},
@@ -267,21 +267,18 @@
 			"dependencies": [
 				"jquery.ui.datepicker",
 				"ext.pageforms.main"
-			],
-			"position": "bottom"
+			]
 		},
 		"ext.pageforms.timepicker": {
 			"scripts": "libs/PF_timepicker.js",
-			"styles": "skins/PF_Timepicker.css",
-			"position": "bottom"
+			"styles": "skins/PF_Timepicker.css"
 		},
 		"ext.pageforms.datetimepicker": {
 			"scripts": "libs/PF_datetimepicker.js",
 			"dependencies": [
 				"ext.pageforms.datepicker",
 				"ext.pageforms.timepicker"
-			],
-			"position": "bottom"
+			]
 		},
 		"ext.pageforms.regexp": {
 			"scripts": "libs/PF_regexp.js",
@@ -302,7 +299,7 @@
 			],
 			"messages": [
 				"pf_forminputs_change_file",
-				"upload-dialog-button-upload"
+				"pf-simpleupload"
 			]
 		},
 		"ext.pageforms.select2": {
@@ -370,12 +367,16 @@
 				"libs/PF_CreateTemplate.js"
 			],
 			"messages": [
-				"pf_blank_error"
+				"pf_blank_error",
+				"pf_createtemplate_hierarchystructureplaceholder"
 			]
 		},
 		"ext.pageforms.PF_CreateClass": {
 			"scripts": [
 				"libs/PF_CreateClass.js"
+			],
+			"messages": [
+				"pf_createtemplate_hierarchystructureplaceholder"
 			]
 		},
 		"ext.pageforms.PF_CreateForm": {
@@ -404,6 +405,9 @@
 			"PFHelperFormAction::displayTab2"
 		],
 		"ArticlePurge": [
+			"PFFormUtils::purgeCache"
+		],
+		"PageContentSave": [
 			"PFFormUtils::purgeCache"
 		],
 		"ParserFirstCallInit": [
@@ -455,6 +459,7 @@
 		"PageFormsCargoFields": [],
 		"PageFormsDependentFields": [],
 		"PageFormsCheckboxesSelectAllMinimum": 10,
+		"PageFormsMapsWithFeeders": [],
 		"PageFormsDatePickerSettings": {
 			"@note": "See PF_DefaultInputSettings.php for allowed values",
 			"FirstDate": null,

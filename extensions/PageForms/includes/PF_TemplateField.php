@@ -22,6 +22,7 @@ class PFTemplateField {
 	private $mCargoTable;
 	private $mCargoField;
 	private $mFieldType;
+	private $mHierarchyStructure;
 
 	private $mPossibleValues;
 	private $mIsList;
@@ -90,6 +91,7 @@ class PFTemplateField {
 	/**
 	 * Called if a matching property is found for a template field when
 	 * a template is parsed during the creation of a form.
+	 * @param string $semantic_property
 	 */
 	function setSemanticProperty( $semantic_property ) {
 		$this->mSemanticProperty = str_replace( '\\', '', $semantic_property );
@@ -101,6 +103,9 @@ class PFTemplateField {
 	/**
 	 * Equivalent to setSemanticProperty(), but called when using Cargo
 	 * instead of SMW.
+	 * @param string $tableName
+	 * @param string $fieldName
+	 * @param string|null $fieldDescription
 	 */
 	function setCargoFieldData( $tableName, $fieldName, $fieldDescription = null ) {
 		$this->mCargoTable = $tableName;
@@ -127,7 +132,12 @@ class PFTemplateField {
 		// We have some "pseudo-types", used for setting the correct
 		// form input.
 		if ( $fieldDescription->mAllowedValues != null ) {
-			$this->mFieldType = 'Enumeration';
+			if ( $fieldDescription->mIsHierarchy == true ) {
+				$this->mFieldType = 'Hierarchy';
+				$this->mHierarchyStructure = $fieldDescription->mHierarchyStructure;
+			} else {
+				$this->mFieldType = 'Enumeration';
+			}
 		} elseif ( $fieldDescription->mType == 'Text' && $fieldDescription->mSize != '' && $fieldDescription->mSize <= 100 ) {
 			$this->mFieldType = 'String';
 		} else {
@@ -178,6 +188,10 @@ class PFTemplateField {
 		return $this->mPossibleValues;
 	}
 
+	function getHierarchyStructure() {
+		return $this->mHierarchyStructure;
+	}
+
 	function isList() {
 		return $this->mIsList;
 	}
@@ -214,4 +228,7 @@ class PFTemplateField {
 		$this->mPossibleValues = $possibleValues;
 	}
 
+	function setHierarchyStructure( $hierarchyStructure ) {
+		$this->mHierarchyStructure = $hierarchyStructure;
+	}
 }

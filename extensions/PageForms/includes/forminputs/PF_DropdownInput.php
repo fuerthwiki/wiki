@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFDropdownInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFDropdownInput class.
- *
  * @ingroup PFFormInput
  */
 class PFDropdownInput extends PFEnumInput {
@@ -88,8 +84,7 @@ class PFDropdownInput extends PFEnumInput {
 				array_key_exists( 'value_labels', $other_args ) &&
 				is_array( $other_args['value_labels'] ) &&
 				array_key_exists( $possible_value, $other_args['value_labels'] )
-			)
-			{
+			) {
 				$label = $other_args['value_labels'][$possible_value];
 			} else {
 				$label = $possible_value;
@@ -119,6 +114,7 @@ class PFDropdownInput extends PFEnumInput {
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		return self::getHTML(

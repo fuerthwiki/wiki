@@ -339,7 +339,7 @@ class PFFormField {
 		}
 
 		// If we're using Cargo, there's no equivalent for "values from
-		// property" - instead, we just always get the values if a 
+		// property" - instead, we just always get the values if a
 		// field and table have been specified.
 		if ( is_null( $f->mPossibleValues ) && defined( 'CARGO_VERSION' ) && $cargo_table != null && $cargo_field != null ) {
 			// We only want the non-null values. Ideally this could
@@ -431,8 +431,8 @@ class PFFormField {
 		$escaped_field_name = str_replace( "'", "\'", $field_name );
 		if ( isset( $template_instance_query_values ) &&
 			$template_instance_query_values != null &&
-			is_array( $template_instance_query_values ) ) {
-
+			is_array( $template_instance_query_values )
+		) {
 			// If the field name contains an apostrophe, the array
 			// sometimes has the apostrophe escaped, and sometimes
 			// not. For now, just check for both versions.
@@ -606,6 +606,8 @@ class PFFormField {
 
 	/**
 	 * Map a label back to a value.
+	 * @param string $label
+	 * @return string
 	 */
 	function labelToValue( $label ) {
 		$value = array_search( $label, $this->mPossibleValues );
@@ -618,6 +620,9 @@ class PFFormField {
 
 	/**
 	 * Map a template field value into labels.
+	 * @param string $valueString
+	 * @param string $delimiter
+	 * @return string|string[]
 	 */
 	public function valueStringToLabels( $valueString, $delimiter ) {
 		if ( strlen( trim( $valueString ) ) === 0 ||
@@ -758,7 +763,9 @@ class PFFormField {
 			$text .= "! $fieldLabel: $descPlaceholder\n";
 		}
 
-		if ( ! $part_of_multiple ) { $text .= "| "; }
+		if ( ! $part_of_multiple ) {
+			$text .= "| ";
+		}
 		$text .= "{{{field|" . $this->template_field->getFieldName();
 		if ( $this->mIsHidden ) {
 			$text .= "|hidden";
@@ -818,6 +825,10 @@ class PFFormField {
 			$other_args['full_cargo_field'] = $fullCargoField;
 		}
 
+		if ( $this->template_field->getFieldType() == 'Hierarchy' ) {
+			$other_args['structure'] = $this->template_field->getHierarchyStructure();
+		}
+
 		if ( ! array_key_exists( 'autocompletion source', $other_args ) ) {
 			if ( $this->template_field->getFieldType() == 'Page' || array_key_exists( 'autocomplete', $other_args ) || array_key_exists( 'remote autocompletion', $other_args ) ) {
 				$other_args['autocompletion source'] = $this->template_field->getFullCargoField();
@@ -831,6 +842,8 @@ class PFFormField {
 	 * create HTML inputs, most arguments are contained in the "$other_args"
 	 * array - create this array, using the attributes of this form
 	 * field and the template field it corresponds to, if any.
+	 * @param array|null $default_args
+	 * @return array
 	 */
 	function getArgumentsForInputCall( $default_args = null ) {
 		// start with the arguments array already defined

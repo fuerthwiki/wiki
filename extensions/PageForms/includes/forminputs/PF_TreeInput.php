@@ -1,7 +1,5 @@
 <?php
 /**
- * File holding the PFTreeInput class
- *
  * @file
  * @ingroup PF
  *
@@ -10,8 +8,6 @@
  */
 
 /**
- * The PFTreeInput class.
- *
  * @ingroup PFFormInput
  */
 class PFTreeInput extends PFFormInput {
@@ -40,6 +36,18 @@ class PFTreeInput extends PFFormInput {
 		}
 	}
 
+	public static function getDefaultCargoTypes() {
+		return array(
+			'Hierarchy' => array()
+		);
+	}
+
+	public static function getDefaultCargoTypeLists() {
+		return array(
+			'Hierarchy' => array()
+		);
+	}
+
 	public static function getOtherCargoTypesHandled() {
 		return array( 'String', 'Page' );
 	}
@@ -51,10 +59,10 @@ class PFTreeInput extends PFFormInput {
 	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, $other_args ) {
 		// Handle the now-deprecated 'category' and 'categories'
 		// input types.
-		if ( $other_args['input type'] == 'category' ) {
+		if ( array_key_exists( 'input type', $other_args ) && $other_args['input type'] == 'category' ) {
 			$inputType = "radio";
 			self::$multipleSelect = false;
-		} elseif ( $other_args['input type'] == 'categories' ) {
+		} elseif ( array_key_exists( 'input type', $other_args ) && $other_args['input type'] == 'categories' ) {
 			$inputType = "checkbox";
 			self::$multipleSelect = true;
 		} else {
@@ -247,6 +255,7 @@ class PFTreeInput extends PFFormInput {
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		return self::getHTML(
@@ -260,7 +269,7 @@ class PFTreeInput extends PFFormInput {
 
 	/**
 	 * Creates a Title object from a user-provided (and thus unsafe) string
-	 * @param $title string
+	 * @param string $title
 	 * @return null|Title
 	 */
 	static function makeTitle( $title ) {

@@ -11,6 +11,12 @@ class PFUtils {
 
 	/**
 	 * Helper function for backward compatibility.
+	 * @param LinkRenderer $linkRenderer
+	 * @param string $title
+	 * @param string|null $msg
+	 * @param array $attrs
+	 * @param array $params
+	 * @return string
 	 */
 	public static function makeLink( $linkRenderer, $title, $msg = null, $attrs = array(), $params = array() ) {
 		if ( !is_null( $linkRenderer ) ) {
@@ -25,6 +31,9 @@ class PFUtils {
 
 	/**
 	 * Creates a link to a special page, using that page's top-level description as the link text.
+	 * @param LinkRenderer $linkRenderer
+	 * @param string $specialPageName
+	 * @return string
 	 */
 	public static function linkForSpecialPage( $linkRenderer, $specialPageName ) {
 		$specialPage = SpecialPageFactory::getPage( $specialPageName );
@@ -36,6 +45,8 @@ class PFUtils {
 	 * Creates the name of the page that appears in the URL;
 	 * this method is necessary because Title::getPartialURL(), for
 	 * some reason, doesn't include the namespace
+	 * @param Title $title
+	 * @return string
 	 */
 	public static function titleURLString( $title ) {
 		$namespace = $title->getNsText();
@@ -53,6 +64,8 @@ class PFUtils {
 	/**
 	 * A very similar function to titleURLString(), to get the
 	 * non-URL-encoded title string
+	 * @param Title $title
+	 * @return string
 	 */
 	public static function titleString( $title ) {
 		$namespace = $title->getNsText();
@@ -69,6 +82,8 @@ class PFUtils {
 
 	/**
 	 * Gets the text contents of a page with the passed-in Title object.
+	 * @param Title $title
+	 * @return string|null
 	 */
 	public static function getPageText( $title ) {
 		$wikiPage = new WikiPage( $title );
@@ -83,6 +98,7 @@ class PFUtils {
 	/**
 	 * Helper function to get the SMW data store for different versions
 	 * of SMW.
+	 * @return Store|null
 	 */
 	public static function getSMWStore() {
 		if ( class_exists( '\SMW\StoreFactory' ) ) {
@@ -97,6 +113,10 @@ class PFUtils {
 
 	/**
 	 * Creates wiki-text for a link to a wiki page
+	 * @param int $namespace
+	 * @param string $name
+	 * @param string|null $text
+	 * @return string
 	 */
 	public static function linkText( $namespace, $name, $text = null ) {
 		$title = Title::makeTitleSafe( $namespace, $name );
@@ -114,6 +134,17 @@ class PFUtils {
 	 * Prints the mini-form contained at the bottom of various pages, that
 	 * allows pages to spoof a normal edit page, that can preview, save,
 	 * etc.
+	 * @param string $title
+	 * @param string $page_contents
+	 * @param string $edit_summary
+	 * @param bool $is_save
+	 * @param bool $is_preview
+	 * @param bool $is_diff
+	 * @param bool $is_minor_edit
+	 * @param bool $watch_this
+	 * @param string $start_time
+	 * @param string $edit_time
+	 * @return string
 	 */
 	public static function printRedirectForm(
 		$title,
@@ -150,7 +181,7 @@ END;
 		$form_body .= Html::hidden( $action, null );
 
 		if ( $is_minor_edit ) {
-			$form_body .= Html::hidden( 'wpMinoredit' , null );
+			$form_body .= Html::hidden( 'wpMinoredit', null );
 		}
 		if ( $watch_this ) {
 			$form_body .= Html::hidden( 'wpWatchthis', null );
@@ -183,6 +214,7 @@ END;
 	 * to display and work correctly.
 	 *
 	 * Accepts an optional Parser instance, or uses $wgOut if omitted.
+	 * @param Parser $parser
 	 */
 	public static function addFormRLModules( $parser = null ) {
 		global $wgOut, $wgPageFormsSimpleUpload;
@@ -232,7 +264,8 @@ END;
 
 	/**
 	 * Returns an array of all form names on this wiki.
-	*/
+	 * @return string[]
+	 */
 	public static function getAllForms() {
 		$dbr = wfGetDB( DB_SLAVE );
 		$res = $dbr->select( 'page',
@@ -251,12 +284,13 @@ END;
 
 	/**
 	 * Creates a dropdown of possible form names.
+	 * @return string
 	 */
 	public static function formDropdownHTML() {
 		global $wgContLang;
 		$namespace_labels = $wgContLang->getNamespaces();
 		$form_label = $namespace_labels[PF_NS_FORM];
-		$form_names = PFUtils::getAllForms();
+		$form_names = self::getAllForms();
 		$select_body = "\n";
 		foreach ( $form_names as $form_name ) {
 			$select_body .= "\t" . Html::element( 'option', null, $form_name ) . "\n";
@@ -266,6 +300,8 @@ END;
 
 	/**
 	 * A helper function, used by getFormTagComponents().
+	 * @param string $s
+	 * @return string
 	 */
 	public static function convertBackToPipes( $s ) {
 		return str_replace( "\1", '|', $s );
@@ -276,6 +312,8 @@ END;
 	 * but does not split on pipes that are contained within additional
 	 * curly brackets, in case the tag contains any calls to parser
 	 * functions or templates.
+	 * @param string $string
+	 * @return string[]
 	 */
 	static function smartSplitFormTag( $string ) {
 		if ( $string == '' ) {
@@ -312,6 +350,8 @@ END;
 	 * explode( '|', $str ), except that it doesn't split on pipes
 	 * that are within parser function calls - i.e., pipes within
 	 * double curly brackets.
+	 * @param string $str
+	 * @return string[]
 	 */
 	public static function getFormTagComponents( $str ) {
 		// Turn each pipe within double curly brackets into another,
@@ -327,6 +367,8 @@ END;
 	/**
 	 * Gets the word in the wiki's language for either the value 'yes' or
 	 * 'no'.
+	 * @param bool $isYes
+	 * @return string
 	 */
 	public static function getWordForYesOrNo( $isYes ) {
 		// @TODO - should Page Forms define these messages itself?
@@ -347,14 +389,13 @@ END;
 	 *
 	 * See http://www.php.net/manual/en/function.array-merge-recursive.php#92195
 	 *
-	 * @param array $array1
-	 * @param array $array2
+	 * @param array &$array1
+	 * @param array &$array2
 	 * @return array
 	 * @author Daniel <daniel (at) danielsmedegaardbuus (dot) dk>
 	 * @author Gabriel Sobrinho <gabriel (dot) sobrinho (at) gmail (dot) com>
 	 */
 	public static function array_merge_recursive_distinct( array &$array1, array &$array2 ) {
-
 		$merged = $array1;
 
 		foreach ( $array2 as $key => &$value ) {

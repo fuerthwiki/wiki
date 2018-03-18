@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFGoogleMapsInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFGoogleMapsInput class.
- *
  * @ingroup PFFormInput
  */
 class PFGoogleMapsInput extends PFOpenLayersInput {
@@ -26,7 +22,7 @@ class PFGoogleMapsInput extends PFOpenLayersInput {
 
 	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, $other_args ) {
 		global $wgPageFormsGoogleMapsKey, $wgPageFormsTabIndex;
-		global $wgOut;
+		global $wgOut, $wgPageFormsMapsWithFeeders;
 
 		$scripts = array(
 			"https://maps.googleapis.com/maps/api/js?v=3.exp&key=$wgPageFormsGoogleMapsKey"
@@ -48,8 +44,12 @@ class PFGoogleMapsInput extends PFOpenLayersInput {
 		);
 		$coordsInput = Html::element( 'input', $coordsInputAttrs );
 		$wgPageFormsTabIndex++;
-		$mapUpdateButton = Html::element( 'input', array( 'type' => 'button', 'class' => 'pfUpdateMap', 'value' => wfMessage( 'pf-maps-setmarker' )->parse() ), null );
-		$addressLookupInput = Html::element( 'input', array( 'type' => 'text', 'tabindex' => $wgPageFormsTabIndex, 'class' => 'pfAddressInput', 'size' => 40, 'placeholder' => wfMessage( 'pf-maps-enteraddress' )->parse() ), null );
+		// The address input box is not necessary if we are using other form inputs for the address.
+		if ( array_key_exists( $input_name, $wgPageFormsMapsWithFeeders ) ) {
+			$addressLookupInput = '';
+		} else {
+			$addressLookupInput = Html::element( 'input', array( 'type' => 'text', 'tabindex' => $wgPageFormsTabIndex, 'class' => 'pfAddressInput', 'size' => 40, 'placeholder' => wfMessage( 'pf-maps-enteraddress' )->parse() ), null );
+		}
 		$addressLookupButton = Html::element( 'input', array( 'type' => 'button', 'class' => 'pfLookUpAddress', 'value' => wfMessage( 'pf-maps-lookupcoordinates' )->parse() ), null );
 		$height = self::getHeight( $other_args );
 		$width = self::getWidth( $other_args );
@@ -57,12 +57,11 @@ class PFGoogleMapsInput extends PFOpenLayersInput {
 
 		$fullInputHTML = <<<END
 <div style="padding-bottom: 10px;">
-$coordsInput
-$mapUpdateButton
-</div>
-<div style="padding-bottom: 10px;">
 $addressLookupInput
 $addressLookupButton
+</div>
+<div style="padding-bottom: 10px;">
+$coordsInput
 </div>
 $mapCanvas
 
@@ -74,6 +73,7 @@ END;
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		return self::getHTML(

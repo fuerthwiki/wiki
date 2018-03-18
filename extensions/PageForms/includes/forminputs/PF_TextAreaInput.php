@@ -1,23 +1,19 @@
 <?php
 
 /**
- * File holding the PFTextAreaInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFTextAreaInput class.
- *
  * @ingroup PFFormInput
  */
 class PFTextAreaInput extends PFFormInput {
 
-	protected $mUseWikieditor = false;
+	protected $mEditor = null;
 
 	public static function getDefaultCargoTypes() {
-			return array( 'Text' => array() );
+		return array( 'Text' => array() );
 	}
 
 	public static function getDefaultCargoTypeLists() {
@@ -25,44 +21,34 @@ class PFTextAreaInput extends PFFormInput {
 			'Text' => array( 'field_type' => 'text', 'is_list' => 'true' )
 		);
 	}
-	
+
 	/**
-	 * Constructor for the PFTextAreaInput class.
-	 *
-	 * @param String $input_number
-	 *	The number of the input in the form. For a simple HTML input element
-	 *	this should end up in the id attribute in the format 'input_<number>'.
-	 * @param String $cur_value
-	 *	The current value of the input field. For a simple HTML input
-	 *	element this should end up in the value attribute.
-	 * @param String $input_name
-	 *	The name of the input. For a simple HTML input element this should
-	 *	end up in the name attribute.
-	 * @param Array $other_args
-	 *	An associative array of other parameters that were present in the
-	 *	input definition.
+	 * @param string $input_number The number of the input in the form. For a simple HTML input
+	 *  element this should end up in the id attribute in the format 'input_<number>'.
+	 * @param string $cur_value The current value of the input field. For a simple HTML input
+	 *  element this should end up in the value attribute.
+	 * @param string $input_name The name of the input. For a simple HTML input element this should
+	 *  end up in the name attribute.
+	 * @param bool $disabled Is this input disabled?
+	 * @param array $other_args An associative array of other parameters that were present in the
+	 *  input definition.
 	 */
 	public function __construct( $input_number, $cur_value, $input_name, $disabled, $other_args ) {
-		
 		global $wgOut;
-		
+
 		parent::__construct( $input_number, $cur_value, $input_name, $disabled, $other_args );
-		
+
 		if (
 			array_key_exists( 'editor', $this->mOtherArgs ) &&
 			$this->mOtherArgs['editor'] == 'wikieditor' &&
-			
-			method_exists( $wgOut, 'getResourceLoader' ) &&
-			in_array( 'jquery.wikiEditor', $wgOut->getResourceLoader()->getModuleNames() ) &&
-			
+			in_array( 'ext.wikiEditor', $wgOut->getResourceLoader()->getModuleNames() ) &&
 			class_exists( 'WikiEditorHooks' )
 		) {
-			$this->mUseWikieditor = true;
+			$this->mEditor = 'wikieditor';
 			$this->addJsInitFunctionData( 'window.ext.wikieditor.init' );
 		}
 	}
 
-	
 	public static function getName() {
 		return 'textarea';
 	}
@@ -136,18 +122,21 @@ class PFTextAreaInput extends PFFormInput {
 
 	/**
 	 * Returns the names of the resource modules this input type uses.
-	 * 
-	 * Returns the names of the modules as an array or - if there is only one 
+	 *
+	 * Returns the names of the modules as an array or - if there is only one
 	 * module - as a string.
-	 * 
+	 *
 	 * @return null|string|array
 	 */
 	public function getResourceModuleNames() {
-		return $this->mUseWikieditor?'ext.pageforms.wikieditor':null;
+		if ( $this->mEditor == 'wikieditor' ) {
+			return 'ext.pageforms.wikieditor';
+		} else {
+			return null;
+		}
 	}
 
 	protected function getTextAreaAttributes() {
-
 		global $wgPageFormsTabIndex, $wgPageFormsFieldNum;
 
 		// Use a special ID for the free text field -
@@ -155,7 +144,7 @@ class PFTextAreaInput extends PFFormInput {
 		// useful for other stuff too.
 		$input_id = $this->mInputName == 'pf_free_text' ? 'pf_free_text' : "input_$wgPageFormsFieldNum";
 
-		if ( $this->mUseWikieditor ) {
+		if ( $this->mEditor == 'wikieditor' ) {
 			// Load modules for all enabled WikiEditor features.
 			// The header for this function was changed in July
 			// 2014, and the function itself was changed
@@ -235,15 +224,21 @@ class PFTextAreaInput extends PFFormInput {
 		if ( array_key_exists( 'placeholder', $this->mOtherArgs ) ) {
 			$textarea_attrs['placeholder'] = $this->mOtherArgs['placeholder'];
 		}
+		if ( array_key_exists( 'feeds to map', $this->mOtherArgs ) ) {
+			global $wgPageFormsMapsWithFeeders;
+			$targetMapName = $this->mOtherArgs['feeds to map'];
+			$wgPageFormsMapsWithFeeders[$targetMapName] = true;
+			$textarea_attrs['data-feeds-to-map'] = $targetMapName;
+		}
 
 		return $textarea_attrs;
 	}
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
-
 		$textarea_attrs = $this->getTextAreaAttributes();
 
 		$text = Html::element( 'textarea', $textarea_attrs, $this->mCurrentValue );

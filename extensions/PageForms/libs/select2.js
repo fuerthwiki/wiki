@@ -1381,6 +1381,21 @@ the specific language governing permissions and limitations under the Apache Lic
         close: function () {
             if (!this.opened()) return;
 
+            // Modification, for Page Forms - prevent the "tab" key from moving on to the next form input,
+            // for either tokens or combobox inputs, so that it can be used as a true value selector -
+            // which is especially useful for tokens.
+            // This modification may possibly become unnecessary if/when select2 is upgraded to a more
+            // recent version, due to the "closeOnSelect" option that select2 now has.
+            // We put a "try" around it because this fails in Firefox and throws a "ReferenceError"
+            // exception. Ideally, this could be fixed - probably by passing around the "event"
+            // parameter in some way - but it's easier to just remove this functionality for Firefox.
+            try {
+                if ( event.key  == 'Tab' ) {
+                     event.preventDefault();
+                }
+            } catch (e) {
+            }
+
             var cid = this.containerId,
                 scroll = "scroll." + cid,
                 resize = "resize."+cid,

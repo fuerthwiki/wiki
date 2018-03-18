@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFTextInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFTextInput class.
- *
  * @ingroup PFFormInput
  */
 class PFTextInput extends PFFormInput {
@@ -148,7 +144,7 @@ class PFTextInput extends PFFormInput {
 		if ( $wgPageFormsSimpleUpload ) {
 			$text = "\n" . '<img class="loading" style="display:none;" src="' . $wgPageFormsScriptPath . '/skins/loading.gif"/>' . "\n";
 			$text .= Html::input( '',
-				wfMessage( 'upload-dialog-button-upload' )->escaped(),
+				wfMessage( 'pf-simpleupload' )->escaped(),
 				'button',
 				array(
 					'class' => 'simpleupload_btn',
@@ -202,7 +198,7 @@ class PFTextInput extends PFFormInput {
 			// window; we're leaving it blank, because otherwise
 			// it can by mistaken by users for a button, leading
 			// to confusion.
-			//'title' => $upload_label,
+			// 'title' => $upload_label,
 			'rev' => $style,
 			'data-input-id' => $input_id
 		);
@@ -242,7 +238,8 @@ class PFTextInput extends PFFormInput {
 		$inputType = '';
 		if ( array_key_exists( 'field_type', $other_args ) &&
 			( !array_key_exists( 'is_list', $other_args ) ||
-			!$other_args['is_list']	) ) {
+			!$other_args['is_list'] )
+		) {
 			if ( $other_args['field_type'] == 'number' ) {
 				$size = 10;
 				$inputType = 'number';
@@ -272,6 +269,12 @@ class PFTextInput extends PFFormInput {
 		}
 		if ( array_key_exists( 'placeholder', $other_args ) ) {
 			$inputAttrs['placeholder'] = $other_args['placeholder'];
+		}
+		if ( array_key_exists( 'feeds to map', $other_args ) ) {
+			global $wgPageFormsMapsWithFeeders;
+			$targetMapName = $other_args['feeds to map'];
+			$wgPageFormsMapsWithFeeders[$targetMapName] = true;
+			$inputAttrs['data-feeds-to-map'] = $targetMapName;
 		}
 		$text = Html::input( $input_name, $cur_value, 'text', $inputAttrs );
 
@@ -339,6 +342,7 @@ class PFTextInput extends PFFormInput {
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		return self::getHTML(

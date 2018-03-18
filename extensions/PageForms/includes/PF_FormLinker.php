@@ -50,7 +50,7 @@ class PFFormLinker {
 		// Allow outside code to set/change the preloaded text.
 		Hooks::run( 'PageForms::EditFormPreloadText', array( &$preloadContent, $title, $formTitle ) );
 
-		list ( $formText, $pageText, $formPageTitle, $generatedPageName ) =
+		list( $formText, $pageText, $formPageTitle, $generatedPageName ) =
 			$wgPageFormsFormPrinter->formHTML( $formDefinition, false, false, null, $preloadContent, 'Some very long page name that will hopefully never get created ABCDEF123', null );
 		$params = array();
 
@@ -75,6 +75,13 @@ class PFFormLinker {
 	/**
 	 * Sets the URL for form-based creation of a nonexistent (broken-linked,
 	 * AKA red-linked) page
+	 * @param Linker $linker
+	 * @param Title $target
+	 * @param array $options
+	 * @param string $text
+	 * @param array &$attribs
+	 * @param bool &$ret
+	 * @return true
 	 */
 	static function setBrokenLink( $linker, $target, $options, $text, &$attribs, &$ret ) {
 		// If it's not a broken (red) link, exit.
@@ -103,6 +110,8 @@ class PFFormLinker {
 	 * - the default form(s) for a category that this article belongs to,
 	 * if there are any; or
 	 * - the default form(s) for the article's namespace, if there are any.
+	 * @param Title $title
+	 * @return array
 	 */
 	static function getDefaultFormsForPage( $title ) {
 		// See if the page itself has a default form (or forms), and
@@ -110,7 +119,11 @@ class PFFormLinker {
 		// (Disregard category pages for this check.)
 		if ( $title->getNamespace() != NS_CATEGORY ) {
 			$default_form = self::getDefaultForm( $title );
-			if ( $default_form != '' ) {
+			if ( $default_form === '' ) {
+				// A call to "{{#default_form:}}" (i.e., no form
+				// specified) should cancel any inherited forms.
+				return array();
+			} elseif ( $default_form !== null ) {
 				return array( $default_form );
 			}
 		}

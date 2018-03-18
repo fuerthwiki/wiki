@@ -1,14 +1,10 @@
 <?php
 /**
- * File holding the PFCheckboxesInput class
- *
  * @file
  * @ingroup PF
  */
 
 /**
- * The PFCheckboxesInput class.
- *
  * @ingroup PFFormInput
  */
 class PFCheckboxesInput extends PFMultiEnumInput {
@@ -137,6 +133,7 @@ class PFCheckboxesInput extends PFMultiEnumInput {
 
 	/**
 	 * Returns the HTML code to be included in the output page for this input.
+	 * @return string
 	 */
 	public function getHtmlText() {
 		return self::getHTML(
