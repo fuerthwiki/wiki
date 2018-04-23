@@ -182,7 +182,7 @@ $wgDefaultUserOptions['thumbsize'] = 2; //180px
 
 ## Enables Signiture-Button also for Articles (#37)
 ## see https://www.mediawiki.org/wiki/Manual:$wgExtraSignatureNamespaces
-$wgExtraSignatureNamespaces = array( NS_MAIN, NS_HELP );
+$wgExtraSignatureNamespaces = array( NS_MAIN, NS_HELP, NS_PROJECT );
 
 # Enabled Extensions. Most extensions are enabled by including the base extension file here
 # but check specific extension documentation for more details
@@ -219,22 +219,12 @@ foreach ( $arr as $key => $value ) {
 $wgUseImageMagick = true;
 $wgImageMagickConvertCommand = '/usr/bin/convert';
 
-# ---------------------------------------------------------------------------- #
-#require_once( "$IP/extensions/Gadgets/Gadgets.php" );
-#require_once( "$IP/extensions/Nuke/Nuke.php" );
-
 # First line autocreated, second line added by Red Rooster
 require_once("$IP/extensions/ParserFunctions/ParserFunctions.php");
 $wgPFEnableStringFunctions = true;
 $wgPFStringLengthLimit = 100000;
 
-#require_once( "$IP/extensions/Renameuser/Renameuser.php" );
-#require_once( "$IP/extensions/Vector/Vector.php" );
 require_once("$IP/extensions/WikiEditor/WikiEditor.php" );
-
-
-# End of automatically generated settings.
-# Add more configuration options below.
 
 # Needed for footnotes!
 require_once("$IP/extensions/Cite/Cite.php");
@@ -243,7 +233,6 @@ require_once("$IP/extensions/Validator/Validator.php");
 
 # Semantic Mediawiki
 require_once("$IP/extensions/SemanticMediaWiki/SemanticMediaWiki.php");
-//$egGoogleJsApiKey = "xxxxxxxxxxxxxxxxxxxxxxx";
 
 # Semantic Result Formats and Forms
 enableSemantics( 'fuerthwiki.de' );
@@ -267,15 +256,6 @@ wfLoadExtension( 'MobileTabsPlugin' );
 # CategoryTree extension
 $wgUseAjax = true;
 require_once("$IP/extensions/CategoryTree/CategoryTree.php");
-
-# Variables extension
-
-# Facebook extension
-#require_once("$IP/extensions/Facebook/Facebook.php");
-#$wgFbAppId  = '294659870655724';
-
-#$wgFbSecret = 'b760f91121a6a350a848174c5a7200be';
-#$smwgShowFactbox = SMW_FACTBOX_NONEMPTY;
 
 # FancyDancyBox
 require_once("$IP/extensions/FancyBoxThumbs/FancyBoxThumbs.php");
@@ -326,7 +306,10 @@ wfLoadExtension( 'CodeEditor' );
 wfLoadExtension( 'HitCounters' );
 
 wfLoadExtension( 'PageForms' );
-#$wgAmericanDates = true;
+
+wfLoadExtension( 'TextExtracts' );
+
+wfLoadExtension( 'Popups' );
 
 wfLoadExtension( 'CollapsibleVector' );
 
