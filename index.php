@@ -9,6 +9,13 @@ if ($_SERVER['REMOTE_ADDR'] != '146.52.238.94') {
 }
 */
 
+/* #Blackout21 - Abschaltung zum Protest gegen #Artikel13. */
+if (date('d') == '21' && date('m') == '3' && date('Y') == '2019') {
+	header('HTTP/1.1 503 Service Temporarily Unavailable'); //send the proper response code
+	header('Retry-After: 3600'); //Retry after 1 hour
+	header('Location: https://www.fuerthwiki.de/verein/2019/03/18/wir-sind-dann-mal-weg/');
+	exit;
+}
 
 /**
  * This is the main web entry point for MediaWiki.
