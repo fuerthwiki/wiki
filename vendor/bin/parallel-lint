@@ -1,1 +1,4 @@
-../jakub-onderka/php-parallel-lint/parallel-lint
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/parallel-lint.php';

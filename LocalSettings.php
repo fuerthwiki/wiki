@@ -92,6 +92,19 @@ $wgMainCacheType    = CACHE_NONE;
 $wgMemCachedServers = array();
 $wgMemoryLimit = "1024M";
 
+# THAT WHOLE BLOCK FIXES NOTHING ----------------------------------------------
+# Saving PageForms complete and correct
+$wgMaxShellMemory = 524288;
+
+# Loading PageForms complete and correct
+$wgPageFormsCacheAutocompleteValues = true;
+$wgPageFormsAutocompleteCacheTimeout = 60*60*12; // 12 hours (in seconds)
+$wgPageFormsMaxLocalAutocompleteValues = 1000;
+# That fixes frozen forms and double save
+$wgHTTPTimeout = 100;
+$wgAsyncHTTPTimeout = 100;
+# -----------------------------------------------------------------------------
+
 ## How to handle SVGs
 #$wgFileExtensions[] = "svg";
 $wgFileExtensions = array_merge( $wgFileExtensions, array( 'svg', 'mp3', 'mp4', 'pdf' ));
@@ -172,8 +185,8 @@ $wgGroupPermissions['*']['rollback'] = false;
 $wgExtraNamespaces =
 	array(100 => "Portal",
 	      101 => "Portal_Diskussion",
-	      200 => "Objekt",
-	      201 => "Objekt_Diskussion",
+	      200 => "Klasse",
+	      201 => "Klasse_Diskussion",
 );
 $smwgNamespacesWithSemanticLinks[200] = true;
 $smwgNamespacesWithSemanticLinks[201] = true;
