@@ -43,8 +43,28 @@ class TaskHandlerFactoryTest extends \PHPUnit_Framework_TestCase {
 	public function testCanConstruct() {
 
 		$this->assertInstanceOf(
-			'\SMW\MediaWiki\Specials\Admin\TaskHandlerFactory',
+			TaskHandlerFactory::class,
 			new TaskHandlerFactory( $this->store, $this->htmlFormRenderer, $this->outputFormatter )
+		);
+	}
+
+	public function testGetTaskHandlerList() {
+
+		$user = $this->getMockBuilder( '\User' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$adminFeatures = '';
+
+		$instance = new TaskHandlerFactory(
+			$this->store,
+			$this->htmlFormRenderer,
+			$this->outputFormatter
+		);
+
+		$this->assertInternalType(
+			'array',
+			$instance->getTaskHandlerList( $user, $adminFeatures )
 		);
 	}
 
@@ -61,61 +81,66 @@ class TaskHandlerFactoryTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertInstanceOf(
 			$expected,
-			call_user_func( array( $instance, $method ) )
+			call_user_func( [ $instance, $method ] )
 		);
 	}
 
 	public function methodProvider() {
 
-		$provider[] = array(
+		$provider[] = [
 			'newTableSchemaTaskHandler',
 			'\SMW\MediaWiki\Specials\Admin\TableSchemaTaskHandler'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'newSupportListTaskHandler',
 			'\SMW\MediaWiki\Specials\Admin\SupportListTaskHandler'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'newConfigurationListTaskHandler',
 			'\SMW\MediaWiki\Specials\Admin\ConfigurationListTaskHandler'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'newOperationalStatisticsListTaskHandler',
 			'\SMW\MediaWiki\Specials\Admin\OperationalStatisticsListTaskHandler'
-		);
+		];
 
-		$provider[] = array(
-			'newIdTaskHandler',
-			'\SMW\MediaWiki\Specials\Admin\IdTaskHandler'
-		);
+		$provider[] = [
+			'newEntityLookupTaskHandler',
+			'\SMW\MediaWiki\Specials\Admin\EntityLookupTaskHandler'
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'newDataRefreshJobTaskHandler',
 			'\SMW\MediaWiki\Specials\Admin\DataRefreshJobTaskHandler'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'newDisposeJobTaskHandler',
 			'\SMW\MediaWiki\Specials\Admin\DisposeJobTaskHandler'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'newPropertyStatsRebuildJobTaskHandler',
 			'\SMW\MediaWiki\Specials\Admin\PropertyStatsRebuildJobTaskHandler'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'newFulltextSearchTableRebuildJobTaskHandler',
 			'\SMW\MediaWiki\Specials\Admin\FulltextSearchTableRebuildJobTaskHandler'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'newDeprecationNoticeTaskHandler',
 			'\SMW\MediaWiki\Specials\Admin\DeprecationNoticeTaskHandler'
-		);
+		];
+
+		$provider[] = [
+			'newDuplicateLookupTaskHandler',
+			'\SMW\MediaWiki\Specials\Admin\DuplicateLookupTaskHandler'
+		];
 
 		return $provider;
 	}

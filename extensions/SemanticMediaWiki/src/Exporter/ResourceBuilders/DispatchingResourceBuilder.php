@@ -20,7 +20,7 @@ class DispatchingResourceBuilder implements ResourceBuilder {
 	/**
 	 * @var ResourceBuilder[]
 	 */
-	private $resourceBuilders = array();
+	private $resourceBuilders = [];
 
 	/**
 	 * @var ResourceBuilder
@@ -36,7 +36,7 @@ class DispatchingResourceBuilder implements ResourceBuilder {
 	 */
 	public function isResourceBuilderFor( DIProperty $property ) {
 
-		if ( $this->resourceBuilders === array() ) {
+		if ( $this->resourceBuilders === [] ) {
 			$this->initResourceBuilders();
 		}
 
@@ -67,7 +67,7 @@ class DispatchingResourceBuilder implements ResourceBuilder {
 	 */
 	public function findResourceBuilder( DIProperty $property ) {
 
-		if ( $this->resourceBuilders === array() ) {
+		if ( $this->resourceBuilders === [] ) {
 			$this->initResourceBuilders();
 		}
 
@@ -102,18 +102,27 @@ class DispatchingResourceBuilder implements ResourceBuilder {
 
 		$this->addResourceBuilder( new UniquenessConstraintPropertyValueResourceBuilder() );
 
+		$sortPropertyValueResourceBuilder = new SortPropertyValueResourceBuilder();
+
+		$sortPropertyValueResourceBuilder->enabledCollationField(
+			( (int)$GLOBALS['smwgSparqlQFeatures'] & SMW_SPARQL_QF_COLLATION ) != 0
+		);
+
+		$this->addResourceBuilder( $sortPropertyValueResourceBuilder );
+
 		$this->addResourceBuilder( new PropertyDescriptionValueResourceBuilder() );
 		$this->addResourceBuilder( new PreferredPropertyLabelResourceBuilder() );
 
 		$this->addResourceBuilder( new ExternalIdentifierPropertyValueResourceBuilder() );
+		$this->addResourceBuilder( new KeywordPropertyValueResourceBuilder() );
+
 		$this->addResourceBuilder( new MonolingualTextPropertyValueResourceBuilder() );
-
 		$this->addResourceBuilder( new ConceptPropertyValueResourceBuilder() );
+
 		$this->addResourceBuilder( new ImportFromPropertyValueResourceBuilder() );
-
 		$this->addResourceBuilder( new RedirectPropertyValueResourceBuilder() );
-		$this->addResourceBuilder( new AuxiliaryPropertyValueResourceBuilder() );
 
+		$this->addResourceBuilder( new AuxiliaryPropertyValueResourceBuilder() );
 		$this->addResourceBuilder( new PredefinedPropertyValueResourceBuilder() );
 
 		$this->addDefaultResourceBuilder( new PropertyValueResourceBuilder() );

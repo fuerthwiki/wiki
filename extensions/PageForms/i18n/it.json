@@ -10,7 +10,8 @@
 			"Melos",
 			"Nemo bis",
 			"VaiTon86",
-			"GabryBarbe"
+			"GabryBarbe",
+			"Daimona Eaytoy"
 		]
 	},
 	"pageforms-desc": "Moduli per creare e modificare pagine wiki",
@@ -144,7 +145,7 @@
 	"pf_formedit_altformsonly": "Per favore seleziona una dei seguenti moduli per aggiungere questa pagina:",
 	"pf_formcreate": "Crea con un modulo",
 	"pf_viewform": "Visualizza modulo",
-	"pf_editsource": "Modifica wikitesto",
+	"pf_editsource": "Modifica sorgente",
 	"pf_formedit_edittitle": "Modifica $1: $2",
 	"pf_formedit_morethanoneform": "'''Attenzione:''' Più di un modulo predefinito è stato definito per questa pagina.",
 	"pf_formedit_formwarning": "Attenzione: questa pagina [[$1|esiste già]], ma non utilizza questo modulo.",
@@ -184,7 +185,7 @@
 	"pf_bad_number_error": "Dev'\\esser un numero valido",
 	"pf_bad_date_error": "Dev'\\esser una data valida",
 	"pf_modified_input_error": "Questa modifica deve essere approvata o rifiutata",
-	"pf_pipe_error": "\"|\" non è consentito, eccetto all'interno di {{...}} o [[...]]",
+	"pf_pipe_error": "\"|\" non è consentito, eccetto all'interno di {{...}}, [[...]] o etichette speciali",
 	"uploadwindow": "Finestra di upload",
 	"pf-simpleupload": "Carica",
 	"pf_deletionlog": "Log cancellazioni",

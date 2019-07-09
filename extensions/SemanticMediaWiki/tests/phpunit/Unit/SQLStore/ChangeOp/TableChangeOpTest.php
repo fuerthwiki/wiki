@@ -1,6 +1,6 @@
 <?php
 
-namespace SMW\Tests\SQLStore\TableChangeOp;
+namespace SMW\Tests\SQLStore\ChangeOp;
 
 use SMW\SQLStore\ChangeOp\TableChangeOp;
 
@@ -18,14 +18,14 @@ class TableChangeOpTest extends \PHPUnit_Framework_TestCase {
 	public function testCanConstruct() {
 
 		$this->assertInstanceOf(
-			'\SMW\SQLStore\ChangeOp\TableChangeOp',
-			new TableChangeOp( 'foo', array() )
+			TableChangeOp::class,
+			new TableChangeOp( 'foo', [] )
 		);
 	}
 
 	public function testEmptyOps() {
 
-		$diff = array();
+		$diff = [];
 
 		$instance = new TableChangeOp(
 			'foo',
@@ -57,31 +57,31 @@ class TableChangeOpTest extends \PHPUnit_Framework_TestCase {
 
 	public function testFixedPropertyOps() {
 
-		$diff = array(
+		$diff = [
 		'property' =>
-			array(
+			[
 				'key' => '_MDAT',
 				'p_id' => 29,
-			),
+			],
 		'insert' =>
-			array(
+			[
 			0 =>
-				array(
+				[
 					's_id' => 462,
 					'o_serialized' => '1/2016/6/10/2/3/31/0',
 					'o_sortkey' => '2457549.5857755',
-				),
-			),
+				],
+			],
 		'delete' =>
-			array(
+			[
 				0 =>
-				array(
+				[
 				's_id' => 462,
 				'o_serialized' => '1/2016/6/10/2/1/0/0',
 				'o_sortkey' => '2457549.5840278',
-				),
-			),
-		);
+				],
+			],
+		];
 
 		$instance = new TableChangeOp(
 			'foo',
@@ -109,35 +109,45 @@ class TableChangeOpTest extends \PHPUnit_Framework_TestCase {
 
 	public function testGetFieldChangeOpsNoType() {
 
-		$diff = array(
+		$diff = [
 		'property' =>
-			array(
+			[
 				'key' => '_MDAT',
 				'p_id' => 29,
-			),
+			],
 		'insert' =>
-			array(
+			[
 			0 =>
-				array(
+				[
 					's_id' => 462,
 					'o_serialized' => '1/2016/6/10/2/3/31/0',
 					'o_sortkey' => '2457549.5857755',
-				),
-			),
+				],
+			],
 		'delete' =>
-			array(
+			[
 				0 =>
-				array(
-				's_id' => 462,
-				'o_serialized' => '1/2016/6/10/2/1/0/0',
-				'o_sortkey' => '2457549.5840278',
-				),
-			),
-		);
+				[
+					's_id' => 462,
+					'o_serialized' => '1/2016/6/10/2/1/0/0',
+					'o_sortkey' => '2457549.5840278',
+				],
+				[
+					's_id' => 42,
+					'p_id' => 1001,
+					'o_id' => 9999
+				]
+			]
+		];
 
 		$instance = new TableChangeOp(
 			'foo',
 			$diff
+		);
+
+		$this->assertCount(
+			3,
+			$instance->getFieldChangeOps()
 		);
 
 		$this->assertCount(
@@ -146,8 +156,70 @@ class TableChangeOpTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$this->assertCount(
-			3,
+			2,
+			$instance->getFieldChangeOps( TableChangeOp::OP_DELETE )
+		);
+
+		$this->assertCount(
+			2,
+			$instance->getFieldChangeOps( null, [ 's_id' => [ 42 => true ] ] )
+		);
+	}
+
+	public function testFieldChangeOps_WithNoOperation() {
+
+		$diff = [
+			[
+				's_id' => 462,
+				'o_serialized' => '1/2016/6/10/2/1/0/0',
+				'o_sortkey' => '2457549.5840278',
+			],
+			[
+				's_id' => 42,
+				'p_id' => 1001,
+				'o_id' => 9999
+			]
+		];
+
+		$instance = new TableChangeOp(
+			'foo',
+			$diff
+		);
+
+		$this->assertCount(
+			2,
 			$instance->getFieldChangeOps()
+		);
+
+		$this->assertCount(
+			1,
+			$instance->getFieldChangeOps( null, [ 's_id' => [ 42 => true ] ] )
+		);
+	}
+
+	public function testToArray() {
+
+		$diff = [
+			[
+				's_id' => 462,
+				'o_serialized' => '1/2016/6/10/2/1/0/0',
+				'o_sortkey' => '2457549.5840278',
+			],
+			[
+				's_id' => 42,
+				'p_id' => 1001,
+				'o_id' => 9999
+			]
+		];
+
+		$instance = new TableChangeOp(
+			'foo',
+			$diff
+		);
+
+		$this->assertSame(
+			['foo' => $diff ],
+			$instance->toArray()
 		);
 	}
 

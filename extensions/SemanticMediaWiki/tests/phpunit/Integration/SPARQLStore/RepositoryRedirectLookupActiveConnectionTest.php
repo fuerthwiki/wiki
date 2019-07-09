@@ -2,13 +2,13 @@
 
 namespace SMW\Tests\Integration\SPARQLStore;
 
+use SMW\ApplicationFactory;
 use SMW\DataValueFactory;
 use SMW\DIProperty;
 use SMW\DIWikiPage;
 use SMW\SemanticData;
 use SMW\SPARQLStore\RepositoryRedirectLookup;
 use SMW\SPARQLStore\SPARQLStore;
-use SMW\ApplicationFactory;
 use SMWExpNsResource as ExpNsResource;
 use SMWExporter as Exporter;
 
@@ -34,8 +34,9 @@ class RepositoryRepositoryRedirectLookupActiveConnectionTest extends \PHPUnit_Fr
 		}
 
 		$this->repositoryConnection = $this->store->getConnection( 'sparql' );
+		$this->repositoryConnection->setConnectionTimeout( 5 );
 
-		if ( !$this->repositoryConnection->setConnectionTimeoutInSeconds( 5 )->ping() ) {
+		if ( !$this->repositoryConnection->ping() ) {
 			$this->markTestSkipped( "Can't connect to the RepositoryConnector" );
 		}
 	}
@@ -43,7 +44,7 @@ class RepositoryRepositoryRedirectLookupActiveConnectionTest extends \PHPUnit_Fr
 	/**
 	 * @dataProvider resourceProvider
 	 */
-	public function testRedirectTragetLookupForNonExistingEntry( $expNsResource ) {
+	public function testRedirectTargetLookupForNonExistingEntry( $expNsResource ) {
 
 		$instance = new RepositoryRedirectLookup( $this->repositoryConnection );
 		$instance->reset();
@@ -58,7 +59,7 @@ class RepositoryRepositoryRedirectLookupActiveConnectionTest extends \PHPUnit_Fr
 		$this->assertFalse( $exists );
 	}
 
-	public function testRedirectTragetLookupForExistingEntry() {
+	public function testRedirectTargetLookupForExistingEntry() {
 
 		$property = new DIProperty( 'TestRepositoryRedirectLookup' );
 
@@ -91,18 +92,18 @@ class RepositoryRepositoryRedirectLookupActiveConnectionTest extends \PHPUnit_Fr
 
 	public function resourceProvider() {
 
-		$provider[] = array(
+		$provider[] = [
 			Exporter::getInstance()->getSpecialNsResource( 'rdf', 'type' )
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			new ExpNsResource(
 				'FooRepositoryRedirectLookup',
 				Exporter::getInstance()->getNamespaceUri( 'property' ),
 				'property',
 				new DIWikiPage( 'FooRepositoryRedirectLookup', SMW_NS_PROPERTY, '' )
 			)
-		);
+		];
 
 		return $provider;
 	}

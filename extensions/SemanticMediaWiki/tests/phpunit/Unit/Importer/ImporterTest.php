@@ -1,12 +1,12 @@
 <?php
 
-namespace SMW\TestsImporter;
+namespace SMW\Tests\Importer;
 
-use SMW\Importer\Importer;
 use SMW\Importer\ContentIterator;
+use SMW\Importer\ImportContents;
+use SMW\Importer\Importer;
 use SMW\Importer\JsoncontentIterator;
 use SMW\Importer\JsonImportContentsFileDirReader;
-use SMW\Importer\ImportContents;
 use SMW\Tests\TestEnvironment;
 
 /**
@@ -20,6 +20,7 @@ use SMW\Tests\TestEnvironment;
  */
 class ImporterTest extends \PHPUnit_Framework_TestCase {
 
+	private $spyMessageReporter;
 	private $testEnvironment;
 	private $contentIterator;
 	private $jsonImportContentsFileDirReader;
@@ -56,6 +57,26 @@ class ImporterTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
+	public function testDisabled() {
+
+		$spyMessageReporter = $this->testEnvironment->getUtilityFactory()->newSpyMessageReporter();
+
+		$instance = new Importer(
+			new JsoncontentIterator( $this->jsonImportContentsFileDirReader ),
+			$this->contentCreator
+		);
+
+		$instance->setMessageReporter( $spyMessageReporter );
+		$instance->isEnabled( false );
+
+		$instance->doImport();
+
+		$this->assertContains(
+			'Skipping the import process',
+			$spyMessageReporter->getMessagesAsString()
+		);
+	}
+
 	public function testDoImport() {
 
 		$importContents = new ImportContents();
@@ -69,14 +90,14 @@ class ImporterTest extends \PHPUnit_Framework_TestCase {
 
 		$this->jsonImportContentsFileDirReader->expects( $this->atLeastOnce() )
 			->method( 'getContentList' )
-			->will( $this->returnValue( array( 'Foo' => array( $importContents ) ) ) );
+			->will( $this->returnValue( [ 'Foo' => [ $importContents ] ] ) );
 
 		$this->jsonImportContentsFileDirReader->expects( $this->atLeastOnce() )
 			->method( 'getErrors' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
 		$this->contentCreator->expects( $this->atLeastOnce() )
-			->method( 'doCreateFrom' );
+			->method( 'create' );
 
 		$instance = new Importer(
 			new JsoncontentIterator( $this->jsonImportContentsFileDirReader ),
@@ -98,14 +119,14 @@ class ImporterTest extends \PHPUnit_Framework_TestCase {
 
 		$this->jsonImportContentsFileDirReader->expects( $this->atLeastOnce() )
 			->method( 'getContentList' )
-			->will( $this->returnValue( array( 'Foo' => array( $importContents ) ) ) );
+			->will( $this->returnValue( [ 'Foo' => [ $importContents ] ] ) );
 
 		$this->jsonImportContentsFileDirReader->expects( $this->atLeastOnce() )
 			->method( 'getErrors' )
-			->will( $this->returnValue( array( 'Error' ) ) );
+			->will( $this->returnValue( [ 'Error' ] ) );
 
 		$this->contentCreator->expects( $this->never() )
-			->method( 'doCreateFrom' );
+			->method( 'create' );
 
 		$instance = new Importer(
 			new JsoncontentIterator( $this->jsonImportContentsFileDirReader ),

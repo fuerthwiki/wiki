@@ -13,9 +13,7 @@
  * @ingroup PFSpecialPages
  */
 class PFCreateClass extends SpecialPage {
-	/**
-	 * Constructor
-	 */
+
 	public function __construct() {
 		parent::__construct( 'CreateClass', 'createclass' );
 	}
@@ -407,12 +405,12 @@ END;
 			array(
 				'type' => 'button',
 				'value' => wfMessage( 'pf_formedit_addanother' )->text(),
-				'class' => "createClassAddRow"
+				'class' => "createClassAddRow mw-ui-button mw-ui-progressive"
 			)
 		);
 		$text .= Html::rawElement( 'p', null, $add_another_button ) . "\n";
 		// Set 'title' as hidden field, in case there's no URL niceness
-		$cc = $this->getTitle();
+		$cc = $this->getPageTitle();
 		$text .= Html::hidden( 'title', PFUtils::titleURLString( $cc ) );
 
 		$text .= "\t" . Html::hidden( 'csrf', $this->getUser()->getEditToken( 'CreateClass' ) ) . "\n";
@@ -421,7 +419,8 @@ END;
 			array(
 				'type' => 'submit',
 				'name' => 'createAll',
-				'value' => wfMessage( 'Pf_createclass_create' )->text()
+				'value' => wfMessage( 'Pf_createclass_create' )->text(),
+				'class' => 'mw-ui-button mw-ui-progressive'
 			)
 		);
 		$text .= "</form>\n";

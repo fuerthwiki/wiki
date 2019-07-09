@@ -6,12 +6,17 @@ MW_INSTALL_PATH=$BASE_PATH/../mw
 
 ## PHPUnit sources need to be present otherwise the MW testrunner will complain
 ## about it
-function installPHPUnitWithComposer {
+function installExtrasUsingComposer {
 	if [ "$PHPUNIT" != "" ]
 	then
 		composer require 'phpunit/phpunit='$PHPUNIT --update-with-dependencies
 	else
 		composer require 'phpunit/phpunit=3.7.*' --update-with-dependencies
+	fi
+
+	if [ "$ES" != "" ]
+	then
+		composer require 'elasticsearch/elasticsearch=6.0.*' --update-with-dependencies
 	fi
 }
 
@@ -21,12 +26,8 @@ function installSmwIntoMwWithComposer {
 
 	cd $MW_INSTALL_PATH
 
-	installPHPUnitWithComposer
+	installExtrasUsingComposer
 	composer require mediawiki/semantic-media-wiki "dev-master" --dev
-
-	# Explicitly load symfony/css-selector
-	# FIXME: Remove once composer.json with symfony/css-selector arrived at packagist
-	composer require  "symfony/css-selector" "^3.3"
 
 	cd extensions
 	cd SemanticMediaWiki
@@ -57,10 +58,10 @@ function installSmwAsTarballLikeBuild {
 	echo -e "Running tarball build on $TRAVIS_BRANCH \n"
 
 	cd $MW_INSTALL_PATH/extensions
-	composer create-project mediawiki/semantic-media-wiki SemanticMediaWiki dev-master -s dev --prefer-dist --no-dev
+	composer create-project mediawiki/semantic-media-wiki SemanticMediaWiki dev-master -s dev --prefer-dist --no-dev --no-interaction
 
 	cd SemanticMediaWiki
-	installPHPUnitWithComposer
+	installExtrasUsingComposer
 }
 
 function installSmwByRunningComposerInstallInIt {
@@ -69,7 +70,7 @@ function installSmwByRunningComposerInstallInIt {
 	cp -r $BASE_PATH $MW_INSTALL_PATH/extensions/SemanticMediaWiki
 	cd $MW_INSTALL_PATH/extensions/SemanticMediaWiki
 
-	installPHPUnitWithComposer
+	installExtrasUsingComposer
 	composer install
 }
 

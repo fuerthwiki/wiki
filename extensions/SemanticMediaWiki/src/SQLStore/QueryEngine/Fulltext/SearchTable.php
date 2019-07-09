@@ -2,12 +2,13 @@
 
 namespace SMW\SQLStore\QueryEngine\Fulltext;
 
-use SMW\MediaWiki\Database;
 use SMW\DataTypeRegistry;
-use SMW\SQLStore\SQLStore;
 use SMW\DIProperty;
 use SMW\DIWikiPage;
+use SMW\MediaWiki\Database;
+use SMW\SQLStore\SQLStore;
 use SMWDataItem as DataItem;
+use SMW\Exception\PredefinedPropertyLabelMismatchException;
 
 /**
  * @license GNU GPL v2+
@@ -45,7 +46,7 @@ class SearchTable {
 	/**
 	 * @var array
 	 */
-	private $propertyExemptionList = array();
+	private $propertyExemptionList = [];
 
 	/**
 	 * @since 2.5
@@ -101,9 +102,17 @@ class SearchTable {
 			return false;
 		}
 
-		return $this->isExemptedProperty(
-			DIProperty::newFromUserLabel( $dataItem->getDBKey() )
-		);
+		try {
+			$property = DIProperty::newFromUserLabel(
+				$dataItem->getDBKey()
+			);
+		} catch( PredefinedPropertyLabelMismatchException $e ) {
+			// The property no longer exists (or is no longer available) therefore
+			// exempt it.
+			return true;
+		}
+
+		return $this->isExemptedProperty( $property );
 	}
 
 	/**
@@ -234,8 +243,8 @@ class SearchTable {
 	 *
 	 * @return integer
 	 */
-	public function getPropertyIdBy( DIProperty $property ) {
-		return $this->store->getObjectIds()->getIDFor( $property->getCanonicalDiWikiPage() );
+	public function getIdByProperty( DIProperty $property ) {
+		return $this->store->getObjectIds()->getId( $property->getCanonicalDiWikiPage() );
 	}
 
 	/**

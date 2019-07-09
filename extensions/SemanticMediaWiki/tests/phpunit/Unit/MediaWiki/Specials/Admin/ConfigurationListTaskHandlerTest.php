@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\MediaWiki\Specials\Admin;
 
-use SMW\Tests\TestEnvironment;
 use SMW\MediaWiki\Specials\Admin\ConfigurationListTaskHandler;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\MediaWiki\Specials\Admin\ConfigurationListTaskHandler
@@ -44,7 +44,7 @@ class ConfigurationListTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 	public function testCanConstruct() {
 
 		$this->assertInstanceOf(
-			'\SMW\MediaWiki\Specials\Admin\ConfigurationListTaskHandler',
+			ConfigurationListTaskHandler::class,
 			new ConfigurationListTaskHandler( $this->outputFormatter )
 		);
 	}

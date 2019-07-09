@@ -3,8 +3,8 @@
 namespace SMW\Tests\Query\ProfileAnnotators;
 
 use SMW\DIWikiPage;
-use SMW\Query\ProfileAnnotators\ParametersProfileAnnotator;
 use SMW\Query\ProfileAnnotators\NullProfileAnnotator;
+use SMW\Query\ProfileAnnotators\ParametersProfileAnnotator;
 use SMW\Tests\Utils\UtilityFactory;
 use SMWContainerSemanticData as ContainerSemanticData;
 use SMWDIContainer as DIContainer;
@@ -75,11 +75,11 @@ class ParametersProfileAnnotatorTest extends \PHPUnit_Framework_TestCase {
 
 		$instance->addAnnotation();
 
-		$expected = array(
+		$expected = [
 			'propertyCount'  => 1,
-			'propertyKeys'   => array( '_ASKPA' ),
-			'propertyValues' => array( '{"limit":42,"offset":0,"sort":[],"order":[],"mode":1}' )
-		);
+			'propertyKeys'   => [ '_ASKPA' ],
+			'propertyValues' => [ '{"limit":42,"offset":0,"sort":[],"order":[],"mode":1}' ]
+		];
 
 		$this->semanticDataValidator->assertThatPropertiesAreSet(
 			$expected,

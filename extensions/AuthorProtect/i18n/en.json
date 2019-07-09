@@ -4,15 +4,15 @@
 			"Ryan Schmidt"
 		]
 	},
+	"action-authorprotect": "protect from non-authors",
 	"authorprotect": "Protect page from non-authors",
 	"authorprotect-desc": "Allows the author of a page to protect it from other users",
-	"authorprotect-notauthor": "You are not the author of this page.",
+	"authorprotect-notauthor": "{{GENDER:$1|You}} are not the {{GENDER:$1|author}} of this page.",
 	"authorprotect-confirm": "Change protection levels",
 	"authorprotect-edit": "Restrict editing to authors",
 	"authorprotect-move": "Restrict moving to authors",
 	"authorprotect-intro": "Use this form to lock this page from non-authors.",
 	"authorprotect-success": "Protection set!",
-	"authorprotect-failure": "Protection failed.",
 	"protect-level-author": "Protect from non-authors",
 	"restriction-level-author": "Author-protected",
 	"right-authorprotect": "Protect authored pages",

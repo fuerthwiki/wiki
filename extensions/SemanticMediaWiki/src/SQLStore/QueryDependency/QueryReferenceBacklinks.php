@@ -2,12 +2,11 @@
 
 namespace SMW\SQLStore\QueryDependency;
 
-use SMW\SQLStore\QueryDependency\QueryDependencyLinksStore;
-use SMW\DIWikiPage;
 use SMW\DIProperty;
+use SMW\DIWikiPage;
 use SMW\Message;
-use SMW\SemanticData;
 use SMW\RequestOptions;
+use SMW\SemanticData;
 
 /**
  * @license GNU GPL v2+
@@ -75,7 +74,7 @@ class QueryReferenceBacklinks {
 	 */
 	public function findReferenceLinks( DIWikiPage $subject, RequestOptions $requestOptions = null ) {
 
-		$queryTargetLinksHashList = $this->queryDependencyLinksStore->findEmbeddedQueryTargetLinksHashListBySubject(
+		$queryTargetLinksHashList = $this->queryDependencyLinksStore->findDependencyTargetLinksForSubject(
 			$subject,
 			$requestOptions
 		);
@@ -98,15 +97,15 @@ class QueryReferenceBacklinks {
 		}
 
 		$localURL = \SpecialPage::getSafeTitleFor( 'SearchByProperty' )->getLocalURL(
-			array(
+			[
 				 'property' => $property->getLabel(),
 				 'value'    => $subject->getTitle()->getPrefixedText()
-			)
+			]
 		);
 
 		$html .= \Html::element(
 			'a',
-			array( 'href' => $localURL ),
+			[ 'href' => $localURL ],
 			Message::get( 'smw_browse_more' )
 		);
 

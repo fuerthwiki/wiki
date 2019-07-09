@@ -2,12 +2,12 @@
 
 namespace SMW\Importer\ContentCreators;
 
-use Onoi\MessageReporter\MessageReporter;
-use SMW\MediaWiki\PageCreator;
-use SMW\Importer\ImportContents;
-use SMW\Importer\ContentCreator;
-use SMW\MediaWiki\Database;
 use ContentHandler;
+use Onoi\MessageReporter\MessageReporter;
+use SMW\Importer\ContentCreator;
+use SMW\Importer\ImportContents;
+use SMW\MediaWiki\Database;
+use SMW\MediaWiki\PageCreator;
 use Title;
 
 /**
@@ -69,7 +69,7 @@ class TextContentCreator implements ContentCreator {
 	 *
 	 * @param ImportContents $importContents
 	 */
-	public function doCreateFrom( ImportContents $importContents ) {
+	public function create( ImportContents $importContents ) {
 
 		if ( !class_exists( 'ContentHandler' ) ) {
 			return $this->messageReporter->reportMessage( "\nContentHandler doesn't exist therefore importing is not possible.\n" );

@@ -6,6 +6,9 @@
 			"Soued031"
 		]
 	},
+	"nstab-page": "Säit",
+	"nstab-index": "Index",
+	"tooltip-ca-nstab-page": "D'Buchsäit weisen",
 	"indexpages": "Lëscht vun Index-Säiten",
 	"pageswithoutscans": "Säiten ouni Scan",
 	"proofreadpage_desc": "Erlaabt et op eng einfach Manéier den Text mat der Originalscan ze vergLäichen",
@@ -14,13 +17,9 @@
 	"proofreadpage_index_expected": "Feeler: Index erwaart",
 	"proofreadpage_nosuch_index": "Feeler: et gëtt kee sou een Index",
 	"proofreadpage_nosuch_file": "Feeler: de Fichier gëtt et net",
-	"proofreadpage_badpage": "Falsche Format",
-	"proofreadpage_badpagetext": "De Format vun der Säit déi Dir versicht hutt z'änneren ass net korrekt.",
-	"proofreadpage_indexdupe": "Duebele Link",
 	"proofreadpage_indexdupetext": "Säite kënnen net méi wéi eemol op eng Index-Säit gesat ginn.",
 	"proofreadpage_nologin": "Net ageloggt",
 	"proofreadpage_nologintext": "Dir musst [[Special:UserLogin|ageloggt]] si fir de Status vum Iwwerliese vu Säiten z'änneren.",
-	"proofreadpage_notallowed": "Ännerung net erlaabt",
 	"proofreadpage_notallowedtext": "Dir sidd net berechtigt de Status vum Iwwerliese vun dëser Säit z'änneren.",
 	"proofreadpage_dataconfig_badformatted": "Feeler an der Datekonfiguratioun",
 	"proofreadpage_dataconfig_badformattedtext": "D'Säit [[Mediawiki:Proofreadpage index data config]] ass net gutt JSON formatéiert.",
@@ -39,7 +38,7 @@
 	"proofreadpage_quality3_category": "Verbessert",
 	"proofreadpage_quality4_category": "Validéiert",
 	"proofreadpage_quality0_message": "Dës Säit brauch net iwwerliest ze ginn",
-	"proofreadpage_quality1_message": "Dës Säit gouf net iwwerliest",
+	"proofreadpage_quality1_message": "Dës Säit gouf net iwwerlies",
 	"proofreadpage_quality2_message": "Et gouf e Problem beim iwwereliese vun dëser Säit",
 	"proofreadpage_quality3_message": "Dës Säit gouf iwwerliest",
 	"proofreadpage_quality4_message": "Dës Säit gouf validéiert",
@@ -76,9 +75,12 @@
 	"proofreadpage-indexoai-error-schemanotfound-text": "De Schema \"$1\" gouf net fonnt.",
 	"proofreadpage-disambiguationspage": "Template:Homonymie",
 	"proofreadpage-indexquality-alt": "$1 validéiert {{PLURAL:$1|Säit|Säiten}}, nëmmen {{PLURAL:$2|eng iwwerliest Säit|$2 iwwerliest Säiten}} an {{PLURAL:$3|an eng net iwwerliest Säit|a(n) $3 net iwwerliest Säiten}}",
-	"content-model-proofread-page": "Säit: Säit",
+	"content-model-proofread-page": "Buchsäit",
+	"content-model-proofread-index": "Buchindex",
 	"proofreadpage-visualeditor-node-pages-inspector-title": "Eraussiche vun der Säit",
 	"proofreadpage-visualeditor-node-pages-inspector-tooltip": "Säiten",
 	"proofreadpage-visualeditor-node-pages-inspector-indexselector-yes": "Jo",
-	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "Neen"
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "Neen",
+	"proofreadpage-visualeditor-node-pagequality-inspector-title": "Qualitéitsniveau Iwwerliesen",
+	"proofreadpage-visualeditor-node-pagequality-inspector-tooltip": "Qualitéitsniveau Iwwerliesen"
 }

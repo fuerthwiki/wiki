@@ -7,8 +7,8 @@ use SMW\DIWikiPage;
 use SMW\ParserData;
 use SMW\PropertyAnnotators\CategoryPropertyAnnotator;
 use SMW\PropertyAnnotators\NullPropertyAnnotator;
-use SMW\Tests\Utils\Mock\MockTitle;
 use SMW\Tests\TestEnvironment;
+use SMW\Tests\Utils\Mock\MockTitle;
 
 /**
  * @covers \SMW\PropertyAnnotators\CategoryPropertyAnnotator
@@ -32,6 +32,12 @@ class CategoryPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 
 		$this->semanticDataFactory = $this->testEnvironment->getUtilityFactory()->newSemanticDataFactory();
 		$this->semanticDataValidator = $this->testEnvironment->getUtilityFactory()->newValidatorFactory()->newSemanticDataValidator();
+
+		$store = $this->getMockBuilder( '\SMW\Store' )
+			->disableOriginalConstructor()
+			->getMockForAbstractClass();
+
+		$this->testEnvironment->registerObject( 'Store', $store );
 	}
 
 	protected function tearDown() {
@@ -47,7 +53,7 @@ class CategoryPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 
 		$instance = new CategoryPropertyAnnotator(
 			new NullPropertyAnnotator( $semanticData ),
-			array()
+			[]
 		);
 
 		$this->assertInstanceOf(
@@ -70,16 +76,20 @@ class CategoryPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 			$parameters['categories']
 		);
 
-		$instance->setShowHiddenCategoriesState(
-			$parameters['settings']['smwgShowHiddenCategories']
+		$instance->showHiddenCategories(
+			$parameters['settings']['showHiddenCategories']
 		);
 
-		$instance->setCategoryInstanceUsageState(
-			$parameters['settings']['smwgCategoriesAsInstances']
+		$instance->useCategoryInstance(
+			$parameters['settings']['categoriesAsInstances']
 		);
 
-		$instance->setCategoryHierarchyUsageState(
-			$parameters['settings']['smwgUseCategoryHierarchy']
+		$instance->useCategoryHierarchy(
+			$parameters['settings']['categoryHierarchy']
+		);
+
+		$instance->useCategoryRedirect(
+			false
 		);
 
 		$instance->addAnnotation();
@@ -108,16 +118,20 @@ class CategoryPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 			$parameters['categories']
 		);
 
-		$instance->setShowHiddenCategoriesState(
-			$parameters['settings']['smwgShowHiddenCategories']
+		$instance->showHiddenCategories(
+			$parameters['settings']['showHiddenCategories']
 		);
 
-		$instance->setCategoryInstanceUsageState(
-			$parameters['settings']['smwgCategoriesAsInstances']
+		$instance->useCategoryInstance(
+			$parameters['settings']['categoriesAsInstances']
 		);
 
-		$instance->setCategoryHierarchyUsageState(
-			$parameters['settings']['smwgUseCategoryHierarchy']
+		$instance->useCategoryHierarchy(
+			$parameters['settings']['categoryHierarchy']
+		);
+
+		$instance->useCategoryRedirect(
+			false
 		);
 
 		$instance->addAnnotation();
@@ -136,7 +150,7 @@ class CategoryPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function testAddCategoriesWithHiddenCategories( array $parameters, array $expected ) {
 
-		$expectedPageLookup = $parameters['settings']['smwgShowHiddenCategories'] ? $this->never() : $this->atLeastOnce();
+		$expectedPageLookup = $parameters['settings']['showHiddenCategories'] ? $this->never() : $this->atLeastOnce();
 
 		$wikiPage = $this->getMockBuilder( '\WikiPage' )
 			->disableOriginalConstructor()
@@ -168,16 +182,20 @@ class CategoryPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 			$parameters['categories']
 		);
 
-		$instance->setShowHiddenCategoriesState(
-			$parameters['settings']['smwgShowHiddenCategories']
+		$instance->showHiddenCategories(
+			$parameters['settings']['showHiddenCategories']
 		);
 
-		$instance->setCategoryInstanceUsageState(
-			$parameters['settings']['smwgCategoriesAsInstances']
+		$instance->useCategoryInstance(
+			$parameters['settings']['categoriesAsInstances']
 		);
 
-		$instance->setCategoryHierarchyUsageState(
-			$parameters['settings']['smwgUseCategoryHierarchy']
+		$instance->useCategoryHierarchy(
+			$parameters['settings']['categoryHierarchy']
+		);
+
+		$instance->useCategoryRedirect(
+			false
 		);
 
 		$instance->addAnnotation();
@@ -188,45 +206,84 @@ class CategoryPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
+	public function testAddCategoryOnInvalidRedirect() {
+
+		$store = $this->getMockBuilder( '\SMW\Store' )
+			->disableOriginalConstructor()
+			->setMethods( [ 'getRedirectTarget' ] )
+			->getMockForAbstractClass();
+
+		$store->expects( $this->atLeastOnce() )
+			->method( 'getRedirectTarget' )
+			->will( $this->returnValue( new DIWikiPage( 'Foo', NS_MAIN ) ) );
+
+		$this->testEnvironment->registerObject( 'Store', $store );
+
+		$semanticData = $this->semanticDataFactory
+			->setSubject( new DIWikiPage( __METHOD__, NS_MAIN ) )
+			->newEmptySemanticData();
+
+		$instance = new CategoryPropertyAnnotator(
+			new NullPropertyAnnotator( $semanticData ),
+			[ 'Bar' ]
+		);
+
+		$instance->useCategoryRedirect(
+			true
+		);
+
+		$instance->addAnnotation();
+
+		$expected = [
+			'propertyCount'  => 1,
+			'propertyKeys'   => '_ERRC'
+		];
+
+		$this->semanticDataValidator->assertThatPropertiesAreSet(
+			$expected,
+			$instance->getSemanticData()
+		);
+	}
+
 	public function categoriesDataProvider() {
 
-		$provider = array();
+		$provider = [];
 
 		// Standard category
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'namespace'  => NS_MAIN,
-				'categories' => array( 'Foo', 'Bar' ),
-				'settings'   => array(
-					'smwgUseCategoryHierarchy'  => false,
-					'smwgCategoriesAsInstances' => true,
-					'smwgShowHiddenCategories'  => true
-				)
-			),
-			array(
+				'categories' => [ 'Foo', 'Bar' ],
+				'settings'   => [
+					'categoryHierarchy'  => false,
+					'categoriesAsInstances' => true,
+					'showHiddenCategories'  => true
+				]
+			],
+			[
 				'propertyCount'  => 1,
 				'propertyKeys'   => '_INST',
-				'propertyValues' => array( 'Foo',  'Bar' ),
-			)
-		);
+				'propertyValues' => [ 'Foo',  'Bar' ],
+			]
+		];
 
 		// Category hierarchy or Sub-category
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'namespace'  => NS_CATEGORY,
-				'categories' => array( 'Foo', 'Bar' ),
-				'settings'   => array(
-					'smwgUseCategoryHierarchy'  => true,
-					'smwgCategoriesAsInstances' => false,
-					'smwgShowHiddenCategories'  => true
-				)
-			),
-			array(
+				'categories' => [ 'Foo', 'Bar' ],
+				'settings'   => [
+					'categoryHierarchy'  => true,
+					'categoriesAsInstances' => false,
+					'showHiddenCategories'  => true
+				]
+			],
+			[
 				'propertyCount'  => 1,
 				'propertyKeys'   => '_SUBC',
-				'propertyValues' => array( 'Foo',  'Bar' ),
-			)
-		);
+				'propertyValues' => [ 'Foo',  'Bar' ],
+			]
+		];
 
 		return $provider;
 	}
@@ -236,7 +293,7 @@ class CategoryPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 	 */
 	public function hiddenCategoriesDataProvider() {
 
-		$provider = array();
+		$provider = [];
 
 		$hidCategory = MockTitle::buildMock( __METHOD__ );
 
@@ -249,80 +306,80 @@ class CategoryPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 			->will( $this->returnValue( 'Bar' ) );
 
 		// #0 Standard category, show hidden category
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'namespace'     => NS_MAIN,
-				'categories'    => array( 'Foo', 'Bar' ),
-				'hidCategories' => array( $hidCategory ),
-				'settings'   => array(
-					'smwgUseCategoryHierarchy'  => false,
-					'smwgCategoriesAsInstances' => true,
-					'smwgShowHiddenCategories'  => true
-				)
-			),
-			array(
+				'categories'    => [ 'Foo', 'Bar' ],
+				'hidCategories' => [ $hidCategory ],
+				'settings'   => [
+					'categoryHierarchy'  => false,
+					'categoriesAsInstances' => true,
+					'showHiddenCategories'  => true
+				]
+			],
+			[
 				'propertyCount'  => 1,
 				'propertyKeys'   => '_INST',
-				'propertyValues' => array( 'Foo', 'Bar' ),
-			)
-		);
+				'propertyValues' => [ 'Foo', 'Bar' ],
+			]
+		];
 
 		// #1 Standard category, omit hidden category
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'namespace'     => NS_MAIN,
-				'categories'    => array( 'Foo', 'Bar' ),
-				'hidCategories' => array( $hidCategory ),
-				'settings'   => array(
-					'smwgUseCategoryHierarchy'  => false,
-					'smwgCategoriesAsInstances' => true,
-					'smwgShowHiddenCategories'  => false
-				)
-			),
-			array(
+				'categories'    => [ 'Foo', 'Bar' ],
+				'hidCategories' => [ $hidCategory ],
+				'settings'   => [
+					'categoryHierarchy'  => false,
+					'categoriesAsInstances' => true,
+					'showHiddenCategories'  => false
+				]
+			],
+			[
 				'propertyCount'  => 1,
 				'propertyKeys'   => '_INST',
-				'propertyValues' => array( 'Foo' ),
-			)
-		);
+				'propertyValues' => [ 'Foo' ],
+			]
+		];
 
 		// #2 Category hierarchy or Sub-category, show hidden category
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'namespace'     => NS_CATEGORY,
-				'categories'    => array( 'Foo', 'Bar' ),
-				'hidCategories' => array( $hidCategory ),
-				'settings'   => array(
-					'smwgUseCategoryHierarchy'  => true,
-					'smwgCategoriesAsInstances' => false,
-					'smwgShowHiddenCategories'  => true
-				)
-			),
-			array(
+				'categories'    => [ 'Foo', 'Bar' ],
+				'hidCategories' => [ $hidCategory ],
+				'settings'   => [
+					'categoryHierarchy'  => true,
+					'categoriesAsInstances' => false,
+					'showHiddenCategories'  => true
+				]
+			],
+			[
 				'propertyCount'  => 1,
 				'propertyKeys'   => '_SUBC',
-				'propertyValues' => array( 'Foo', 'Bar' ),
-			)
-		);
+				'propertyValues' => [ 'Foo', 'Bar' ],
+			]
+		];
 
 		// #3 Category hierarchy or Sub-category, omit hidden category
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'namespace'     => NS_CATEGORY,
-				'categories'    => array( 'Foo', 'Bar' ),
-				'hidCategories' => array( $hidCategory ),
-				'settings'   => array(
-					'smwgUseCategoryHierarchy'  => true,
-					'smwgCategoriesAsInstances' => false,
-					'smwgShowHiddenCategories'  => false
-				)
-			),
-			array(
+				'categories'    => [ 'Foo', 'Bar' ],
+				'hidCategories' => [ $hidCategory ],
+				'settings'   => [
+					'categoryHierarchy'  => true,
+					'categoriesAsInstances' => false,
+					'showHiddenCategories'  => false
+				]
+			],
+			[
 				'propertyCount'  => 1,
 				'propertyKeys'   => '_SUBC',
-				'propertyValues' => array( 'Foo' ),
-			)
-		);
+				'propertyValues' => [ 'Foo' ],
+			]
+		];
 
 		return $provider;
 	}

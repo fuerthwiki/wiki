@@ -2,10 +2,9 @@
 
 namespace SMW\SQLStore\QueryEngine;
 
-use SMW\DIWikiPage;
-use SMWQuery as Query;
 use SMW\MediaWiki\Database;
 use SMW\SQLStore\SQLStore;
+use SMWQuery as Query;
 
 /**
  * @license GNU GPL v2+
@@ -19,12 +18,12 @@ class QuerySegmentListBuildManager {
 	/**
 	 * @var QuerySegment[]
 	 */
-	private $querySegmentList = array();
+	private $querySegmentList = [];
 
 	/**
 	 * @var string[]
 	 */
-	private $errors = array();
+	private $errors = [];
 
 	/**
 	 * @var string[]
@@ -37,21 +36,21 @@ class QuerySegmentListBuildManager {
 	private $querySegmentListBuilder;
 
 	/**
-	 * @var OrderConditionsComplementor
+	 * @var OrderCondition
 	 */
-	private $orderConditionsComplementor;
+	private $orderCondition;
 
 	/**
 	 * @since 2.5
 	 *
 	 * @param Database $connection
 	 * @param QuerySegmentListBuilder $querySegmentListBuilder
-	 * @param OrderConditionsComplementor $orderConditionsComplementor
+	 * @param OrderCondition $orderCondition
 	 */
-	public function __construct( Database $connection, QuerySegmentListBuilder $querySegmentListBuilder, OrderConditionsComplementor $orderConditionsComplementor ) {
+	public function __construct( Database $connection, QuerySegmentListBuilder $querySegmentListBuilder, OrderCondition $orderCondition ) {
 		$this->connection = $connection;
 		$this->querySegmentListBuilder = $querySegmentListBuilder;
-		$this->orderConditionsComplementor = $orderConditionsComplementor;
+		$this->orderCondition = $orderCondition;
 	}
 
 	/**
@@ -131,24 +130,24 @@ class QuerySegmentListBuildManager {
 			// manually make final root query (to retrieve namespace,title):
 			$rootid = $rootSegmentNumber;
 			$qobj = $this->querySegmentList[$rootSegmentNumber];
-			$qobj->components = array( $qid => "$qobj->alias.smw_id" );
+			$qobj->components = [ $qid => "$qobj->alias.smw_id" ];
 			$qobj->sortfields = $this->querySegmentList[$qid]->sortfields;
 			$this->querySegmentListBuilder->addQuerySegment( $qobj );
 		} else { // not such a common case, but worth avoiding the additional inner join:
 			$rootid = $qid;
 		}
 
-		$this->orderConditionsComplementor->setSortKeys(
+		$this->orderCondition->setSortKeys(
 			$this->sortKeys
 		);
 
 		// Include order conditions (may extend query if needed for sorting):
-		$this->querySegmentList = $this->orderConditionsComplementor->applyOrderConditions(
+		$this->querySegmentList = $this->orderCondition->apply(
 			$rootid
 		);
 
-		$this->sortKeys = $this->orderConditionsComplementor->getSortKeys();
-		$this->errors = $this->orderConditionsComplementor->getErrors();
+		$this->sortKeys = $this->orderCondition->getSortKeys();
+		$this->errors = $this->orderCondition->getErrors();
 
 		return $rootid;
 	}

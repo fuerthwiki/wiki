@@ -7,9 +7,6 @@ use DatabaseBase;
 use RuntimeException;
 use SearchEngine;
 use SMW\ApplicationFactory;
-use SMW\Query\Language\Conjunction;
-use SMW\Query\Language\Disjunction;
-use SMW\Query\Language\NamespaceDescription;
 use SMWQuery;
 use SMWQueryResult as QueryResult;
 use Title;
@@ -34,7 +31,43 @@ class Search extends SearchEngine {
 
 	private $database = null;
 
-	private $queryCache = array();
+	/**
+	 * @var array
+	 */
+	private $errors = [];
+
+	/**
+	 * @var QueryBuilder
+	 */
+	private $queryBuilder;
+
+	/**
+	 * @var string
+	 */
+	private $queryString = '';
+
+	/**
+	 * @var InfoLink
+	 */
+	private $queryLink;
+
+	/**
+	 * @see SearchEngine::getValidSorts
+	 *
+	 * @since 3.0
+	 *
+	 * @return array
+	 */
+	public function getValidSorts() {
+		return [
+
+			// SemanticMediaWiki supported
+			'title', 'recent', 'best',
+
+			// MediaWiki default
+			'relevance'
+		];
+	}
 
 	/**
 	 * @param null|SearchEngine $fallbackSearch
@@ -85,6 +118,33 @@ class Search extends SearchEngine {
 	}
 
 	/**
+	 * @since 3.0
+	 *
+	 * @return []
+	 */
+	public function getErrors() {
+		return $this->errors;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @return string
+	 */
+	public function getQueryString() {
+		return $this->queryString;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @return string
+	 */
+	public function getQueryLink() {
+		return $this->queryLink;
+	}
+
+	/**
 	 * @param DatabaseBase $connection
 	 */
 	public function setDB( DatabaseBase $connection ) {
@@ -111,25 +171,27 @@ class Search extends SearchEngine {
 	 */
 	private function getSearchQuery( $term ) {
 
-		if ( ! is_string( $term ) || trim( $term ) === '' ) {
-			return null;
+		if ( $this->queryBuilder === null ) {
+			$this->queryBuilder = new QueryBuilder();
 		}
 
-		if ( !array_key_exists( $term, $this->queryCache ) ) {
+		$this->queryString = $this->queryBuilder->getQueryString(
+			ApplicationFactory::getInstance()->getStore(),
+			$term
+		);
 
-			$params = \SMWQueryProcessor::getProcessedParams( array() );
-			$query = \SMWQueryProcessor::createQuery( $term, $params );
+		$query = $this->queryBuilder->getQuery(
+			$this->queryString
+		);
 
-			$description = $query->getDescription();
+		$this->queryBuilder->addSort( $query );
 
-			if ( $description === null || is_a( $description, 'SMWThingDescription' ) ) {
-				$query = null;
-			}
+		$this->queryBuilder->addNamespaceCondition(
+			$query,
+			$this->searchableNamespaces()
+		);
 
-			$this->queryCache[$term] = $query;
-		}
-
-		return $this->queryCache[$term];
+		return $query;
 	}
 
 	private function searchFallbackSearchEngine( $term, $fulltext ) {
@@ -158,33 +220,8 @@ class Search extends SearchEngine {
 	 */
 	public function searchTitle( $term ) {
 
-		$query = $this->getSearchQuery( $term );
-
-		if ( $query !== null ) {
-
-			$namespacesDisjunction = new Disjunction(
-				array_map( function ( $ns ) {
-					return new NamespaceDescription( $ns );
-				}, $this->namespaces )
-			);
-
-			$description = new Conjunction( array( $query->getDescription(), $namespacesDisjunction ) );
-
-			$query->setDescription( $description );
-			$query->setOffset( $this->offset );
-			$query->setLimit( $this->limit, false );
-
-			$store = ApplicationFactory::getInstance()->getStore();
-
-			$result = $store->getQueryResult( $query );
-
-			$query->querymode = SMWQuery::MODE_COUNT;
-			$query->setOffset( 0 );
-
-			$queryResult = $store->getQueryResult( $query );
-			$count = $queryResult instanceof QueryResult ? $queryResult->getCountValue() : $queryResult;
-
-			return new SearchResultSet( $result, $count );
+		if ( $this->getSearchQuery( $term ) !== null ) {
+			return null;
 		}
 
 		return $this->searchFallbackSearchEngine( $term, false );
@@ -201,11 +238,100 @@ class Search extends SearchEngine {
 	public function searchText( $term ) {
 
 		if ( $this->getSearchQuery( $term ) !== null ) {
-			// No fulltext search for semantic queries
-			return null;
+			return $this->newSearchResultSet( $term );
 		}
 
 		return $this->searchFallbackSearchEngine( $term, true );
+	}
+
+	/**
+	 * @see SearchEngine::completionSearchBackend
+	 *
+	 * Perform a completion search.
+	 *
+	 * @param string $search
+	 *
+	 * @return SearchSuggestionSet
+	 */
+	protected function completionSearchBackend( $search ) {
+
+		$searchResultSet = null;
+
+		// Avoid MW's auto formatting of title entities
+		if ( $search !== '' ) {
+			$search{0} = strtolower( $search{0} );
+		}
+
+		$searchEngine = $this->getFallbackSearchEngine();
+
+		if ( !$this->hasPrefixAndMinLenForCompletionSearch( $search, 3 ) ) {
+			return $searchEngine->completionSearch( $search );
+		}
+
+		if ( $this->getSearchQuery( $search ) !== null ) {
+			$searchResultSet = $this->newSearchResultSet( $search, false, false );
+		}
+
+		if ( $searchResultSet instanceof SearchResultSet ) {
+			return $searchResultSet->newSearchSuggestionSet();
+		}
+
+		return $searchEngine->completionSearch( $search );
+	}
+
+	private function hasPrefixAndMinLenForCompletionSearch( $term, $minLen ) {
+
+		// Only act on when `in:foo`, `has:SomeProperty`, or `phrase:some text`
+		// is actively used as prefix
+
+		if ( strpos( $term, 'in:' ) !== false && mb_strlen( $term ) >= ( 3 + $minLen ) ) {
+			return true;
+		}
+
+		if ( strpos( $term, 'has:' ) !== false && mb_strlen( $term ) >= ( 4 + $minLen ) ) {
+			return true;
+		}
+
+		if ( strpos( $term, 'phrase:' ) !== false && mb_strlen( $term ) >= ( 7 + $minLen ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private function newSearchResultSet( $term, $count = true, $highlight = true ) {
+
+		$query = $this->getSearchQuery( $term );
+
+		if ( $query === null ) {
+			return null;
+		}
+
+		$query->setOffset( $this->offset );
+		$query->setLimit( $this->limit, false );
+		$this->queryString = $query->getQueryString();
+
+		$store = ApplicationFactory::getInstance()->getStore();
+		$query->clearErrors();
+		$query->setOption( 'highlight.fragment', $highlight );
+
+		$result = $store->getQueryResult( $query );
+		$this->errors = $query->getErrors();
+		$this->queryLink = $result->getQueryLink();
+		$this->queryLink->setParameter( $this->offset, 'offset' );
+		$this->queryLink->setParameter( $this->limit, 'limit' );
+
+		if ( $count ) {
+			$query->querymode = SMWQuery::MODE_COUNT;
+			$query->setOffset( 0 );
+
+			$queryResult = $store->getQueryResult( $query );
+			$count = $queryResult instanceof QueryResult ? $queryResult->getCountValue() : $queryResult;
+		} else {
+			$count = 0;
+		}
+
+		return new SearchResultSet( $result, $count );
 	}
 
 	/**
@@ -330,7 +456,6 @@ class Search extends SearchEngine {
 	public function getShowSuggestion() {
 		return $this->showSuggestion;
 	}
-
 
 	public function setLimitOffset( $limit, $offset = 0 ) {
 		parent::setLimitOffset( $limit, $offset );

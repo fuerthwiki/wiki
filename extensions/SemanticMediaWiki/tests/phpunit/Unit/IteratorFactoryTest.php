@@ -15,6 +15,8 @@ use SMW\IteratorFactory;
  */
 class IteratorFactoryTest extends \PHPUnit_Framework_TestCase {
 
+	use PHPUnitCompat;
+
 	public function testCanConstructResultIterator() {
 
 		$instance = new IteratorFactory();
@@ -33,7 +35,7 @@ class IteratorFactoryTest extends \PHPUnit_Framework_TestCase {
 
 		$instance = new IteratorFactory();
 
-		$iterator = $this->getMockBuilder( '\Iterator' )
+		$iterator = $this->getMockBuilder( '\ArrayIterator' )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -55,6 +57,28 @@ class IteratorFactoryTest extends \PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf(
 			'\SMW\Iterators\ChunkedIterator',
 			$instance->newChunkedIterator( $iterator )
+		);
+	}
+
+	public function testCanConstructAppendIterator() {
+
+		$instance = new IteratorFactory();
+
+		$this->assertInstanceOf(
+			'\SMW\Iterators\AppendIterator',
+			$instance->newAppendIterator()
+		);
+	}
+
+	public function testCanConstructCsvFileIterator() {
+
+		$instance = new IteratorFactory();
+
+		$this->setExpectedException( 'SMW\Exception\FileNotFoundException' );
+
+		$this->assertInstanceOf(
+			'\SMW\Iterators\CsvFileIterator',
+			$instance->newCsvFileIterator( 'Foo' )
 		);
 	}
 

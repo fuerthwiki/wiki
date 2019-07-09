@@ -13,7 +13,6 @@
 	"authorprotect-move": "Povoliť presúvanie výlučne pre autorov",
 	"authorprotect-intro": "Tento formulár slúži na zamknutie tejto stránky ostatným používateľom okrem jej autorov.",
 	"authorprotect-success": "Ochrana prebehla úspešne!",
-	"authorprotect-failure": "Ochrana neprebehla úspešne",
 	"protect-level-author": "Ochrániť pred neautorskými úpravami",
 	"restriction-level-author": "Len pre autorov",
 	"right-authorprotect": "Chrániť autorské stránky",

@@ -2,13 +2,12 @@
 
 namespace SMW\MediaWiki\Api;
 
+use SMW\ApplicationFactory;
 use SMW\DIProperty;
 use SMW\PropertySpecificationLookup;
 use SMW\RequestOptions;
 use SMW\Store;
 use SMW\StringCondition;
-use SMW\Localizer;
-use SMW\ApplicationFactory;
 
 /**
  * @license GNU GPL v2+
@@ -36,17 +35,17 @@ class PropertyListByApiRequest {
 	/**
 	 * @var array
 	 */
-	private $propertyList = array();
+	private $propertyList = [];
 
 	/**
 	 * @var array
 	 */
-	private $namespaces = array();
+	private $namespaces = [];
 
 	/**
 	 * @var array
 	 */
-	private $meta = array();
+	private $meta = [];
 
 	/**
 	 * @var integer
@@ -186,11 +185,11 @@ class PropertyListByApiRequest {
 		$this->continueOffset = $this->continueOffset > $requestOptions->limit ? $requestOptions->limit : 0;
 		$this->namespaces = array_keys( $this->namespaces );
 
-		$this->meta = array(
+		$this->meta = [
 			'limit' => $requestOptions->limit,
 			'count' => count( $this->propertyList ),
 			'isCached' => $propertyListLookup->isFromCache()
-		);
+		];
 
 		return true;
 	}
@@ -237,7 +236,7 @@ class PropertyListByApiRequest {
 
 	private function addPropertyToList( array $value ) {
 
-		if ( $value === array() || !$value[0] instanceof DIProperty ) {
+		if ( $value === [] || !$value[0] instanceof DIProperty ) {
 			return;
 		}
 
@@ -248,10 +247,10 @@ class PropertyListByApiRequest {
 			$this->namespaces[substr( $key, 0, strpos( $key, ':' ) )] = true;
 		}
 
-		$this->propertyList[$key] = array(
+		$this->propertyList[$key] = [
 			'label' => $property->getLabel(),
 			'key'   => $property->getKey()
-		);
+		];
 
 		if ( $this->listOnly ) {
 			return;
@@ -264,7 +263,7 @@ class PropertyListByApiRequest {
 
 	private function findPropertyDescriptionBy( DIProperty $property ) {
 
-		$description = $this->propertySpecificationLookup->getPropertyDescriptionBy(
+		$description = $this->propertySpecificationLookup->getPropertyDescriptionByLanguageCode(
 			$property,
 			$this->languageCode
 		);
@@ -273,9 +272,9 @@ class PropertyListByApiRequest {
 			return $description;
 		}
 
-		return array(
+		return [
 			$this->languageCode => $description
-		);
+		];
 	}
 
 	private function matchPropertiesToPreferredLabelBy( $label ) {
@@ -291,7 +290,7 @@ class PropertyListByApiRequest {
 		);
 
 		foreach ( $results as $result ) {
-			$this->addPropertyToList( array( $result, 0 ) );
+			$this->addPropertyToList( [ $result, 0 ] );
 		}
 	}
 

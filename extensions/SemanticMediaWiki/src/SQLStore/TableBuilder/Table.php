@@ -22,7 +22,7 @@ class Table {
 	/**
 	 * @var array
 	 */
-	private $configuration = array();
+	private $attributes = [];
 
 	/**
 	 * @since 2.5
@@ -48,23 +48,32 @@ class Table {
 	 * @param string
 	 */
 	public function getHash() {
-		return json_encode( $this->configuration );
+		return json_encode( $this->attributes );
 	}
 
 	/**
 	 * @since 2.5
 	 *
-	 * @param string|null $key
-	 *
 	 * @param array
 	 */
-	public function getConfiguration( $key = null ) {
+	public function getAttributes() {
+		return $this->attributes;
+	}
 
-		if ( isset( $this->configuration[$key] ) ) {
-			return $this->configuration[$key];
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $key
+	 *
+	 * @param mixed
+	 */
+	public function get( $key ) {
+
+		if ( !isset( $this->attributes[$key] ) ) {
+			throw new RuntimeException( "$key is a reserved option key." );
 		}
 
-		return $this->configuration;
+		return $this->attributes[$key];
 	}
 
 	/**
@@ -74,26 +83,31 @@ class Table {
 	 * @param string|array $fieldType
 	 */
 	public function addColumn( $fieldName, $fieldType ) {
-		$this->configuration['fields'][$fieldName] = $fieldType;
+		$this->attributes['fields'][$fieldName] = $fieldType;
 	}
 
 	/**
 	 * @since 2.5
 	 *
 	 * @param string|array $index
+	 * @param string|null $key
 	 */
-	public function addIndex( $index ) {
-		$this->configuration['indicies'][] = $index;
+	public function addIndex( $index, $key = null ) {
+		if ( $key !== null ) {
+			$this->attributes['indices'][$key] = $index;
+		} else {
+			$this->attributes['indices'][] = $index;
+		}
 	}
 
 	/**
-	 * @since 2.5
+	 * @since 3.0
 	 *
-	 * @param string $key
-	 * @param string|array $index
+	 * @param string $fieldName
+	 * @param string|int $default
 	 */
-	public function addIndexWithKey( $key, $index ) {
-		$this->configuration['indicies'][$key] = $index;
+	public function addDefault( $fieldName, $default ) {
+		$this->attributes['defaults'][$fieldName] = $default;
 	}
 
 	/**
@@ -106,11 +120,11 @@ class Table {
 	 */
 	public function addOption( $key, $option ) {
 
-		if ( $key === 'fields' || $key === 'indicies' ) {
+		if ( $key === 'fields' || $key === 'indices' || $key === 'defaults' ) {
 			throw new RuntimeException( "$key is a reserved option key." );
 		}
 
-		$this->configuration[$key] = $option;
+		$this->attributes[$key] = $option;
 	}
 
 }

@@ -42,7 +42,7 @@ class ApiQueryProofreadInfo extends ApiQueryBase {
 	}
 
 	protected function appendNamespaces() {
-		$data = array();
+		$data = [];
 
 		$index = ProofreadPage::getIndexNamespaceId();
 		if ( $index != null ) {
@@ -58,11 +58,12 @@ class ApiQueryProofreadInfo extends ApiQueryBase {
 	}
 
 	protected function appendQualityLevels() {
-		$data = array();
+		$data = [];
 		for ( $i = 0; $i < 5; $i++ ) {
-			$level = array();
+			$level = [];
 			$level['id'] = $i;
-			$level['category'] = $this->msg( "proofreadpage_quality{$i}_category" )->inContentLanguage()->text();
+			$level['category'] = $this->msg( "proofreadpage_quality{$i}_category" )
+				->inContentLanguage()->text();
 			$data[$i] = $level;
 		}
 		$this->getResult()->setIndexedTagName( $data, 'level' );
@@ -74,58 +75,27 @@ class ApiQueryProofreadInfo extends ApiQueryBase {
 	}
 
 	public function getAllowedParams() {
-		return array(
-			'prop' => array(
+		return [
+			'prop' => [
 				ApiBase::PARAM_DFLT => 'namespaces|qualitylevels',
 				ApiBase::PARAM_ISMULTI => true,
-				ApiBase::PARAM_TYPE => array(
+				ApiBase::PARAM_TYPE => [
 					'namespaces',
 					'qualitylevels',
-				)
-			),
-		);
+				]
+			],
+		];
 	}
 
 	/**
-	 * @deprecated since MediaWiki core 1.25
-	 */
-	public function getParamDescription() {
-		return array(
-			'prop' => array(
-				'Which proofread properties to get:',
-				' namespaces            - Information about Page and Index namespaces',
-				' qualitylevels         - List of proofread quality levels'
-			)
-		);
-	}
-
-	/**
-	 * @deprecated since MediaWiki core 1.25
-	 */
-	public function getDescription() {
-		return 'Return information about configuration of ProofreadPage extension';
-	}
-
-	/**
-	 * @deprecated since MediaWiki core 1.25
-	 */
-	public function getExamples() {
-		return array(
-			'api.php?action=query&meta=proofreadinfo',
-			'api.php?action=query&meta=proofreadinfo&piprop=namespaces|qualitylevels',
-			'api.php?action=query&meta=proofreadinfo&piprop=namespaces',
-		);
-	}
-
-	/**
-	 * @see ApiBase::getExamplesMessages()
+	 * @inheritDoc
 	 */
 	protected function getExamplesMessages() {
-		return array(
+		return [
 			'action=query&meta=proofreadinfo'
 				=> 'apihelp-query+proofreadinfo-example-1',
 			'action=query&meta=proofreadinfo&piprop=namespaces'
 				=> 'apihelp-query+proofreadinfo-example-3',
-		);
+		];
 	}
 }

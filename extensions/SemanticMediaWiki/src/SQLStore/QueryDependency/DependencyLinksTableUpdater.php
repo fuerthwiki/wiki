@@ -2,11 +2,10 @@
 
 namespace SMW\SQLStore\QueryDependency;
 
+use Psr\Log\LoggerAwareTrait;
 use SMW\DIWikiPage;
 use SMW\SQLStore\SQLStore;
 use SMW\Store;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerAwareInterface;
 
 /**
  * @license GNU GPL v2+
@@ -14,27 +13,19 @@ use Psr\Log\LoggerAwareInterface;
  *
  * @author mwjames
  */
-class DependencyLinksTableUpdater implements LoggerAwareInterface {
+class DependencyLinksTableUpdater {
+
+	use LoggerAwareTrait;
 
 	/**
 	 * @var array
 	 */
-	private static $updateList = array();
+	private static $updateList = [];
 
 	/**
 	 * @var Store
 	 */
-	private $store = null;
-
-	/**
-	 * @var Database
-	 */
-	private $connection = null;
-
-	/**
-	 * @var LoggerInterface
-	 */
-	private $logger;
+	private $store;
 
 	/**
 	 * @since 2.4
@@ -43,18 +34,6 @@ class DependencyLinksTableUpdater implements LoggerAwareInterface {
 	 */
 	public function __construct( Store $store ) {
 		$this->store = $store;
-		$this->connection = $this->store->getConnection( 'mw.db' );
-	}
-
-	/**
-	 * @see LoggerAwareInterface::setLogger
-	 *
-	 * @since 2.5
-	 *
-	 * @param LoggerInterface $logger
-	 */
-	public function setLogger( LoggerInterface $logger ) {
-		$this->logger = $logger;
 	}
 
 	/**
@@ -70,7 +49,7 @@ class DependencyLinksTableUpdater implements LoggerAwareInterface {
 	 * @since 2.4
 	 */
 	public function clear() {
-		self::$updateList = array();
+		self::$updateList = [];
 	}
 
 	/**
@@ -81,7 +60,7 @@ class DependencyLinksTableUpdater implements LoggerAwareInterface {
 	 */
 	public function addToUpdateList( $sid, array $dependencyList = null ) {
 
-		if ( $sid == 0 || $dependencyList === null || $dependencyList === array() ) {
+		if ( $sid == 0 || $dependencyList === null || $dependencyList === [] ) {
 			return null;
 		}
 
@@ -98,12 +77,12 @@ class DependencyLinksTableUpdater implements LoggerAwareInterface {
 	public function doUpdate() {
 		foreach ( self::$updateList as $sid => $dependencyList ) {
 
-			if ( $dependencyList === array() ) {
+			if ( $dependencyList === [] ) {
 				continue;
 			}
 
 			$this->updateDependencyList( $sid, $dependencyList );
-			self::$updateList[$sid] = array();
+			self::$updateList[$sid] = [];
 		}
 	}
 
@@ -114,19 +93,26 @@ class DependencyLinksTableUpdater implements LoggerAwareInterface {
 	 */
 	public function deleteDependenciesFromList( array $deleteIdList ) {
 
-		$this->log( __METHOD__ . ' ' . implode( ' ,', $deleteIdList ) );
+		$context = [
+			'method' => __METHOD__,
+			'role' => 'developer',
+			'list' => implode( ' ,', $deleteIdList )
+		];
 
-		$this->connection->beginAtomicTransaction( __METHOD__ );
+		$this->logger->info( '[QueryDependency] Delete dependencies: {list}', $context );
 
-		$this->connection->delete(
+		$connection = $this->store->getConnection( 'mw.db' );
+		$connection->beginAtomicTransaction( __METHOD__ );
+
+		$connection->delete(
 			SQLStore::QUERY_LINKS_TABLE,
-			array(
+			[
 				's_id' => $deleteIdList
-			),
+			],
 			__METHOD__
 		);
 
-		$this->connection->endAtomicTransaction( __METHOD__ );
+		$connection->endAtomicTransaction( __METHOD__ );
 	}
 
 	/**
@@ -137,24 +123,25 @@ class DependencyLinksTableUpdater implements LoggerAwareInterface {
 	 */
 	private function updateDependencyList( $sid, array $dependencyList ) {
 
-		$this->connection->beginAtomicTransaction( __METHOD__ );
+		$connection = $this->store->getConnection( 'mw.db' );
+		$connection->beginAtomicTransaction( __METHOD__ );
 
 		// Before an insert, delete all entries that for the criteria which is
 		// cheaper then doing an individual upsert or selectRow, this also ensures
 		// that entries are self-corrected for dependencies matched
-		$this->connection->delete(
+		$connection->delete(
 			SQLStore::QUERY_LINKS_TABLE,
-			array(
+			[
 				's_id' => $sid
-			),
+			],
 			__METHOD__
 		);
 
 		if ( $sid == 0 ) {
-			return $this->connection->endAtomicTransaction( __METHOD__ );
+			return $connection->endAtomicTransaction( __METHOD__ );
 		}
 
-		$inserts = array();
+		$inserts = [];
 
 		foreach ( $dependencyList as $dependency ) {
 
@@ -173,29 +160,35 @@ class DependencyLinksTableUpdater implements LoggerAwareInterface {
 				continue;
 			}
 
-			$inserts[$sid . $oid] = array(
+			$inserts[$sid . $oid] = [
 				's_id' => $sid,
 				'o_id' => $oid
-			);
+			];
 		}
 
-		if ( $inserts === array() ) {
-			return $this->connection->endAtomicTransaction( __METHOD__ );
+		if ( $inserts === [] ) {
+			return $connection->endAtomicTransaction( __METHOD__ );
 		}
 
 		// MW's multi-array insert needs a numeric dimensional array but the key
 		// was used with a hash to avoid duplicate entries hence the re-copy
 		$inserts = array_values( $inserts );
 
-		$this->log( __METHOD__ . ' insert for SID ' . $sid );
+		$context = [
+			'method' => __METHOD__,
+			'role' => 'developer',
+			'id' => $sid
+		];
 
-		$this->connection->insert(
+		$this->logger->info( '[QueryDependency] Table insert: {id} ID', $context );
+
+		$connection->insert(
 			SQLStore::QUERY_LINKS_TABLE,
 			$inserts,
 			__METHOD__
 		);
 
-		$this->connection->endAtomicTransaction( __METHOD__ );
+		$connection->endAtomicTransaction( __METHOD__ );
 	}
 
 	/**
@@ -215,7 +208,7 @@ class DependencyLinksTableUpdater implements LoggerAwareInterface {
 			);
 		}
 
-		$id = $this->store->getObjectIds()->getIDFor(
+		$id = $this->store->getObjectIds()->getId(
 			$subject
 		);
 
@@ -238,18 +231,17 @@ class DependencyLinksTableUpdater implements LoggerAwareInterface {
 			false
 		);
 
-		$this->log( __METHOD__ . " add new {$id} ID for " . $subject->getHash() . " {$subobjectName}" );
+		$context = [
+			'method' => __METHOD__,
+			'role' => 'developer',
+			'id' => $id,
+			'origin' => $subject->getHash() . $subobjectName
+
+		];
+
+		$this->logger->info( '[QueryDependency] Table update: new {id} ID; {origin}', $context );
 
 		return $id;
-	}
-
-	private function log( $message, $context = array() ) {
-
-		if ( $this->logger === null ) {
-			return;
-		}
-
-		$this->logger->info( $message, $context );
 	}
 
 }

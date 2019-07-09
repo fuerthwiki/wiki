@@ -2,9 +2,8 @@
 
 namespace SMW\SPARQLStore;
 
-use SMW\SemanticData;
 use SMW\DIProperty;
-use SMW\DataTypeRegistry;
+use SMW\SemanticData;
 
 /**
  * Truncate a SemanticData instance for the replication process
@@ -19,7 +18,7 @@ class ReplicationDataTruncator {
 	/**
 	 * @var array
 	 */
-	private $propertyExemptionList = array();
+	private $propertyExemptionList = [];
 
 	/**
 	 * @since 2.5
@@ -39,7 +38,7 @@ class ReplicationDataTruncator {
 	 */
 	public function doTruncate( SemanticData $semanticData ) {
 
-		if ( $this->propertyExemptionList === array() ) {
+		if ( $this->propertyExemptionList === [] ) {
 			return $semanticData;
 		}
 

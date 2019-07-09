@@ -7,9 +7,12 @@
 			"Olgak85",
 			"Przemub",
 			"Sp5uhe",
-			"Ankry"
+			"Ankry",
+			"Zdzislaw"
 		]
 	},
+	"nstab-page": "Strona",
+	"nstab-index": "Indeks",
 	"indexpages": "Spis stron indeksów",
 	"pageswithoutscans": "Strony bez skanów",
 	"proofreadpage_desc": "Umożliwia łatwe porównanie treści ze skanem oryginału",
@@ -18,13 +21,9 @@
 	"proofreadpage_index_expected": "Błąd – oczekiwano indeksu",
 	"proofreadpage_nosuch_index": "Błąd – nie ma takiego indeksu",
 	"proofreadpage_nosuch_file": "Błąd – nie ma takiego pliku",
-	"proofreadpage_badpage": "Zły format",
-	"proofreadpage_badpagetext": "Format strony którą próbujesz zapisać jest nieprawidłowy.",
-	"proofreadpage_indexdupe": "Zdublowany link",
 	"proofreadpage_indexdupetext": "Strony nie mogą być wymienione więcej niż jeden raz na stronie indeksu.",
 	"proofreadpage_nologin": "Niezalogowany",
 	"proofreadpage_nologintext": "Musisz [[Special:UserLogin|zalogować się]], aby zmienić status proofreading strony.",
-	"proofreadpage_notallowed": "Zmiana niedozwolona",
 	"proofreadpage_notallowedtext": "Zmiana statusu proofreading tej strony przez Ciebie jest niedozwolona.",
 	"proofreadpage_dataconfig_badformatted": "Błąd w danych konfiguracyjnych",
 	"proofreadpage_dataconfig_badformattedtext": "Strona [[Mediawiki:Proofreadpage index data config]] nie jest poprawnie sformatowana w JSON.",
@@ -81,8 +80,11 @@
 	"proofreadpage-indexoai-error-schemanotfound": "Schematu nie znaleziono",
 	"proofreadpage-indexoai-error-schemanotfound-text": "Schemat $1 nie został znaleziony.",
 	"proofreadpage-disambiguationspage": "Template:Disambig",
-	"content-model-proofread-page": "Strona: strona",
+	"content-model-proofread-page": "Strona książki",
+	"content-model-proofread-index": "Indeks książki",
 	"proofreadpage-visualeditor-node-pages-inspector-tooltip": "Strony",
 	"proofreadpage-visualeditor-node-pages-inspector-indexselector-yes": "Tak",
-	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "Nie"
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "Nie",
+	"proofreadpage-visualeditor-node-pagequality-inspector-title": "Jakość korekty",
+	"proofreadpage-visualeditor-node-pagequality-inspector-tooltip": "Jakość korekty"
 }

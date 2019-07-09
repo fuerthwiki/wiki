@@ -2,10 +2,10 @@
 
 namespace SMW\DataValues;
 
+use SMW\Message;
 use SMWDataItem as DataItem;
 use SMWDataValue as DataValue;
 use SMWDIBlob as DIBlob;
-use SMW\Message;
 
 /**
  * Handling of a language dependent error message encoded by Message::encode.
@@ -94,7 +94,7 @@ class ErrorMsgTextValue extends DataValue {
 
 	private function constructErrorText( $linker = null ) {
 
-		if ( !$this->isValid() || $this->getDataItem() === array() ) {
+		if ( !$this->isValid() || $this->getDataItem() === [] ) {
 			return '';
 		}
 

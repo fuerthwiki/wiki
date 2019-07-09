@@ -2,14 +2,13 @@
 
 namespace SMW\MediaWiki\Specials\Admin;
 
+use Html;
 use SMW\ApplicationFactory;
+use SMW\DIWikiPage;
 use SMW\MediaWiki\Renderer\HtmlFormRenderer;
 use SMW\Message;
-use SMW\Store;
-use Html;
-use WebRequest;
 use Title;
-use Job;
+use WebRequest;
 
 /**
  * @license GNU GPL v2+
@@ -18,11 +17,6 @@ use Job;
  * @author mwjames
  */
 class PropertyStatsRebuildJobTaskHandler extends TaskHandler {
-
-	/**
-	 * @var Store
-	 */
-	private $store;
 
 	/**
 	 * @var HtmlFormRenderer
@@ -35,16 +29,46 @@ class PropertyStatsRebuildJobTaskHandler extends TaskHandler {
 	private $outputFormatter;
 
 	/**
+	 * @var boolean
+	 */
+	public $isApiTask = true;
+
+	/**
 	 * @since 2.5
 	 *
-	 * @param Store $store
 	 * @param HtmlFormRenderer $htmlFormRenderer
 	 * @param OutputFormatter $outputFormatter
 	 */
-	public function __construct( Store $store, HtmlFormRenderer $htmlFormRenderer, OutputFormatter $outputFormatter ) {
-		$this->store = $store;
+	public function __construct( HtmlFormRenderer $htmlFormRenderer, OutputFormatter $outputFormatter ) {
 		$this->htmlFormRenderer = $htmlFormRenderer;
 		$this->outputFormatter = $outputFormatter;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function getSection() {
+		return self::SECTION_DATAREPAIR;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function hasAction() {
+		return true;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function isApiTask() {
+		return $this->isApiTask;
 	}
 
 	/**
@@ -63,33 +87,51 @@ class PropertyStatsRebuildJobTaskHandler extends TaskHandler {
 	 */
 	public function getHtml() {
 
+		$subject = DIWikiPage::newFromTitle( \SpecialPage::getTitleFor( 'SMWAdmin' ) );
+
 		// smw-admin-propertystatistics
 		$this->htmlFormRenderer
-				->addHeader( 'h3', $this->getMessageAsString( 'smw-admin-propertystatistics-title' ) )
-				->addParagraph( $this->getMessageAsString( 'smw-admin-propertystatistics-intro', Message::PARSE ) );
+				->addHeader( 'h4', $this->msg( 'smw-admin-propertystatistics-title' ) )
+				->addParagraph( $this->msg( 'smw-admin-propertystatistics-intro', Message::PARSE ), [ 'class' => 'plainlinks' ] );
 
-		if ( $this->isEnabledFeature( SMW_ADM_PSTATS ) && !$this->hasPropertyStatisticsRebuildJob() ) {
+		if ( $this->isEnabledFeature( SMW_ADM_PSTATS ) && !$this->hasPendingJob() ) {
 			$this->htmlFormRenderer
 				->setMethod( 'post' )
 				->addHiddenField( 'action', 'pstatsrebuild' )
 				->addSubmitButton(
-					$this->getMessageAsString( 'smw-admin-propertystatistics-button' ),
-					array(
-						'class' => ''
-					)
+					$this->msg( 'smw-admin-propertystatistics-button' ),
+					[
+						'class' => $this->isApiTask() ? 'smw-admin-api-job-task' : '',
+						'data-job' => 'SMW\PropertyStatisticsRebuildJob',
+						'data-subject' => $subject->getHash()
+					]
 				 );
 		} elseif ( $this->isEnabledFeature( SMW_ADM_PSTATS ) ) {
-			$this->htmlFormRenderer
-				->addParagraph(
-					Html::element( 'span', array( 'class' => 'smw-admin-circle-orange' ), '' ) .
-					Html::element( 'span', array( 'style' => 'font-style:italic; margin-left:25px;' ), $this->getMessageAsString( 'smw-admin-propertystatistics-active' ) )
+			$this->htmlFormRenderer->addParagraph(
+					Html::element(
+						'span',
+						[
+							'class' => 'smw-admin-circle-orange'
+						]
+					) . Html::element(
+						'span',
+						[
+							'style' => 'font-style:italic; margin-left:25px;'
+						],
+						$this->msg( 'smw-admin-propertystatistics-active' )
+					)
 				);
 		} else {
-			$this->htmlFormRenderer
-				->addParagraph( $this->getMessageAsString( 'smw-admin-feature-disabled' ) );
+			$this->htmlFormRenderer->addParagraph(
+				$this->msg( 'smw-admin-feature-disabled' )
+			);
 		}
 
-		return Html::rawElement( 'div', array(), $this->htmlFormRenderer->getForm() );
+		return Html::rawElement(
+			'div',
+			[],
+			$this->htmlFormRenderer->getForm()
+		);
 	}
 
 	/**
@@ -99,34 +141,22 @@ class PropertyStatsRebuildJobTaskHandler extends TaskHandler {
 	 */
 	public function handleRequest( WebRequest $webRequest ) {
 
-		if ( $this->isEnabledFeature( SMW_ADM_PSTATS ) && !$this->hasPropertyStatisticsRebuildJob() ) {
-			$propertyStatisticsRebuildJob = ApplicationFactory::getInstance()->newJobFactory()->newByType(
-				'SMW\PropertyStatisticsRebuildJob',
-				\SpecialPage::getTitleFor( 'SMWAdmin' )
-			);
-
-			$propertyStatisticsRebuildJob->insert();
+		if ( !$this->isEnabledFeature( SMW_ADM_PSTATS ) || $this->hasPendingJob() || $this->isApiTask() ) {
+			return $this->outputFormatter->redirectToRootPage( '', [ 'tab' => 'rebuild' ] );
 		}
 
-		$this->outputFormatter->redirectToRootPage( $this->getMessageAsString( 'smw-admin-propertystatistics-title' ) );
+		$job = ApplicationFactory::getInstance()->newJobFactory()->newByType(
+			'smw.propertyStatisticsRebuild',
+			\SpecialPage::getTitleFor( 'SMWAdmin' )
+		);
+
+		$job->insert();
+
+		$this->outputFormatter->redirectToRootPage( '', [ 'tab' => 'rebuild' ] );
 	}
 
-	private function hasPropertyStatisticsRebuildJob() {
-
-		if ( !$this->isEnabledFeature( SMW_ADM_PSTATS ) ) {
-			return false;
-		}
-
-		$jobQueueLookup = ApplicationFactory::getInstance()->create(
-			'JobQueueLookup',
-			$this->store->getConnection( 'mw.db' )
-		);
-
-		$row = $jobQueueLookup->selectJobRowBy(
-			'SMW\PropertyStatisticsRebuildJob'
-		);
-
-		return $row !== null && $row !== false;
+	private function hasPendingJob() {
+		return ApplicationFactory::getInstance()->getJobQueue()->hasPendingJob( 'smw.propertyStatisticsRebuild' );
 	}
 
 }

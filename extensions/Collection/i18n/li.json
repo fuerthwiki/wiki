@@ -3,7 +3,8 @@
 		"authors": [
 			"Aelske",
 			"Ooswesthoesbes",
-			"Pahles"
+			"Pahles",
+			"Macofe"
 		]
 	},
 	"coll-desc": "[[Special:Book|Maak book]]",
@@ -31,7 +32,7 @@
 	"coll-download": "Haol óp",
 	"coll-format_label": "Fórmaat:",
 	"coll-remove": "weggoeje",
-	"coll-show": "Toean",
+	"coll-show": "Tuin",
 	"coll-move_to_top": "Gans euveróppes",
 	"coll-move_up": "Euveróppes",
 	"coll-move_down": "Óngeróppes",
@@ -46,7 +47,7 @@
 	"coll-new_chapter": "Veur de naam van 't nuuj hoofstök in",
 	"coll-rename_chapter": "Veur 'ne nuuje naam in veur 't huidstök",
 	"coll-no_such_category": "De kattegorie besteit neet",
-	"coll-notitle_title": "De titel ven g'r pazjena kós neet vasgesteldj waere.",
+	"coll-notitle_title": "Kós paginanaam neet bekómme",
 	"coll-error_reponse": "De server haet 'n foutmèljing trökgegaeve",
 	"coll-empty_collection": "Laeg book",
 	"coll-revision": "Versie: $1",
@@ -76,7 +77,8 @@
 	"coll-rendering_page_info_text_article": "{{MediaWiki:Coll-helppage}}/Paginarenderinformatie",
 	"coll-rendering_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/Verzamelingrenderinformatie",
 	"coll-rendering_finished_title": "Rendere aafgeröndj",
-	"coll-rendering_finished_text": "<strong>Het document is aangemaak.</strong>\n<strong>[$1 t bestandj downloade]</strong>.\n\nOpmerkinge:\n* Neet tevrede mit de oetveur? Op de [[{{MediaWiki:Coll-helppage}}|hulppagina euver collecties]] staon tips om deze te verbaetere.",
+	"coll-rendering_finished_text": "<strong>Het document is aangemaak.</strong>\n<strong>[$1 t bestandj downloade]</strong>.",
+	"coll-rendering_finished_notes_heading": "Opmirkinge:",
 	"coll-finished_page_info_text_article": "{{MediaWiki:Coll-helppage}}/Informatieteks biw pagina rendere",
 	"coll-finished_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/Informatieteks bie verzameling renderen",
 	"coll-notfound_title": "Book neet gevónje",
@@ -105,7 +107,7 @@
 	"coll-suggest_add_selected": "Voeg geselecteerde pagina's toe",
 	"coll-suggest_ban_selected": "Verwieder geselecteerde pagina's",
 	"coll-suggest_your_book": "Dien book",
-	"coll-suggest_show": "toean",
+	"coll-suggest_show": "tuin",
 	"coll-suggest_ban_tooltip": "Verwieder dees pagina oete lies met suggesties",
 	"coll-suggest_article_ban": "De pagina <strong>$1</strong> is verwiederd oet de suggesties ($2).",
 	"coll-suggest_article_add": "De pagina <strong>$1</strong> is toegevoeg aan die book ($2).",
@@ -148,5 +150,8 @@
 	"coll-not_addable": "Dees paasj kos neet toegevoog waere",
 	"coll-make_suggestions": "Suggereer paazjes",
 	"coll-make_suggestions_tooltip": "Tuun suggesties oppe bokepaginabasis",
-	"coll-suggest_empty": "laeg"
+	"coll-suggest_empty": "laeg",
+	"coll-attribution-anons": "Anoniem: $1",
+	"coll-article-attribution": "<b>$1</b> <i>Brón:</i> $2 <i>Biedragers:</i> $3",
+	"coll-image-attribution": "<b>$1</b> <i>Brón:</i> $2 <i>Licentie:</i> $3 <i>Biedragers:</i> $4 <i>Oearsprunkelike kónsteneer:</i> $5"
 }

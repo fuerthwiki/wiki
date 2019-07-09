@@ -3,26 +3,46 @@
 namespace ProofreadPage\Parser;
 
 use OutOfBoundsException;
-use ProofreadIndexPage;
-use ProofreadPage;
+use Parser;
+use ProofreadPage\Context;
 use ProofreadPage\Pagination\FilePagination;
 use ProofreadPageDbConnector;
-use ProofreadPagePage;
 use Title;
 
 /**
- * @licence GNU GPL v2+
+ * @license GPL-2.0-or-later
  *
  * Parser for the <pages> tag
  */
-class PagesTagParser extends TagParser {
+class PagesTagParser {
 
 	/**
-	 * @see TagParser::render
+	 * @var Parser
+	 */
+	private $parser;
+
+	/**
+	 * @var Context
+	 */
+	private $context;
+
+	public function __construct( Parser $parser, Context $context ) {
+		$this->parser = $parser;
+		$this->context = $context;
+	}
+
+	/**
+	 * Render a <pages> tag
+	 *
+	 * @param string $input the content between opening and closing tags
+	 * @param array $args tags arguments
+	 * @return string
 	 */
 	public function render( $input, array $args ) {
 		// abort if this is nested <pages> call
-		if ( isset( $this->parser->proofreadRenderingPages ) && $this->parser->proofreadRenderingPages ) {
+		if ( isset( $this->parser->proofreadRenderingPages ) &&
+			$this->parser->proofreadRenderingPages
+		) {
 			return '';
 		}
 
@@ -52,24 +72,26 @@ class PagesTagParser extends TagParser {
 			$tosection = null;
 		}
 
-		if( !$index ) {
+		if ( !$index ) {
 			return $this->formatError( 'proofreadpage_index_expected' );
 		}
 
 		$indexTitle = Title::makeTitleSafe( $this->context->getIndexNamespaceId(), $index );
-		if( $indexTitle === null || !$indexTitle->exists() ) {
+		if ( $indexTitle === null || !$indexTitle->exists() ) {
 			return $this->formatError( 'proofreadpage_nosuch_index' );
 		}
-		$indexPage = ProofreadIndexPage::newFromTitle( $indexTitle );
-		$pagination = $this->context->getPaginationFactory()->getPaginationForIndexPage( $indexPage );
+		$indexContent = $this->context->getIndexContentLookup()->getIndexContentForTitle( $indexTitle );
+		$pagination = $this->context->getPaginationFactory()->getPaginationForIndexTitle( $indexTitle );
 		$language = $this->parser->getTargetLanguage();
-		$this->parser->getOutput()->addTemplate( $indexTitle, $indexTitle->getArticleID(), $indexTitle->getLatestRevID() );
+		$this->parser->getOutput()->addTemplate(
+			$indexTitle, $indexTitle->getArticleID(), $indexTitle->getLatestRevID()
+		);
 		$out = '';
 
-		if( $from || $to || $include ) {
-			$pages = array();
+		if ( $from || $to || $include ) {
+			$pages = [];
 
-			if( $pagination instanceof FilePagination ) {
+			if ( $pagination instanceof FilePagination ) {
 				$from = ( $from === null ) ? null : $language->parseFormattedNumber( $from );
 				$to = ( $to === null ) ? null : $language->parseFormattedNumber( $to );
 				$step = ( $step === null ) ? null : $language->parseFormattedNumber( $step );
@@ -79,102 +101,100 @@ class PagesTagParser extends TagParser {
 					return $this->formatError( 'proofreadpage_nosuch_file' );
 				}
 
-				if( !$step ) {
+				if ( !$step ) {
 					$step = 1;
 				}
-				if( !is_numeric( $step ) || $step < 1 ) {
+				if ( !is_numeric( $step ) || $step < 1 ) {
 					return $this->formatError( 'proofreadpage_number_expected' );
 				}
 
-				$pagenums = array();
+				$pagenums = [];
 
-				//add page selected with $include in pagenums
-				if( $include ) {
+				// add page selected with $include in pagenums
+				if ( $include ) {
 					$list = $this->parseNumList( $include );
-					if( $list  == null ) {
+					if ( $list == null ) {
 						return $this->formatError( 'proofreadpage_invalid_interval' );
 					}
 					$pagenums = $list;
 				}
 
-				//ad pages selected with from and to in pagenums
-				if( $from || $to ) {
-					if( !$from ) {
+				// ad pages selected with from and to in pagenums
+				if ( $from || $to ) {
+					if ( !$from ) {
 						$from = 1;
 					}
-					if( !$to ) {
+					if ( !$to ) {
 						$to = $count;
 					}
-					if( !is_numeric( $from ) || !is_numeric( $to )  || !is_numeric( $step ) ) {
+					if ( !is_numeric( $from ) || !is_numeric( $to ) || !is_numeric( $step ) ) {
 						return $this->formatError( 'proofreadpage_number_expected' );
 					}
 
-					if( !( 1 <= $from && $from <= $to && $to <= $count ) ) {
+					if ( !( 1 <= $from && $from <= $to && $to <= $count ) ) {
 						return $this->formatError( 'proofreadpage_invalid_interval' );
 					}
 
-					for( $i = $from; $i <= $to; $i++ ) {
+					for ( $i = $from; $i <= $to; $i++ ) {
 						$pagenums[$i] = $i;
 					}
 				}
 
-				//remove excluded pages form $pagenums
-				if( $exclude ) {
+				// remove excluded pages form $pagenums
+				if ( $exclude ) {
 					$excluded = $this->parseNumList( $exclude );
-					if( $excluded  == null ) {
+					if ( $excluded == null ) {
 						return $this->formatError( 'proofreadpage_invalid_interval' );
 					}
 					$pagenums = array_diff( $pagenums, $excluded );
 				}
 
-				if( count( $pagenums ) / $step > 1000 ) {
+				if ( count( $pagenums ) / $step > 1000 ) {
 					return $this->formatError( 'proofreadpage_interval_too_large' );
 				}
 
-				ksort( $pagenums ); //we must sort the array even if the numerical keys are in a good order.
-				if( end( $pagenums ) > $count ) {
+				// we must sort the array even if the numerical keys are in a good order.
+				ksort( $pagenums );
+				if ( end( $pagenums ) > $count ) {
 					return $this->formatError( 'proofreadpage_invalid_interval' );
 				}
 
-				//Create the list of pages to translude. the step system start with the smaller pagenum
+				// Create the list of pages to translude.
+				// the step system start with the smaller pagenum
 				$mod = reset( $pagenums ) % $step;
-				foreach( $pagenums as $num ) {
-					if( $step == 1 || $num % $step == $mod ) {
-						$pagenum = $pagination->getDisplayedPageNumber( $num )->getFormattedPageNumber( $language );
-						$pages[] = array( $pagination->getPage( $num )->getTitle(), $pagenum );
+				foreach ( $pagenums as $num ) {
+					if ( $step == 1 || $num % $step == $mod ) {
+						$pagenum = $pagination->getDisplayedPageNumber( $num )
+							->getFormattedPageNumber( $language );
+						$pages[] = [ $pagination->getPageTitle( $num ), $pagenum ];
 					}
 				}
 
 			} else {
-				$adding = true;
-
-				$fromPage = null;
-				if( $from ) {
-					$fromTitle = Title::makeTitleSafe( $this->context->getPageNamespaceId(), $from );
-					if( $fromTitle !== null ) {
-						$fromPage = ProofreadPagePage::newFromTitle( $fromTitle );
-						$adding = false;
-					}
+				$fromTitle = null;
+				if ( $from ) {
+					$fromTitle = Title::makeTitleSafe(
+						$this->context->getPageNamespaceId(), $from
+					);
 				}
 
-				$toPage = null;
-				if( $to ) {
+				$toTitle = null;
+				if ( $to ) {
 					$toTitle = Title::makeTitleSafe( $this->context->getPageNamespaceId(), $to );
-					if( $toTitle !== null ) {
-						$toPage = ProofreadPagePage::newFromTitle( $toTitle );
-					}
 				}
 
+				$adding = ( $fromTitle === null );
 				$i = 1;
-				foreach( $pagination as $link ) {
-					if( $fromPage !== null && $fromPage->equals( $link ) ) {
+				foreach ( $pagination as $link ) {
+					if ( $fromTitle !== null && $fromTitle->equals( $link ) ) {
 						$adding = true;
 					}
-					if( $adding ) {
-						$pagenum = $pagination->getDisplayedPageNumber( $i )->getFormattedPageNumber( $language );
-						$pages[] = array( $link->getTitle(), $pagenum );
+					if ( $adding ) {
+						$pagenum = $pagination->getDisplayedPageNumber( $i )
+							->getFormattedPageNumber( $language );
+						$pages[] = [ $link, $pagenum ];
 					}
-					if( $toPage !== null && $toPage->equals( $link ) ) {
+					if ( $toTitle !== null && $toTitle->equals( $link ) ) {
 						$adding = false;
 					}
 					$i++;
@@ -185,17 +205,18 @@ class PagesTagParser extends TagParser {
 			list( $to_page, $to_pagenum ) = end( $pages );
 
 			// find which pages have quality0
-			$q0_pages = array();
-			if( !empty( $pages ) ) {
-				$pp = array();
-				foreach( $pages as $item ) {
+			$q0_pages = [];
+			if ( !empty( $pages ) ) {
+				$pp = [];
+				foreach ( $pages as $item ) {
 					list( $page, $pagenum ) = $item;
 					$pp[] = $page->getDBkey();
 				}
-				$cat = str_replace( ' ' , '_' , wfMessage( 'proofreadpage_quality0_category' )->inContentLanguage()->escaped() );
+				$cat = str_replace( ' ', '_', wfMessage( 'proofreadpage_quality0_category' )
+					->inContentLanguage()->escaped() );
 				$res = ProofreadPageDbConnector::getPagesNameInCategory( $pp, $cat );
 
-				if( $res ) {
+				if ( $res ) {
 					foreach ( $res as $o ) {
 						$q0_pages[] = $o->page_title;
 					}
@@ -203,97 +224,107 @@ class PagesTagParser extends TagParser {
 			}
 
 			// write the output
-			foreach( $pages as $item ) {
+			foreach ( $pages as $item ) {
 				list( $page, $pagenum ) = $item;
-				if( in_array( $page->getDBKey(), $q0_pages ) ) {
+				if ( in_array( $page->getDBKey(), $q0_pages ) ) {
 					$is_q0 = true;
 				} else {
 					$is_q0 = false;
 				}
 				$text = $page->getPrefixedText();
-				if( !$is_q0 ) {
-					$out .= '<span>{{:MediaWiki:Proofreadpage_pagenum_template|page=' . $text . "|num=$pagenum}}</span>";
+				if ( !$is_q0 ) {
+					$out .= '<span>{{:MediaWiki:Proofreadpage_pagenum_template|page=' . $text .
+						"|num=$pagenum}}</span>";
 				}
-				if( $from_page !== null && $page->equals( $from_page ) && $fromsection !== null ) {
+				if ( $from_page !== null && $page->equals( $from_page ) && $fromsection !== null ) {
 					$ts = '';
 					// Check if it is single page transclusion
 					if ( $to_page !== null && $page->equals( $to_page ) && $tosection !== null ) {
 						$ts = $tosection;
 					}
 					$out .= '{{#lst:' . $text . '|' . $fromsection . '|' . $ts .'}}';
-				} elseif( $to_page !== null && $page->equals( $to_page ) && $tosection !== null ) {
+				} elseif ( $to_page !== null && $page->equals( $to_page ) && $tosection !== null ) {
 					$out .= '{{#lst:' . $text . '||' . $tosection . '}}';
 				} elseif ( $onlysection !== null ) {
 					$out .= '{{#lst:' . $text . '|' . $onlysection . '}}';
 				} else {
 					$out .= '{{:' . $text . '}}';
 				}
-				if( !$is_q0 ) {
-					$out.= "&#32;";
+				if ( !$is_q0 ) {
+					$out .= "&#32;";
 				}
 			}
 		} else {
 			/* table of Contents */
 			$header = 'toc';
 			try {
-				$firstpage = $pagination->getPage( 1 )->getTitle();
+				$firstpage = $pagination->getPageTitle( 1 );
 				$this->parser->getOutput()->addTemplate(
 					$firstpage,
 					$firstpage->getArticleID(),
 					$firstpage->getLatestRevID()
 				);
-			} catch( OutOfBoundsException $e ) {} //if the first page does not exists
+			}
+			catch ( OutOfBoundsException $e ) {
+	  } // if the first page does not exists
 		}
 
-		if( $header ) {
-			if( $header == 'toc') {
+		if ( $header ) {
+			if ( $header == 'toc' ) {
 				$this->parser->getOutput()->is_toc = true;
 			}
-			$indexLinks = $indexPage->getLinksToMainNamespace();
+			$indexLinks = $indexContent->getLinksToNamespace(
+				NS_MAIN, $indexTitle, true
+			);
 			$pageTitle = $this->parser->getTitle();
 			$h_out = '{{:MediaWiki:Proofreadpage_header_template';
 			$h_out .= "|value=$header";
 			// find next and previous pages in list
-			for( $i = 0; $i < count( $indexLinks ); $i++ ) {
-				if( $pageTitle->equals( $indexLinks[$i][0] ) ) {
-					$current = '[[' . $indexLinks[$i][0]->getFullText() . '|' . $indexLinks[$i][1] . ']]';
+			$indexLinksCount = count( $indexLinks );
+			for ( $i = 0; $i < $indexLinksCount; $i++ ) {
+				if ( $pageTitle->equals( $indexLinks[$i]->getTarget() ) ) {
+					$current = '[[' . $indexLinks[$i]->getTarget()->getFullText() . '|' .
+						$indexLinks[$i]->getLabel() . ']]';
 					break;
 				}
 			}
-			if( $i > 1 ) {
-				$prev = '[[' . $indexLinks[$i - 1][0]->getFullText() . '|' . $indexLinks[$i - 1][1] . ']]';
+			if ( $i > 1 ) {
+				$prev = '[[' . $indexLinks[$i - 1]->getTarget()->getFullText() . '|' .
+					$indexLinks[$i - 1]->getLabel() . ']]';
 			}
-			if( $i + 1 < count( $indexLinks ) ) {
-				$next = '[[' . $indexLinks[$i + 1][0]->getFullText() . '|' . $indexLinks[$i + 1][1] . ']]';
+			if ( $i + 1 < $indexLinksCount ) {
+				$next = '[[' . $indexLinks[$i + 1]->getTarget()->getFullText() . '|' .
+					$indexLinks[$i + 1]->getLabel() . ']]';
 			}
-			if( isset( $args['current'] ) ) {
+			if ( isset( $args['current'] ) ) {
 				$current = $args['current'];
 			}
-			if( isset( $args['prev'] ) ) {
+			if ( isset( $args['prev'] ) ) {
 				$prev = $args['prev'];
 			}
-			if( isset( $args['next'] ) ) {
+			if ( isset( $args['next'] ) ) {
 				$next = $args['next'];
 			}
-			if( isset( $current ) ) {
+			if ( isset( $current ) ) {
 				$h_out .= "|current=$current";
 			}
-			if( isset( $prev ) ) {
+			if ( isset( $prev ) ) {
 				$h_out .= "|prev=$prev";
 			}
-			if( isset( $next ) ) {
+			if ( isset( $next ) ) {
 				$h_out .= "|next=$next";
 			}
-			if( isset( $from_pagenum ) ) {
+			if ( isset( $from_pagenum ) ) {
 				$h_out .= "|from=$from_pagenum";
 			}
-			if( isset( $to_pagenum ) ) {
+			if ( isset( $to_pagenum ) ) {
 				$h_out .= "|to=$to_pagenum";
 			}
-			$attributes = $indexPage->getIndexEntriesForHeader();
-			foreach( $attributes as $attribute ) {
+			$attributes = $this->context->getCustomIndexFieldsParser()
+				->parseCustomIndexFieldsForHeader( $indexContent );
+			foreach ( $attributes as $attribute ) {
 				$key = strtolower( $attribute->getKey() );
-				if( array_key_exists( $key, $args ) ) {
+				if ( array_key_exists( $key, $args ) ) {
 					$val = $args[$key];
 				} else {
 					$val = $attribute->getStringValue();
@@ -301,7 +332,7 @@ class PagesTagParser extends TagParser {
 				$h_out .= "|$key=$val";
 			}
 			$h_out .= '}}';
-			$out = $h_out . $out ;
+			$out = $h_out . $out;
 		}
 
 		// wrap the output in a div, to prevent the parser from inserting paragraphs
@@ -316,30 +347,39 @@ class PagesTagParser extends TagParser {
 	 * Parse a comma-separated list of pages. A dash indicates an interval of pages
 	 * example: 1-10,23,38
 	 *
-	 * @param $input string
+	 * @param string $input
 	 * @return array|null an array of pages, or null if the input does not comply to the syntax
 	 */
-	public function parseNumList($input) {
-		$input = str_replace(array(' ', '\t', '\n'), '', $input);
+	public function parseNumList( $input ) {
+		$input = str_replace( [ ' ', '\t', '\n' ], '', $input );
 		$list = explode( ',', $input );
-		$nums = array();
-		foreach( $list as $item ) {
-			if( is_numeric( $item ) ) {
+		$nums = [];
+		foreach ( $list as $item ) {
+			if ( is_numeric( $item ) ) {
 				$nums[$item] = $item;
 			} else {
 				$interval = explode( '-', $item );
-				if( count( $interval ) != 2
+				if ( count( $interval ) != 2
 					|| !is_numeric( $interval[0] )
 					|| !is_numeric( $interval[1] )
 					|| $interval[1] < $interval[0]
 				) {
 					return null;
 				}
-				for( $i = $interval[0]; $i <= $interval[1]; $i += 1 ) {
+				for ( $i = $interval[0]; $i <= $interval[1]; $i += 1 ) {
 					$nums[$i] = $i;
 				}
 			}
 		}
 		return $nums;
+	}
+
+	/**
+	 * @param string $errorMsg
+	 * @return string
+	 */
+	private function formatError( $errorMsg ) {
+		return '<strong class="error">' . wfMessage( $errorMsg )->inContentLanguage()->escaped() .
+			'</strong>';
 	}
 }

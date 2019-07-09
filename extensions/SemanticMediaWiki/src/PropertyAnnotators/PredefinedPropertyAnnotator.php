@@ -6,6 +6,7 @@ use SMW\DIProperty;
 use SMW\DIWikiPage;
 use SMW\PageInfo;
 use SMW\PropertyAnnotator;
+use SMW\PropertyRegistry;
 use SMWDataItem as DataItem;
 use SMWDIBlob as DIBlob;
 use SMWDIBoolean as DIBoolean;
@@ -27,7 +28,7 @@ class PredefinedPropertyAnnotator extends PropertyAnnotatorDecorator {
 	/**
 	 * @var array
 	 */
-	private $predefinedPropertyList = array();
+	private $predefinedPropertyList = [];
 
 	/**
 	 * @since 1.9
@@ -51,7 +52,7 @@ class PredefinedPropertyAnnotator extends PropertyAnnotatorDecorator {
 
 	protected function addPropertyValues() {
 
-		$cachedProperties = array();
+		$cachedProperties = [];
 
 		foreach ( $this->predefinedPropertyList as $propertyId ) {
 
@@ -61,7 +62,7 @@ class PredefinedPropertyAnnotator extends PropertyAnnotatorDecorator {
 
 			$propertyDI = new DIProperty( $propertyId );
 
-			if ( $this->getSemanticData()->getPropertyValues( $propertyDI ) !== array() ) {
+			if ( $this->getSemanticData()->getPropertyValues( $propertyDI ) !== [] ) {
 				$cachedProperties[$propertyId] = true;
 				continue;
 			}
@@ -76,7 +77,7 @@ class PredefinedPropertyAnnotator extends PropertyAnnotatorDecorator {
 	}
 
 	protected function isRegisteredPropertyId( $propertyId, $cachedProperties ) {
-		return ( DIProperty::getPredefinedPropertyTypeId( $propertyId ) === '' ) ||
+		return ( PropertyRegistry::getInstance()->getPropertyValueTypeById( $propertyId ) === '' ) ||
 			array_key_exists( $propertyId, $cachedProperties );
 	}
 

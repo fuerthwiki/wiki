@@ -17,6 +17,8 @@ namespace SMW;
  */
 class RequestOptions {
 
+	const SEARCH_FIELD = 'search_field';
+
 	/**
 	 * The maximum number of results that should be returned.
 	 */
@@ -62,7 +64,7 @@ class RequestOptions {
 	 *
 	 * @var StringCondition[]
 	 */
-	private $stringConditions = array();
+	private $stringConditions = [];
 
 	/**
 	 * Contains extra conditions which a consumer is being allowed to interpret
@@ -70,17 +72,23 @@ class RequestOptions {
 	 *
 	 * @var array
 	 */
-	private $extraConditions = array();
+	private $extraConditions = [];
+
+	/**
+	 * @var array
+	 */
+	private $options = [];
 
 	/**
 	 * @since 1.0
 	 *
 	 * @param string $string to match
 	 * @param integer $condition one of STRCOND_PRE, STRCOND_POST, STRCOND_MID
-	 * @param boolean $isDisjunctiveCondition
+	 * @param boolean $isOr
+	 * @param boolean $isNot
 	 */
-	public function addStringCondition( $string, $condition, $isDisjunctiveCondition = false ) {
-		$this->stringConditions[] = new StringCondition( $string, $condition, $isDisjunctiveCondition );
+	public function addStringCondition( $string, $condition, $isOr = false, $isNot = false ) {
+		$this->stringConditions[] = new StringCondition( $string, $condition, $isOr, $isNot );
 	}
 
 	/**
@@ -110,6 +118,33 @@ class RequestOptions {
 	 */
 	public function getExtraConditions() {
 		return $this->extraConditions;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $key
+	 * @param string $value
+	 */
+	public function setOption( $key, $value ) {
+		$this->options[$key] = $value;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $key
+	 * @param mixed $default
+	 *
+	 * @return mixed
+	 */
+	public function getOption( $key, $default = null ) {
+
+		if ( isset( $this->options[$key] ) ) {
+			return $this->options[$key];
+		}
+
+		return $default;
 	}
 
 	/**
@@ -161,7 +196,7 @@ class RequestOptions {
 			$stringConditions .= $stringCondition->getHash();
 		}
 
-		return json_encode( array(
+		return json_encode( [
 			$this->limit,
 			$this->offset,
 			$this->sort,
@@ -169,8 +204,9 @@ class RequestOptions {
 			$this->boundary,
 			$this->include_boundary,
 			$stringConditions,
-			$this->extraConditions
-		) );
+			$this->extraConditions,
+			$this->options,
+		] );
 	}
 
 }

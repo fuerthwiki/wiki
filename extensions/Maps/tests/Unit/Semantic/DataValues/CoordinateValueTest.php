@@ -1,21 +1,22 @@
 <?php
 
-namespace Maps\Tests\Semantic\DataValues;
+namespace Maps\Tests\Unit\Semantic\DataValues;
 
-use Maps\Semantic\DataValues\CoordinateValue;
-use Maps\Semantic\ValueDescriptions\AreaDescription;
-use Maps\Semantic\ValueDescriptions\CoordinateDescription;
+use Maps\SemanticMW\DataValues\CoordinateValue;
+use Maps\SemanticMW\ValueDescriptions\AreaDescription;
+use Maps\SemanticMW\ValueDescriptions\CoordinateDescription;
+use PHPUnit\Framework\TestCase;
 use SMW\DataValueFactory;
 use SMWDataItem;
 use SMWDIGeoCoord;
 
 /**
- * @covers \Maps\Semantic\ValueDescriptions\CoordinateValue
+ * @covers \Maps\SemanticMW\ValueDescriptions\CoordinateValue
  *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
-class CoordinateValueTest extends \PHPUnit_Framework_TestCase {
+class CoordinateValueTest extends TestCase {
 
 	public function setUp() {
 		if ( !defined( 'SMW_VERSION' ) ) {
@@ -34,7 +35,7 @@ class CoordinateValueTest extends \PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf( CoordinateValue::class, $geoValue );
 
 		$this->assertEquals( $geoDI, $geoValue->getDataItem() );
-		$this->assertEquals( '23° 0\' 0", 42° 0\' 0"', $geoValue->getShortWikiText() );
+		$this->assertSame( '23° 0\' 0.00" N, 42° 0\' 0.00" E', $geoValue->getShortWikiText() );
 	}
 
 	/**
@@ -48,6 +49,10 @@ class CoordinateValueTest extends \PHPUnit_Framework_TestCase {
 		$this->assertIsCorrectCoordValue( $description, $lat, $long );
 	}
 
+	protected function newInstance() {
+		return new CoordinateValue( SMWDataItem::TYPE_GEO );
+	}
+
 	private function assertIsCorrectCoordValue( $description, $lat, $long ) {
 		/**
 		 * @var CoordinateDescription $description
@@ -55,10 +60,6 @@ class CoordinateValueTest extends \PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf( CoordinateDescription::class, $description );
 		$this->assertEquals( $lat, $description->getDataItem()->getLatitude() );
 		$this->assertEquals( $long, $description->getDataItem()->getLongitude() );
-	}
-
-	protected function newInstance() {
-		return new CoordinateValue( SMWDataItem::TYPE_GEO );
 	}
 
 	public function coordinateProvider() {

@@ -3,9 +3,9 @@
 namespace SMW;
 
 use Html;
+use SMW\Exception\PropertyNotFoundException;
 use SMWDIError;
 use SMWTypesValue;
-use SMW\Exception\PropertyNotFoundExeption;
 
 /**
  * Query page that provides content to Special:UnusedProperties
@@ -91,12 +91,12 @@ class UnusedPropertiesQueryPage extends QueryPage {
 
 		return Html::rawElement(
 			'p',
-			array( 'class' => 'smw-unusedproperties-docu' ),
+			[ 'class' => 'smw-unusedproperties-docu' ],
 			$this->msg( 'smw-unusedproperties-docu' )->parse()
 		) . $this->getSearchForm( $this->getRequest()->getVal( 'property' ), $this->getCacheInfo() ) .
 		Html::element(
 			'h2',
-			array(),
+			[],
 			$this->msg( 'smw-sp-properties-header-label' )->text()
 		);
 	}
@@ -119,11 +119,11 @@ class UnusedPropertiesQueryPage extends QueryPage {
 		} elseif ( $result instanceof SMWDIError ) {
 			return $this->getMessageFormatter()->clear()
 				->setType( 'warning' )
-				->addFromArray( array( $result->getErrors() ) )
+				->addFromArray( [ $result->getErrors() ] )
 				->getHtml();
 		}
 
-		throw new PropertyNotFoundExeption( 'UnusedPropertiesQueryPage expects results that are properties or errors.' );
+		throw new PropertyNotFoundException( 'UnusedPropertiesQueryPage expects results that are properties or errors.' );
 	}
 
 	/**
@@ -157,7 +157,7 @@ class UnusedPropertiesQueryPage extends QueryPage {
 
 			$types = $this->store->getPropertyValues( $property->getDiWikiPage(), new DIProperty( '_TYPE' ) );
 
-			if ( count( $types ) >= 1 ) {
+			if ( is_array( $types ) && count( $types ) >= 1 ) {
 				$typeDataValue = DataValueFactory::getInstance()->newDataValueByItem( current( $types ), new DIProperty( '_TYPE' ) );
 			} else {
 				$typeDataValue = SMWTypesValue::newFromTypeId( '_wpg' );

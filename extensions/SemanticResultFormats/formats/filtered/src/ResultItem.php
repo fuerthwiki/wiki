@@ -40,16 +40,16 @@ class ResultItem {
 		if ( $data === null ) {
 			$this->unsetData( $viewOrFilterId );
 		} else {
-			$this->mItemData[ $viewOrFilterId ] = $data;
+			$this->mItemData[$viewOrFilterId] = $data;
 		}
 	}
 
 	public function unsetData( $viewOrFilterId ) {
-		unset( $this->mItemData[ $viewOrFilterId ] );
+		unset( $this->mItemData[$viewOrFilterId] );
 	}
 
 	public function getData( $viewOrFilterId ) {
-		return $this->mItemData[ $viewOrFilterId ];
+		return $this->mItemData[$viewOrFilterId];
 	}
 
 	/**
@@ -82,11 +82,11 @@ class ResultItem {
 					$values[] = [ 'lat' => $dataItem->getLatitude(), 'lng' => $dataItem->getLongitude() ];
 					$sorted[] = $dataItem->getSortKey();
 				} elseif ( $dataItem instanceof SMWDIWikiPage ) {
-					$values[] = $dataValue->getShortHTMLText();
+					$values[] = $dataValue->getShortWikiText();
 					$sorted[] = $dataValue->getSortKey();
 				} else {
-					$values[] = $dataValue->getShortHTMLText();
-					$sorted[] = $dataValue->getShortHTMLText();
+					$values[] = $dataValue->getShortWikiText();
+					$sorted[] = $dataValue->getShortWikiText();
 				}
 
 				if ( $dataValue instanceof SMWErrorValue ) {
@@ -96,7 +96,7 @@ class ResultItem {
 				}
 			}
 
-			$printouts[ $this->mQueryPrinter->uniqid( $printRequest->getHash() ) ] = [
+			$printouts[$this->mQueryPrinter->uniqid( $printRequest->getHash() )] = [
 				'values' => $values,
 				'formatted values' => $formatted,
 				'sort values' => $sorted,

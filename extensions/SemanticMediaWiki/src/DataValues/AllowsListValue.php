@@ -3,11 +3,9 @@
 namespace SMW\DataValues;
 
 use SMW\Localizer;
-use SMWStringValue as StringValue;
-use SMW\Message;
 
 /**
- * To suppport value list via the NS_MEDIAWIKI namespace
+ * To support value list via the NS_MEDIAWIKI namespace
  *
  * @license GNU GPL v2+
  * @since 2.5
@@ -46,17 +44,15 @@ class AllowsListValue extends StringValue {
 
 		$allowsListValueParser = $this->dataValueServiceFactory->getValueParser( $this );
 
-		$content = $allowsListValueParser->parse(
-			$value
-		);
+		$allowsListValueParser->parse( $value );
 
-		if ( $allowsListValueParser->getErrors() !== array() ) {
+		if ( $allowsListValueParser->getErrors() !== [] ) {
 			foreach ( $allowsListValueParser->getErrors() as $error ) {
 				$this->addErrorMsg( $error );
 			}
+		} else {
+			parent::parseUserValue( $value );
 		}
-
-		parent::parseUserValue( $value );
 	}
 
 	/**
@@ -100,10 +96,10 @@ class AllowsListValue extends StringValue {
 
 		return \Html::rawElement(
 			'a',
-			array(
+			[
 				'href'   => $title->getLocalUrl(),
 				'target' => '_blank'
-			),
+			],
 			$id
 		);
 	}

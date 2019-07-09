@@ -10,14 +10,14 @@ use SMW\Query\Language\Disjunction;
 use SMW\Query\Language\SomeProperty;
 use SMW\Query\Language\ThingDescription;
 use SMW\Query\Language\ValueDescription;
+use SMW\SQLStore\EntityStore\DataItemHandler;
 use SMW\SQLStore\QueryEngine\DescriptionInterpreter;
+use SMW\SQLStore\QueryEngine\FulltextSearchTableFactory;
 use SMW\SQLStore\QueryEngine\QuerySegment;
 use SMW\SQLStore\QueryEngine\QuerySegmentListBuilder;
 use SMWDataItem as DataItem;
-use SMW\SQLStore\EntityStore\DataItemHandler;
 use SMWSql3SmwIds;
 use SMWSQLStore3Table;
-use SMW\SQLStore\QueryEngine\FulltextSearchTableFactory;
 
 /**
  * @license GNU GPL v2+
@@ -143,6 +143,7 @@ class SomePropertyInterpreter implements DescriptionInterpreter {
 
 		// *** Now construct the query ... ***//
 		$query->joinTable = $proptable->getName();
+		$query->depth = $description->getHierarchyDepth();
 
 		// *** Add conditions for selecting rows for this property ***//
 		if ( !$proptable->isFixedPropertyTable() ) {
@@ -152,7 +153,8 @@ class SomePropertyInterpreter implements DescriptionInterpreter {
 			$pqid = QuerySegment::$qnum;
 			$pquery = new QuerySegment();
 			$pquery->type = QuerySegment::Q_PROP_HIERARCHY;
-			$pquery->joinfield = array( $pid );
+			$pquery->joinfield = [ $pid ];
+			$pquery->depth = $description->getHierarchyDepth();
 			$query->components[$pqid] = "{$query->alias}.p_id";
 
 			$this->querySegmentListBuilder->addQuerySegment( $pquery );
@@ -192,7 +194,7 @@ class SomePropertyInterpreter implements DescriptionInterpreter {
 				// Can we prevent that? (PERFORMANCE)
 				$query->from = ' INNER JOIN ' .	$db->tableName( SMWSql3SmwIds::TABLE_NAME ) .
 						" AS ids{$query->alias} ON ids{$query->alias}.smw_id={$query->alias}.{$o_id}";
-				$query->sortfields[$sortkey] = "ids{$query->alias}.smw_sortkey";
+				$query->sortfields[$sortkey] = "ids{$query->alias}.smw_sort";
 			}
 		} else { // non-page value description
 			$query->joinfield = "{$query->alias}.s_id";
@@ -292,7 +294,7 @@ class SomePropertyInterpreter implements DescriptionInterpreter {
 		if ( $where == '' && $valueMatchConditionBuilder->canApplyFulltextSearchMatchCondition( $description ) ) {
 			$query->joinTable = $valueMatchConditionBuilder->getTableName();
 			$query->sortIndexField = $valueMatchConditionBuilder->getSortIndexField( $query->alias );
-			$query->components = array();
+			$query->components = [];
 			$where = $valueMatchConditionBuilder->getWhereCondition( $description, $query->alias );
 		} elseif ( $where == '' ) {
 

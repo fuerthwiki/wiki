@@ -47,12 +47,7 @@ export class DistanceFilter extends Filter {
 		this.filterValue = this.options[ 'initial value' ] ? Math.min( this.options[ 'initial value' ], maxValue ) : maxValue;
 
 		// build filter controls
-		let filtercontrols = this.target;
-
-		filtercontrols
-		.append( '<div class="filtered-distance-label"><span>' + this.options[ 'label' ] + '</span></div>' );
-
-		filtercontrols = this.addControlForCollapsing( filtercontrols );
+		let filtercontrols = this.buildEmptyControl();
 
 		let readout = $( '<div class="filtered-distance-readout">' + this.filterValue + '</div>' );
 
@@ -133,7 +128,15 @@ export class DistanceFilter extends Filter {
 	}
 
 	public isVisible( rowId: string ): boolean {
-		return this.controller.getData()[ rowId ].data[ this.filterId ].distance <= this.filterValue;
+
+		let rowdata = this.controller.getData()[ rowId ].data;
+
+		if ( rowdata.hasOwnProperty( this.filterId ) ) {
+			return rowdata[ this.filterId ].distance <= this.filterValue;
+		}
+
+		return super.isVisible( rowId );
+
 	}
 
 }

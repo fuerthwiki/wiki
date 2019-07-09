@@ -2,10 +2,10 @@
 
 namespace SMW\MediaWiki\Specials\Admin;
 
+use Html;
 use SMW\ApplicationFactory;
 use SMW\Message;
 use SMW\NamespaceManager;
-use Html;
 use WebRequest;
 
 /**
@@ -31,6 +31,24 @@ class ConfigurationListTaskHandler extends TaskHandler {
 	}
 
 	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function getSection() {
+		return self::SECTION_SUPPLEMENT;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function hasAction() {
+		return true;
+	}
+
+	/**
 	 * @since 2.5
 	 *
 	 * {@inheritDoc}
@@ -45,14 +63,22 @@ class ConfigurationListTaskHandler extends TaskHandler {
 	 * {@inheritDoc}
 	 */
 	public function getHtml() {
+
+		$link = $this->outputFormatter->createSpecialPageLink(
+			$this->msg( 'smw-admin-supplementary-settings-title' ),
+			[
+				'action' => 'settings'
+			]
+		);
+
 		return Html::rawElement(
 			'li',
-			array(),
-			$this->getMessageAsString(
-				array(
+			[],
+			$this->msg(
+				[
 					'smw-admin-supplementary-settings-intro',
-					$this->outputFormatter->getSpecialPageLinkWith( $this->getMessageAsString( 'smw-admin-supplementary-settings-title' ), array( 'action' => 'settings' ) )
-				)
+					$link
+				]
 			)
 		);
 	}
@@ -64,20 +90,52 @@ class ConfigurationListTaskHandler extends TaskHandler {
 	 */
 	public function handleRequest( WebRequest $webRequest ) {
 
-		$this->outputFormatter->setPageTitle( $this->getMessageAsString( 'smw-admin-supplementary-settings-title' ) );
-		$this->outputFormatter->addParentLink();
+		$this->outputFormatter->setPageTitle(
+			$this->msg( 'smw-admin-supplementary-settings-title' )
+		);
 
-		$this->outputFormatter->addHtml(
-			Html::rawElement( 'p', array(), $this->getMessageAsString( 'smw-admin-settings-docu', Message::PARSE ) )
+		$this->outputFormatter->addParentLink(
+			[ 'tab' => 'supplement' ]
 		);
 
 		$this->outputFormatter->addHtml(
-			'<pre>' . $this->outputFormatter->encodeAsJson( ApplicationFactory::getInstance()->getSettings()->getOptions() ) . '</pre>'
+			Html::rawElement(
+				'p',
+				[
+					'class' => 'plainlinks'
+				],
+				$this->msg( 'smw-admin-settings-docu', Message::PARSE )
+			)
 		);
 
-		$this->outputFormatter->addHtml(
-			'<pre>' . $this->outputFormatter->encodeAsJson( array( 'canonicalNames' => NamespaceManager::getCanonicalNames() ) ) . '</pre>'
+		$options = ApplicationFactory::getInstance()->getSettings()->toArray();
+
+		$this->outputFormatter->addAsPreformattedText(
+			str_replace( '\\\\', '\\', $this->outputFormatter->encodeAsJson( $this->cleanPath( $options ) ) )
 		);
+
+		$this->outputFormatter->addAsPreformattedText(
+			$this->outputFormatter->encodeAsJson(
+				[
+					'canonicalNames' => NamespaceManager::getCanonicalNames()
+				]
+			)
+		);
+	}
+
+	private function cleanPath( array &$options ) {
+
+		foreach ( $options as $key => &$value ) {
+			if ( is_array( $value ) ) {
+				$this->cleanPath( $value );
+			}
+
+			if ( is_string( $value ) && strpos( $value , 'SemanticMediaWiki/') !== false ) {
+				$value = preg_replace('/[\s\S]+?SemanticMediaWiki/', '.../SemanticMediaWiki', $value );
+			}
+		}
+
+		return $options;
 	}
 
 }

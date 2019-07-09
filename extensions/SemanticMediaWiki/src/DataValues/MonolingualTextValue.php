@@ -5,16 +5,14 @@ namespace SMW\DataValues;
 use SMW\ApplicationFactory;
 use SMW\DataValueFactory;
 use SMW\DataValues\ValueFormatters\DataValueFormatter;
-use SMW\DataValues\ValueParsers\MonolingualTextValueParser;
 use SMW\DIProperty;
 use SMW\DIWikiPage;
 use SMW\Localizer;
-use SMW\StringCondition;
 use SMWContainerSemanticData as ContainerSemanticData;
 use SMWDataItem as DataItem;
 use SMWDataValue as DataValue;
-use SMWDIContainer as DIContainer;
 use SMWDIBlob as DIBlob;
+use SMWDIContainer as DIContainer;
 
 /**
  * MonolingualTextValue requires two components, a language code and a
@@ -98,13 +96,13 @@ class MonolingualTextValue extends AbstractMultiValue {
 		$languageCodeValue = $this->newLanguageCodeValue( $languageCode );
 
 		if (
-			( $languageCode !== '' && $languageCodeValue->getErrors() !== array() ) ||
+			( $languageCode !== '' && $languageCodeValue->getErrors() !== [] ) ||
 			( $languageCode === '' && $this->isEnabledFeature( SMW_DV_MLTV_LCODE ) ) ) {
 			$this->addError( $languageCodeValue->getErrors() );
 			return;
 		}
 
-		$dataValues = array();
+		$dataValues = [];
 
 		foreach ( $this->getPropertyDataItems() as $property ) {
 
@@ -140,11 +138,10 @@ class MonolingualTextValue extends AbstractMultiValue {
 			$containerSemanticData->addDataValue( $dataValue );
 		}
 
-		$this->m_dataitem = new DIContainer( $containerSemanticData );
+		// Remember the data to extend the sortkey
+		$containerSemanticData->setExtensionData( 'sort.data', implode( ';', [ $text, $languageCode ] ) );
 
-		// Composite sortkey is to ensure that Store::getPropertyValues can
-		// apply sorting during value selection
-		$this->m_dataitem->setSortKey( implode( ';', array( $text, $languageCode ) ) );
+		$this->m_dataitem = new DIContainer( $containerSemanticData );
 	}
 
 	/**
@@ -229,11 +226,11 @@ class MonolingualTextValue extends AbstractMultiValue {
 	 */
 	public function getPropertyDataItems() {
 
-		if ( self::$properties !== null && self::$properties !== array() ) {
+		if ( self::$properties !== null && self::$properties !== [] ) {
 			return self::$properties;
 		}
 
-		foreach ( array( '_TEXT', '_LCODE' ) as  $id ) {
+		foreach ( [ '_TEXT', '_LCODE' ] as  $id ) {
 			self::$properties[] = new DIProperty( $id );
 		}
 
@@ -258,7 +255,7 @@ class MonolingualTextValue extends AbstractMultiValue {
 	 */
 	public function getTextValueByLanguage( $languageCode ) {
 
-		if ( ( $list = $this->toArray() ) === array() ) {
+		if ( ( $list = $this->toArray() ) === [] ) {
 			return null;
 		}
 
@@ -285,16 +282,16 @@ class MonolingualTextValue extends AbstractMultiValue {
 	 */
 	public function toArray() {
 
-		if ( !$this->isValid() || $this->getDataItem() === array() ) {
-			return array();
+		if ( !$this->isValid() || $this->getDataItem() === [] ) {
+			return [];
 		}
 
 		$semanticData = $this->getDataItem()->getSemanticData();
 
-		$list = array(
+		$list = [
 			'_TEXT'  => '',
 			'_LCODE' => ''
-		);
+		];
 
 		$dataItems = $semanticData->getPropertyValues( new DIProperty( '_TEXT' ) );
 		$dataItem = reset( $dataItems );
@@ -320,7 +317,7 @@ class MonolingualTextValue extends AbstractMultiValue {
 	 */
 	public function toString() {
 
-		if ( !$this->isValid() || $this->getDataItem() === array() ) {
+		if ( !$this->isValid() || $this->getDataItem() === [] ) {
 			return '';
 		}
 

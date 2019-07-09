@@ -2,18 +2,19 @@
 	"@metadata": {
 		"authors": [
 			"Toliño",
-			"Elisardojm"
+			"Elisardojm",
+			"Banjo"
 		]
 	},
+	"action-authorprotect": "protexer de non autores",
 	"authorprotect": "Protexer a páxina fronte á edición dos que non son os seus autores",
 	"authorprotect-desc": "Permítelle ao autor dunha páxina que a protexa fronte á edición doutros usuarios",
-	"authorprotect-notauthor": "Non é o autor desta páxina",
+	"authorprotect-notauthor": "Non é {{GENDER:$1|o|a}} {{GENDER:$1|autor|autora}} desta páxina.",
 	"authorprotect-confirm": "Cambiar os niveis de protección",
 	"authorprotect-edit": "Restrinxir o editado aos autores",
 	"authorprotect-move": "Restrinxir o movemento aos autores",
 	"authorprotect-intro": "Use isto para protexer esta páxina fronte á edición dos que non son os seus autores",
 	"authorprotect-success": "Protección aplicada!",
-	"authorprotect-failure": "Fallou a protección.",
 	"protect-level-author": "Protexer fronte á edición dos que non son os seus autores",
 	"restriction-level-author": "Protexido polo autor",
 	"right-authorprotect": "Protexer as páxinas de autores",

@@ -28,7 +28,7 @@ class ApiQueryProofread extends ApiQueryBase {
 		}
 
 		$pageNamespaceId = ProofreadPage::getPageNamespaceId();
-		$pageIds = array();
+		$pageIds = [];
 		foreach ( $pages as $pageId => $title ) {
 			if ( $title->inNamespace( $pageNamespaceId ) ) {
 				$pageIds[] = $pageId;
@@ -40,7 +40,7 @@ class ApiQueryProofread extends ApiQueryBase {
 		}
 
 		// Determine the categories defined in MediaWiki: pages
-		$qualityCategories = $qualityText = array();
+		$qualityCategories = $qualityText = [];
 		for ( $i = 0; $i < 5; $i++ ) {
 			$cat = Title::makeTitleSafe(
 				NS_CATEGORY,
@@ -53,49 +53,55 @@ class ApiQueryProofread extends ApiQueryBase {
 		}
 		$qualityLevels = array_flip( $qualityCategories );
 
-		// <Reedy> johnduhart, it'd seem sane rather than duplicating the functionality
-		$params = new DerivativeRequest( $this->getRequest(), array(
-			'action' => 'query',
-			'prop' => 'categories',
-			'pageids' => implode( '|', $pageIds ),
-			'clcategories' => implode( '|', $qualityCategories ),
-			'cllimit' => 'max'
-		) );
+		foreach ( array_chunk( $pageIds, ApiBase::LIMIT_SML1 ) as $chunk ) {
+			// <Reedy> johnduhart, it'd seem sane rather than duplicating the functionality
+			$params = new DerivativeRequest( $this->getRequest(), [
+				'action' => 'query',
+				'prop' => 'categories',
+				'pageids' => implode( '|', $chunk ),
+				'clcategories' => implode( '|', $qualityCategories ),
+				'cllimit' => 'max',
+				'errorformat' => 'raw',
+			] );
 
-		$api = new ApiMain($params);
-		$api->execute();
-		if ( defined( 'ApiResult::META_CONTENT' ) ) {
+			$api = new ApiMain( $params );
+			$api->execute();
 			$data = $api->getResult()->getResultData();
 			$pages = ApiResult::stripMetadataNonRecursive(
 				(array)$data['query']['pages']
 			);
-		} else {
-			$data = $api->getResultData();
-			$pages = $data['query']['pages'];
-		}
-		unset( $api );
+			unset( $api );
 
-		if ( array_key_exists( 'error', $data ) ) {
-			$this->dieUsageMsg( $data['error'] );
-		}
-
-		$result = $this->getResult();
-		foreach ( $pages as $pageid => $data) {
-			if ( !array_key_exists( 'categories', $data ) ) {
-				continue;
+			if ( array_key_exists( 'errors', $data ) ) {
+				$status = StatusValue::newGood();
+				foreach ( $data['errors'] as $error ) {
+					$status->fatal( ApiMessage::create(
+						array_merge( [ $data['key'] ], $data['params'] ),
+						$data['code'],
+						isset( $data['data'] ) ? $data['data'] : []
+					) );
+				}
+				$this->dieStatus( $status );
 			}
-			$title = $data['categories'][0]['title'];
 
-			if ( !array_key_exists( $title, $qualityLevels ) ) {
-				continue;
+			$result = $this->getResult();
+			foreach ( $pages as $pageid => $data ) {
+				if ( !array_key_exists( 'categories', $data ) ) {
+					continue;
+				}
+				$title = $data['categories'][0]['title'];
+
+				if ( !array_key_exists( $title, $qualityLevels ) ) {
+					continue;
+				}
+				$pageQuality = $qualityLevels[ $title ];
+
+				$val = [
+					'quality' => $pageQuality,
+					'quality_text' => $qualityText[ $pageQuality ]
+				];
+				$result->addValue( [ 'query', 'pages', $pageid ], 'proofread', $val );
 			}
-			$pageQuality = $qualityLevels[ $title ];
-
-			$val = array(
-				'quality' => $pageQuality,
-				'quality_text' => $qualityText[ $pageQuality ]
-			);
-			$result->addValue( array( 'query', 'pages', $pageid ), 'proofread', $val );
 		}
 	}
 
@@ -104,32 +110,16 @@ class ApiQueryProofread extends ApiQueryBase {
 	}
 
 	public function getAllowedParams() {
-		return array();
+		return [];
 	}
 
 	/**
-	 * @deprecated since MediaWiki core 1.25
-	 */
-	public function getDescription() {
-		return 'Returns information about the current proofread status of the given pages.';
-	}
-
-	/**
-	 * @deprecated since MediaWiki core 1.25
-	 */
-	public function getExamples() {
-		return array(
-			'api.php?action=query&generator=allpages&gapnamespace=' . ProofreadPage::getPageNamespaceId() . '&prop=proofread'
-		);
-	}
-
-	/**
-	 * @see ApiBase::getExamplesMessages()
+	 * @inheritDoc
 	 */
 	protected function getExamplesMessages() {
-		return array(
+		return [
 			'action=query&generator=allpages&gapnamespace=250&prop=proofread'
 				=> 'apihelp-query+proofread-example-1',
-		);
+		];
 	}
 }

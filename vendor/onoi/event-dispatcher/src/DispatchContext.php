@@ -21,6 +21,23 @@ class DispatchContext {
 	private $container = array();
 
 	/**
+	 * @since 1.1
+	 *
+	 * @param array $container
+	 *
+	 * @return DispatchContext
+	 */
+	public static function newFromArray( array $container ) {
+		$dispatchContext = new DispatchContext();
+
+		foreach ( $container as $key => $value ) {
+			$dispatchContext->set( $key, $value );
+		}
+
+		return $dispatchContext;
+	}
+
+	/**
 	 * @since 1.0
 	 *
 	 * @param string $key

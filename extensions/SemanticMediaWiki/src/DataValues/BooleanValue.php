@@ -90,6 +90,12 @@ class BooleanValue extends DataValue {
 		} elseif ( strtolower( $formatstring ) == '-' ) { // "plain" format
 			$this->trueCaption = 'true';
 			$this->falseCaption = 'false';
+		} elseif ( strtolower( $formatstring ) == 'num' ) { // "numeric" format
+			$this->trueCaption = 1;
+			$this->falseCaption = 0;
+		} elseif ( strtolower( $formatstring ) == 'tick' ) { // "tick" format
+			$this->trueCaption = '✓';
+			$this->falseCaption = '✕';
 		} elseif ( strtolower( $formatstring ) == 'x' ) { // X format
 			$this->trueCaption = '<span style="font-family: sans-serif; ">X</span>';
 			$this->falseCaption = '&nbsp;';
@@ -197,7 +203,7 @@ class BooleanValue extends DataValue {
 			$boolvalue = false;
 		} else {
 			$this->addErrorMsg(
-				array( 'smw_noboolean', $value ),
+				[ 'smw_noboolean', $value ],
 				Message::TEXT,
 				Message::USER_LANGUAGE
 			);

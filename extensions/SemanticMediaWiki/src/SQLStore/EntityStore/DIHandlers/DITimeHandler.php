@@ -2,12 +2,11 @@
 
 namespace SMW\SQLStore\EntityStore\DIHandlers;
 
-use SMW\SQLStore\SQLStore;
-use SMWDataItem as DataItem;
 use SMW\SQLStore\EntityStore\DataItemHandler;
 use SMW\SQLStore\EntityStore\Exception\DataItemHandlerException;
-use SMWDITime as DITime;
 use SMW\SQLStore\TableBuilder\FieldType;
+use SMWDataItem as DataItem;
+use SMWDITime as DITime;
 
 /**
  * This class implements Store access to Time data items.
@@ -25,10 +24,10 @@ class DITimeHandler extends DataItemHandler {
 	 * {@inheritDoc}
 	 */
 	public function getTableFields() {
-		return array(
+		return [
 			'o_serialized' => FieldType::FIELD_TITLE,
 			'o_sortkey' => FieldType::TYPE_DOUBLE
-		);
+		];
 	}
 
 	/**
@@ -37,9 +36,45 @@ class DITimeHandler extends DataItemHandler {
 	 * {@inheritDoc}
 	 */
 	public function getFetchFields() {
-		return array(
+		return [
 			'o_serialized' => FieldType::FIELD_TITLE
-		);
+		];
+	}
+
+	/**
+	 * @since 1.8
+	 *
+	 * {@inheritDoc}
+	 */
+	public function getTableIndexes() {
+		return [
+
+			// API module pvalue lookup
+			'p_id,o_serialized',
+			'p_id,o_sortkey',
+
+			// SMWSQLStore3Readers::fetchSemanticData
+			// SELECT p.smw_title as prop,o_serialized AS v0, o_sortkey AS v2
+			// FROM `smw_di_time` INNER JOIN `smw_object_ids` AS p ON
+			// p_id=p.smw_id WHERE s_id='104822'	7.9291ms
+			// ... FROM `smw_fpt_sobj` INNER JOIN `smw_object_ids` AS o0 ON
+			// o_id=o0.smw_id WHERE s_id='104322'
+			's_id,p_id,o_sortkey,o_serialized',
+		];
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function getIndexHint( $key ) {
+
+		if ( 'property.subjects' && $this->isDbType( 'mysql' ) ) {
+			return 's_id';
+		}
+
+		return '';
 	}
 
 	/**
@@ -48,7 +83,7 @@ class DITimeHandler extends DataItemHandler {
 	 * {@inheritDoc}
 	 */
 	public function getWhereConds( DataItem $dataItem ) {
-		return array( 'o_sortkey' => $dataItem->getSortKey() );
+		return [ 'o_sortkey' => $dataItem->getSortKey() ];
 	}
 
 	/**
@@ -57,10 +92,10 @@ class DITimeHandler extends DataItemHandler {
 	 * {@inheritDoc}
 	 */
 	public function getInsertValues( DataItem $dataItem ) {
-		return array(
+		return [
 			'o_serialized' => $dataItem->getSerialization(),
 			'o_sortkey' => $dataItem->getSortKey()
-		);
+		];
 	}
 
 	/**
@@ -81,7 +116,7 @@ class DITimeHandler extends DataItemHandler {
 	 * {@inheritDoc}
 	 */
 	public function getLabelField() {
-		return '';
+		return 'o_serialized';
 	}
 
 	/**

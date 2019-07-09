@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\SQLStore\QueryEngine\Fulltext;
 
-use SMW\SQLStore\QueryEngine\Fulltext\MySQLValueMatchConditionBuilder;
 use SMW\DataItemFactory;
+use SMW\SQLStore\QueryEngine\Fulltext\MySQLValueMatchConditionBuilder;
 
 /**
  * @covers \SMW\SQLStore\QueryEngine\Fulltext\MySQLValueMatchConditionBuilder
@@ -126,13 +126,15 @@ class MySQLValueMatchConditionBuilderTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getDataItem' )
 			->will( $this->returnValue( $this->dataItemFactory->newDIBlob( 'Bar' ) ) );
 
-		$description->expects( $this->once() )
+		$description->expects( $this->atLeastOnce() )
 			->method( 'getComparator' )
 			->will( $this->returnValue( SMW_CMP_LIKE ) );
 
 		$this->assertTrue(
 			$instance->canApplyFulltextSearchMatchCondition( $description )
 		);
+
+		$instance->getWhereCondition( $description );
 	}
 
 	/**
@@ -181,29 +183,29 @@ class MySQLValueMatchConditionBuilderTest extends \PHPUnit_Framework_TestCase {
 
 	public function searchTermProvider() {
 
-		$provider[] = array(
+		$provider[] = [
 			'foooo',
 			'barColumn',
 			"MATCH(barColumn) AGAINST (foooo IN BOOLEAN MODE) "
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'foooo&BOL',
 			'barColumn',
 			"MATCH(barColumn) AGAINST (foooo IN BOOLEAN MODE) "
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'foooo&INL',
 			'barColumn',
 			"MATCH(barColumn) AGAINST (foooo IN NATURAL LANGUAGE MODE) "
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'foooo&QEX',
 			'barColumn',
 			"MATCH(barColumn) AGAINST (foooo WITH QUERY EXPANSION) "
-		);
+		];
 
 		return $provider;
 	}

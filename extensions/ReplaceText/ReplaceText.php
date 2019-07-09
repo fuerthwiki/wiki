@@ -4,7 +4,7 @@
  * allow administrators to do a global string find-and-replace on all the
  * content pages of a wiki.
  *
- * http://www.mediawiki.org/wiki/Extension:Replace_Text
+ * https://www.mediawiki.org/wiki/Extension:Replace_Text
  *
  * The special page created is 'Special:ReplaceText', and it provides
  * a form to do a global search-and-replace, with the changes to every
@@ -17,55 +17,57 @@
  * replacement, since it is not easily reversible.
  */
 
-if ( !defined( 'MEDIAWIKI' ) ) { die(); }
+if ( function_exists( 'wfLoadExtension' ) ) {
+	wfLoadExtension( 'ReplaceText' );
+	// Keep i18n globals so mergeMessageFileList.php doesn't break
+	$wgMessagesDirs['ReplaceText'] = __DIR__ . '/i18n';
+	$wgExtensionMessagesFiles['ReplaceTextAlias'] = __DIR__ . '/ReplaceText.i18n.alias.php';
+	/* wfWarn(
+		'Deprecated PHP entry point used for Replace Text extension. ' .
+		'Please use wfLoadExtension instead, ' .
+		'see https://www.mediawiki.org/wiki/Extension_registration for more details.'
+	); */
+	return;
+}
 
-define( 'REPLACE_TEXT_VERSION', '1.0.1' );
+if ( !defined( 'MEDIAWIKI' ) ) {
+	die();
+}
+
+define( 'REPLACE_TEXT_VERSION', '1.4.1' );
 
 // credits
-$wgExtensionCredits['specialpage'][] = array(
+$wgExtensionCredits['specialpage'][] = [
 	'path' => __FILE__,
 	'name' => 'Replace Text',
 	'version' => REPLACE_TEXT_VERSION,
-	'author' => array( 'Yaron Koren', 'Niklas Laxström' ),
+	'author' => [ 'Yaron Koren', 'Niklas Laxström', '...' ],
 	'url' => 'https://www.mediawiki.org/wiki/Extension:Replace_Text',
-	'descriptionmsg'  => 'replacetext-desc',
-);
+	'descriptionmsg' => 'replacetext-desc',
+	'license-name' => 'GPL-2.0-or-later'
+];
 
-$rtgIP = __DIR__ . '/';
 $wgMessagesDirs['ReplaceText'] = __DIR__ . '/i18n';
-$wgExtensionMessagesFiles['ReplaceText'] = $rtgIP . 'ReplaceText.i18n.php';
-$wgExtensionMessagesFiles['ReplaceTextAlias'] = $rtgIP . 'ReplaceText.alias.php';
+$wgExtensionMessagesFiles['ReplaceTextAlias'] = __DIR__ . '/ReplaceText.i18n.alias.php';
 $wgJobClasses['replaceText'] = 'ReplaceTextJob';
 
 // This extension uses its own permission type, 'replacetext'
 $wgAvailableRights[] = 'replacetext';
 $wgGroupPermissions['sysop']['replacetext'] = true;
 
-$wgHooks['AdminLinks'][] = 'rtAddToAdminLinks';
+$wgHooks['AdminLinks'][] = 'ReplaceTextHooks::addToAdminLinks';
 
-$wgSpecialPages['ReplaceText'] = 'ReplaceText';
-$wgSpecialPageGroups['ReplaceText'] = 'wiki';
-$wgAutoloadClasses['ReplaceText'] = $rtgIP . 'SpecialReplaceText.php';
-$wgAutoloadClasses['ReplaceTextJob'] = $rtgIP . 'ReplaceTextJob.php';
+$wgSpecialPages['ReplaceText'] = 'SpecialReplaceText';
+$wgAutoloadClasses['ReplaceTextHooks'] = __DIR__ . '/src/ReplaceTextHooks.php';
+$wgAutoloadClasses['SpecialReplaceText'] = __DIR__ . '/src/SpecialReplaceText.php';
+$wgAutoloadClasses['ReplaceTextJob'] = __DIR__ . '/src/ReplaceTextJob.php';
+$wgAutoloadClasses['ReplaceTextSearch'] = __DIR__ . '/src/ReplaceTextSearch.php';
 
-/**
- * This function should really go into a "ReplaceText_body.php" file.
- *
- * Handler for 'AdminLinks' hook in the AdminLinks extension
- *
- * @param $admin_links_tree ALTree
- * @return bool
- */
-function rtAddToAdminLinks( ALTree &$admin_links_tree ) {
-	$general_section = $admin_links_tree->getSection( wfMessage( 'adminlinks_general' )->text() );
-	$extensions_row = $general_section->getRow( 'extensions' );
+$wgResourceModules['ext.ReplaceText'] = [
+	'scripts' => 'ext.ReplaceText.js',
+	'localBasePath' => 'resources',
+	'remoteExtPath' => 'ReplaceText/resources',
+];
 
-	if ( is_null( $extensions_row ) ) {
-		$extensions_row = new ALRow( 'extensions' );
-		$general_section->addRow( $extensions_row );
-	}
-
-	$extensions_row->addItem( ALItem::newFromSpecialPage( 'ReplaceText' ) );
-
-	return true;
-}
+// Global variables
+$wgReplaceTextUser = null;

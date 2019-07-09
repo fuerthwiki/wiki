@@ -2,11 +2,12 @@
 
 namespace SMW\Tests\DataValues\ValueFormatters;
 
-use SMW\DataValues\ValueFormatters\PropertyValueFormatter;
-use SMWPropertyValue as PropertyValue;
-use SMW\DataValues\ValueParsers\PropertyValueParser;
 use SMW\DataItemFactory;
+use SMW\DataValues\ValueFormatters\PropertyValueFormatter;
+use SMW\DataValues\ValueParsers\PropertyValueParser;
 use SMW\Tests\TestEnvironment;
+use SMW\Tests\PHPUnitCompat;
+use SMW\DataValues\PropertyValue;
 
 /**
  * @covers \SMW\DataValues\ValueFormatters\PropertyValueFormatter
@@ -18,6 +19,8 @@ use SMW\Tests\TestEnvironment;
  * @author mwjames
  */
 class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
+
+	use PHPUnitCompat;
 
 	private $dataItemFactory;
 	private $propertyLabelFinder;
@@ -63,7 +66,7 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertInstanceOf(
 			'\SMW\DataValues\ValueFormatters\PropertyValueFormatter',
-			new PropertyValueFormatter()
+			new PropertyValueFormatter( $this->propertySpecificationLookup )
 		);
 	}
 
@@ -73,7 +76,9 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$instance = new PropertyValueFormatter();
+		$instance = new PropertyValueFormatter(
+			$this->propertySpecificationLookup
+		);
 
 		$this->assertTrue(
 			$instance->isFormatterFor( $propertyValue )
@@ -90,11 +95,13 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 			$this->dataValueServiceFactory
 		);
 
-		$instance = new PropertyValueFormatter( $propertyValue );
+		$instance = new PropertyValueFormatter(
+			$this->propertySpecificationLookup
+		);
 
 		$this->assertEquals(
 			'',
-			$instance->format( 'Foo' )
+			$instance->format( $propertyValue, [ 'Foo' ] )
 		);
 	}
 
@@ -109,18 +116,21 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 			$this->dataValueServiceFactory
 		);
 
-		$instance = new PropertyValueFormatter( $propertyValue );
+		$instance = new PropertyValueFormatter(
+			$this->propertySpecificationLookup
+		);
 
 		$this->assertEquals(
 			'ABC[<>]',
-			$instance->format( PropertyValueFormatter::WIKI_SHORT )
+			$instance->format( $propertyValue, [ PropertyValueFormatter::WIKI_SHORT ] )
 		);
 
 		$this->assertEquals(
 			'ABC[&lt;&gt;]',
-			$instance->format( PropertyValueFormatter::HTML_SHORT )
+			$instance->format( $propertyValue, [ PropertyValueFormatter::HTML_SHORT ] )
 		);
 	}
+
 
 	public function testFormatWithCaptionOutputAndHighlighter() {
 
@@ -134,16 +144,18 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 			$this->dataValueServiceFactory
 		);
 
-		$instance = new PropertyValueFormatter( $propertyValue );
-
-		$this->assertContains(
-			'<span class="smwtext">ABC[<>]</span><div class="smwttcontent"></div>',
-			$instance->format( PropertyValueFormatter::WIKI_SHORT )
+		$instance = new PropertyValueFormatter(
+			$this->propertySpecificationLookup
 		);
 
 		$this->assertContains(
-			'<span class="smwtext">ABC[&lt;&gt;]</span><div class="smwttcontent"></div>',
-			$instance->format( PropertyValueFormatter::HTML_SHORT )
+			'<span class="smwtext">ABC[<>]</span><span class="smwttcontent"></span>',
+			$instance->format( $propertyValue, [ PropertyValueFormatter::WIKI_SHORT ] )
+		);
+
+		$this->assertContains(
+			'<span class="smwtext">ABC[&lt;&gt;]</span><span class="smwttcontent"></span>',
+			$instance->format( $propertyValue, [ PropertyValueFormatter::HTML_SHORT ] )
 		);
 	}
 
@@ -163,12 +175,18 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 			$this->dataValueServiceFactory
 		);
 
-		$instance = new PropertyValueFormatter( $propertyValue );
-		$expected = $this->testEnvironment->getLocalizedTextByNamespace( SMW_NS_PROPERTY, $expected );
+		$instance = new PropertyValueFormatter(
+			$this->propertySpecificationLookup
+		);
+
+		$expected = $this->testEnvironment->replaceNamespaceWithLocalizedText(
+			SMW_NS_PROPERTY,
+			$expected
+		);
 
 		$this->assertEquals(
 			$expected,
-			$instance->format( $type, $linker )
+			$instance->format( $propertyValue, [ $type, $linker ] )
 		);
 	}
 
@@ -187,7 +205,7 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 
 		$this->propertyLabelFinder->expects( $this->any() )
 			->method( 'findPropertyListFromLabelByLanguageCode' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
 		$this->propertyLabelFinder->expects( $this->any() )
 			->method( 'findPreferredPropertyLabelByLanguageCode' )
@@ -212,12 +230,18 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 
 		$propertyValue->setUserValue( $property );
 
-		$instance = new PropertyValueFormatter( $propertyValue );
-		$expected = $this->testEnvironment->getLocalizedTextByNamespace( SMW_NS_PROPERTY, $expected );
+		$instance = new PropertyValueFormatter(
+			$this->propertySpecificationLookup
+		);
+
+		$expected = $this->testEnvironment->replaceNamespaceWithLocalizedText(
+			SMW_NS_PROPERTY,
+			$expected
+		);
 
 		$this->assertEquals(
 			$expected,
-			$instance->format( $type, $linker )
+			$instance->format( $propertyValue, [ $type, $linker ] )
 		);
 
 		\SMW\PropertyRegistry::clear();
@@ -238,7 +262,7 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 
 		$this->propertyLabelFinder->expects( $this->any() )
 			->method( 'findPropertyListFromLabelByLanguageCode' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
 		$this->propertyLabelFinder->expects( $this->any() )
 			->method( 'findPreferredPropertyLabelByLanguageCode' )
@@ -264,12 +288,18 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 		$propertyValue->setUserValue( $property );
 		$propertyValue->setCaption( $caption );
 
-		$instance = new PropertyValueFormatter( $propertyValue );
-		$expected = $this->testEnvironment->getLocalizedTextByNamespace( SMW_NS_PROPERTY, $expected );
+		$instance = new PropertyValueFormatter(
+			$this->propertySpecificationLookup
+		);
+
+		$expected = $this->testEnvironment->replaceNamespaceWithLocalizedText(
+			SMW_NS_PROPERTY,
+			$expected
+		);
 
 		$this->assertEquals(
 			$expected,
-			$instance->format( $type, $linker )
+			$instance->format( $propertyValue, [ $type, $linker ] )
 		);
 
 		\SMW\PropertyRegistry::clear();
@@ -292,18 +322,26 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 			$this->dataValueServiceFactory
 		);
 
-		$instance = new PropertyValueFormatter( $propertyValue );
-		$expected = $this->testEnvironment->getLocalizedTextByNamespace( SMW_NS_PROPERTY, $expected );
+		$instance = new PropertyValueFormatter(
+			$this->propertySpecificationLookup
+		);
+
+		$expected = $this->testEnvironment->replaceNamespaceWithLocalizedText(
+			SMW_NS_PROPERTY,
+			$expected
+		);
 
 		$this->assertEquals(
 			$expected,
-			$instance->format( PropertyValue::FORMAT_LABEL, $linker )
+			$instance->format( $propertyValue, [ PropertyValue::FORMAT_LABEL, $linker ] )
 		);
 	}
 
 	public function testTryToFormatOnMissingDataValueThrowsException() {
 
-		$instance = new PropertyValueFormatter();
+		$instance = new PropertyValueFormatter(
+			$this->propertySpecificationLookup
+		);
 
 		$this->setExpectedException( 'RuntimeException' );
 		$instance->format( PropertyValueFormatter::VALUE );
@@ -313,40 +351,40 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 
 		$dataItemFactory = new DataItemFactory();
 
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIProperty( 'Foo' ),
 			PropertyValueFormatter::VALUE,
 			null,
 			'Foo'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIProperty( 'Foo' ),
 			PropertyValueFormatter::WIKI_SHORT,
 			null,
 			'Foo'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIProperty( 'Foo' ),
 			PropertyValueFormatter::HTML_SHORT,
 			null,
 			'Foo'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIProperty( 'Foo' ),
 			PropertyValueFormatter::WIKI_LONG,
 			null,
 			'Property:Foo'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIProperty( 'Foo' ),
 			PropertyValueFormatter::HTML_LONG,
 			null,
 			'Property:Foo'
-		);
+		];
 
 		return $provider;
 	}
@@ -355,53 +393,53 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 
 		$linker = 'some';
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
 			'Bar',
 			PropertyValueFormatter::VALUE,
 			null,
 			'Bar'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
 			'Bar',
 			PropertyValueFormatter::WIKI_SHORT,
 			null,
 			'Bar&nbsp;<span title="Foo"><sup>ᵖ</sup></span>'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
 			'Bar',
 			PropertyValueFormatter::HTML_SHORT,
 			null,
 			'Bar&nbsp;<span title="Foo"><sup>ᵖ</sup></span>'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
 			'Bar',
 			PropertyValueFormatter::WIKI_LONG,
 			$linker,
 			'[[:Property:Foo|Bar]]&nbsp;<span title="Foo"><sup>ᵖ</sup></span>'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
 			'Bar',
 			PropertyValueFormatter::HTML_LONG,
 			null,
 			'Property:Foo&nbsp;<span title="Foo"><sup>ᵖ</sup></span>'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
 			'Bar with',
 			PropertyValueFormatter::HTML_SHORT,
 			null,
 			'Bar with&nbsp;<span title="Foo"><sup>ᵖ</sup></span>'
-		);
+		];
 
 		return $provider;
 	}
@@ -410,41 +448,41 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 
 		$linker = 'some';
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
 			false,
 			'Bar',
 			PropertyValueFormatter::VALUE,
 			null,
 			'Bar'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
 			false,
 			'Bar',
 			PropertyValueFormatter::HTML_SHORT,
 			null,
 			'Bar'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
 			'Bar with',
 			'Bar with',
 			PropertyValueFormatter::HTML_SHORT,
 			null,
 			'Bar with&nbsp;<span title="Foo"><sup>ᵖ</sup></span>'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
 			'Bar&nbsp;with',
 			'Bar with',
 			PropertyValueFormatter::HTML_SHORT,
 			null,
 			'Bar&nbsp;with&nbsp;<span title="Foo"><sup>ᵖ</sup></span>'
-		);
+		];
 
 		return $provider;
 	}
@@ -471,11 +509,11 @@ class PropertyValueFormatterTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getCanonicalLabel' )
 			->will( $this->returnValue( 'Foo' ) );
 
-		$provider[] = array(
+		$provider[] = [
 			$property,
 			null,
 			'&nbsp;<span style="font-size:small;">(Foo)</span>'
-		);
+		];
 
 		return $provider;
 	}

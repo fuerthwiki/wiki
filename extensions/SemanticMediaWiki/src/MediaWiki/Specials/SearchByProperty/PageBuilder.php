@@ -6,14 +6,14 @@ use Html;
 use SMW\ApplicationFactory;
 use SMW\DataTypeRegistry;
 use SMW\DataValueFactory;
+use SMW\DataValues\StringValue;
 use SMW\DIProperty;
 use SMW\DIWikiPage;
-use SMW\ProcessingErrorMsgHandler;
 use SMW\MediaWiki\MessageBuilder;
 use SMW\MediaWiki\Renderer\HtmlFormRenderer;
+use SMW\ProcessingErrorMsgHandler;
 use SMWDataValue as DataValue;
 use SMWInfolink as Infolink;
-use SMWStringValue as StringValue;
 
 /**
  * @license GNU GPL v2+
@@ -91,13 +91,13 @@ class PageBuilder {
 
 		$pageDescription = Html::rawElement(
 			'p',
-			array( 'class' => 'smw-sp-searchbyproperty-description' ),
+			[ 'class' => 'smw-sp-searchbyproperty-description' ],
 			$this->messageBuilder->getMessage( 'smw-sp-searchbyproperty-description' )->parse()
 		);
 
 		$resultListHeader = Html::element(
 			'h2',
-			array(),
+			[],
 			$this->messageBuilder->getMessage( 'smw-sp-searchbyproperty-resultlist-header' )->text()
 		);
 
@@ -143,16 +143,16 @@ class PageBuilder {
 		$resultMessage = '';
 
 		if ( $this->pageRequestOptions->propertyString === '' || !$this->pageRequestOptions->propertyString ) {
-			return array( $this->messageBuilder->getMessage( 'smw_sbv_docu' )->text(), '', 0 );
+			return [ $this->messageBuilder->getMessage( 'smw_sbv_docu' )->text(), '', 0 ];
 		}
 
 		// #1728
 		if ( !$this->pageRequestOptions->property->isValid() ) {
-			return array( ProcessingErrorMsgHandler::getMessagesAsString( $this->pageRequestOptions->property->getErrors() ), '', 0 );
+			return [ ProcessingErrorMsgHandler::getMessagesAsString( $this->pageRequestOptions->property->getErrors() ), '', 0 ];
 		}
 
 		if ( $this->pageRequestOptions->valueString !== '' && !$this->pageRequestOptions->value->isValid() ) {
-			return array( ProcessingErrorMsgHandler::getMessagesAsString( $this->pageRequestOptions->value->getErrors() ), '', 0 );
+			return [ ProcessingErrorMsgHandler::getMessagesAsString( $this->pageRequestOptions->value->getErrors() ), '', 0 ];
 		}
 
 		// Find out where the subject is used in connection with a query
@@ -160,7 +160,7 @@ class PageBuilder {
 			$exactResults = $this->queryResultLookup->doQueryLinksReferences( $this->pageRequestOptions );
 			$exactCount = count( $exactResults );
 			$resultList = $this->makeResultList( $exactResults, $this->pageRequestOptions->limit, true );
-			return array( str_replace( '_', ' ', $resultMessage ), $resultList, $exactCount );
+			return [ str_replace( '_', ' ', $resultMessage ), $resultList, $exactCount ];
 		}
 
 		$exactResults = $this->queryResultLookup->doQuery( $this->pageRequestOptions );
@@ -185,7 +185,7 @@ class PageBuilder {
 			$resultList = $this->makeResultList( $exactResults, $this->pageRequestOptions->limit, true );
 		}
 
-		return array( str_replace( '_', ' ', $resultMessage ), $resultList, $exactCount );
+		return [ str_replace( '_', ' ', $resultMessage ), $resultList, $exactCount ];
 	}
 
 	private function getNearbyResults( $exactResults, $exactCount ) {
@@ -224,7 +224,7 @@ class PageBuilder {
 		}
 
 		if ( ( $greaterCount + $smallerCount + $exactCount ) == 0 ) {
-			return array( '', $resultList, 0 );
+			return [ '', $resultList, 0 ];
 		}
 
 		$resultMessage = $this->messageBuilder->getMessage(
@@ -244,7 +244,7 @@ class PageBuilder {
 
 		$resultList .= $this->makeResultList( $greaterResults, $greaterCount, true );
 
-		return array( $resultMessage, $resultList, $greaterCount + $exactCount );
+		return [ $resultMessage, $resultList, $greaterCount + $exactCount ];
 	}
 
 	/**
@@ -273,7 +273,9 @@ class PageBuilder {
 
 		foreach ( $results as $result ) {
 
-			$result[0]->setOutputFormat( 'LOCL' );
+			$outputFormat = $result[0]->getOutputFormat();
+			$result[0]->setOutputFormat( $outputFormat ? $outputFormat : 'LOCL' );
+
 			$listitem = $result[0]->getLongHTMLText( $this->linker );
 
 			if ( $this->canShowSearchByPropertyLink( $result[0] ) ) {
@@ -282,7 +284,7 @@ class PageBuilder {
 				$res = clone $result[0];
 				$res->setOutputFormat( '' );
 
-				$value = $res instanceof StringValue ? $res->getWikiValueByLengthOf( 72 ) : $res->getWikiValue();
+				$value = $res instanceof StringValue && $res->getLength() < 72 ? $res->getWikiValue() : mb_substr( $res->getWikiValue(), 0, 72 );
 
 				$listitem .= '&#160;&#160;' . Infolink::newPropertySearchLink(
 					'+',
@@ -307,7 +309,8 @@ class PageBuilder {
 				( !$this->pageRequestOptions->value->getDataItem()->equals( $result[1]->getDataItem() )
 					|| $highlight ) ) {
 
-				$result[1]->setOutputFormat( 'LOCL' );
+				$outputFormat = $result[1]->getOutputFormat();
+				$result[1]->setOutputFormat( $outputFormat ? $outputFormat : 'LOCL' );
 
 				$listitem .= "&#160;<em><small>" . $this->messageBuilder->getMessage( 'parentheses' )
 					->rawParams( $result[1]->getLongHTMLText( $this->linker ) )
@@ -351,7 +354,7 @@ class PageBuilder {
 
 		if ( !$dataItem instanceof DIWikiPage ) {
 			$resultMessage = 'No reference found.';
-			return array( $resultMessage, $resultList, $resultCount );
+			return [ $resultMessage, $resultList, $resultCount ];
 		}
 
 		// In case the item has already been marked as deleted but is yet pending
@@ -365,7 +368,8 @@ class PageBuilder {
 			$dataItem
 		);
 
-		$dataValue->setOutputFormat( 'LOCL' );
+		$outputFormat = $dataValue->getOutputFormat();
+		$dataValue->setOutputFormat( $outputFormat ? $outputFormat : 'LOCL' );
 
 		if ( $dataValue->isValid() ) {
 			//$resultMessage = 'Item reference for a zero-marked property.';
@@ -378,7 +382,7 @@ class PageBuilder {
 			)->getHTML( $this->linker );
 		}
 
-		return array( $resultMessage, $resultList, $resultCount );
+		return [ $resultMessage, $resultList, $resultCount ];
 	}
 
 	private function isAskQueryLinksRelatedRequest() {

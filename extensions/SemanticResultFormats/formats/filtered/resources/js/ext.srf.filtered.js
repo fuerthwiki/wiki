@@ -1,14 +1,19 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
+/// <reference types="jquery" />
 exports.__esModule = true;
 var View_1 = require("./View/View");
-var Controller = (function () {
+var Controller = /** @class */ (function () {
     function Controller(target, data, printRequests) {
         this.target = undefined;
+        this.filterSpinner = undefined;
         this.views = {};
         this.filters = {};
         this.currentView = undefined;
         this.target = target;
+        if (this.target !== undefined) {
+            this.filterSpinner = this.target.find('div.filtered-filter-spinner');
+        }
         this.data = data;
         this.printRequests = printRequests;
         for (var rowId in this.data) {
@@ -43,15 +48,16 @@ var Controller = (function () {
     Controller.prototype.attachFilter = function (filter) {
         var filterId = filter.getId();
         this.filters[filterId] = filter;
-        this.onFilterUpdated(filterId);
-        return this;
+        filter.init();
+        return this.onFilterUpdated(filterId);
     };
     Controller.prototype.getFilter = function (filterId) {
         return this.filters[filterId];
     };
     Controller.prototype.show = function () {
         this.initializeFilters();
-        this.target.show();
+        this.target.children('.filtered-spinner').remove();
+        this.target.children().show();
         this.switchToView(this.currentView);
     };
     Controller.prototype.switchToView = function (view) {
@@ -68,7 +74,7 @@ var Controller = (function () {
         var toHide = [];
         for (var rowId in this.data) {
             for (var filterId in this.filters) {
-                this.data[rowId].visible[filterId] = this.filters[filterId].isVisible(rowId);
+                this.data[rowId].visible[filterId] = this.filters[filterId].isDisabled() || this.filters[filterId].isVisible(rowId);
             }
             if (this.isVisible(rowId)) {
                 toShow.push(rowId);
@@ -84,25 +90,28 @@ var Controller = (function () {
         this.switchToView(this.views[viewID]);
     };
     Controller.prototype.onFilterUpdated = function (filterId) {
-        var toShow = [];
-        var toHide = [];
-        for (var rowId in this.data) {
-            var oldVisible = this.data[rowId].visible[filterId];
-            var newVisible = this.filters[filterId].isVisible(rowId);
-            if (oldVisible !== newVisible) {
-                this.data[rowId].visible[filterId] = newVisible;
-                if (newVisible && this.isVisible(rowId)) {
-                    toShow.push(rowId);
-                    // controller.showRow( rowId );
-                }
-                else {
-                    toHide.push(rowId);
-                    // controller.hideRow( rowId );
+        var _this = this;
+        return this.showSpinner()
+            .then(function () {
+            var toShow = [];
+            var toHide = [];
+            var disabled = _this.filters[filterId].isDisabled();
+            for (var rowId in _this.data) {
+                var newVisible = disabled || _this.filters[filterId].isVisible(rowId);
+                if (_this.data[rowId].visible[filterId] !== newVisible) {
+                    _this.data[rowId].visible[filterId] = newVisible;
+                    if (newVisible && _this.isVisible(rowId)) {
+                        toShow.push(rowId);
+                    }
+                    else {
+                        toHide.push(rowId);
+                    }
                 }
             }
-        }
-        this.hideRows(toHide);
-        this.showRows(toShow);
+            _this.hideRows(toHide);
+            _this.showRows(toShow);
+        })
+            .then(function () { _this.hideSpinner(); });
     };
     Controller.prototype.isVisible = function (rowId) {
         for (var filterId in this.data[rowId].visible) {
@@ -128,6 +137,22 @@ var Controller = (function () {
             this.views[viewId].showRows(rowIds);
         }
     };
+    Controller.prototype.showSpinner = function () {
+        return this.animateSpinner();
+    };
+    Controller.prototype.hideSpinner = function () {
+        return this.animateSpinner(false);
+    };
+    Controller.prototype.animateSpinner = function (show) {
+        if (show === void 0) { show = true; }
+        if (this.filterSpinner === undefined) {
+            return jQuery.when();
+        }
+        if (show) {
+            return this.filterSpinner.fadeIn(200).promise();
+        }
+        return this.filterSpinner.fadeOut(200).promise();
+    };
     return Controller;
 }());
 exports.Controller = Controller;
@@ -135,9 +160,12 @@ exports.Controller = Controller;
 },{"./View/View":11}],2:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -146,7 +174,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 exports.__esModule = true;
 var Filter_1 = require("./Filter");
-var DistanceFilter = (function (_super) {
+var DistanceFilter = /** @class */ (function (_super) {
     __extends(DistanceFilter, _super);
     function DistanceFilter() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -176,10 +204,7 @@ var DistanceFilter = (function (_super) {
         }
         this.filterValue = this.options['initial value'] ? Math.min(this.options['initial value'], maxValue) : maxValue;
         // build filter controls
-        var filtercontrols = this.target;
-        filtercontrols
-            .append('<div class="filtered-distance-label"><span>' + this.options['label'] + '</span></div>');
-        filtercontrols = this.addControlForCollapsing(filtercontrols);
+        var filtercontrols = this.buildEmptyControl();
         var readout = $('<div class="filtered-distance-readout">' + this.filterValue + '</div>');
         var table = $('<table class="filtered-distance-table"><tbody><tr><td class="filtered-distance-min-cell">0</td>' +
             '<td class="filtered-distance-slider-cell"><div class="filtered-distance-slider"></div></td>' +
@@ -240,27 +265,35 @@ var DistanceFilter = (function (_super) {
         return this.earthRadiusValue * 2 * Math.atan2(Math.sqrt(f), Math.sqrt(1 - f));
     };
     DistanceFilter.prototype.isVisible = function (rowId) {
-        return this.controller.getData()[rowId].data[this.filterId].distance <= this.filterValue;
+        var rowdata = this.controller.getData()[rowId].data;
+        if (rowdata.hasOwnProperty(this.filterId)) {
+            return rowdata[this.filterId].distance <= this.filterValue;
+        }
+        return _super.prototype.isVisible.call(this, rowId);
+    };
+    DistanceFilter.earthRadius = {
+        m: 6371008.8,
+        km: 6371.0088,
+        mi: 3958.7613,
+        nm: 3440.0695,
+        Å: 63710088000000000
     };
     return DistanceFilter;
 }(Filter_1.Filter));
-DistanceFilter.earthRadius = {
-    m: 6371008.8,
-    km: 6371.0088,
-    mi: 3958.7613,
-    nm: 3440.0695,
-    Å: 63710088000000000
-};
 exports.DistanceFilter = DistanceFilter;
 
 },{"./Filter":3}],3:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
-var Filter = (function () {
+var Filter = /** @class */ (function () {
     function Filter(filterId, target, printrequestId, controller, options) {
+        this.outerTarget = undefined;
         this.target = undefined;
         this.options = undefined;
+        this.disabled = false;
+        this.collapsed = false;
         this.target = target;
+        this.outerTarget = target;
         this.filterId = filterId;
         this.printrequestId = printrequestId;
         this.controller = controller;
@@ -268,42 +301,125 @@ var Filter = (function () {
     }
     Filter.prototype.init = function () { };
     ;
+    Filter.prototype.isDisabled = function () {
+        return this.disabled;
+    };
+    Filter.prototype.disable = function () {
+        var _this = this;
+        this.disabled = true;
+        this.outerTarget
+            .removeClass('enabled')
+            .addClass('disabled');
+        this.collapse();
+        this.target.promise().then(function () { return _this.controller.onFilterUpdated(_this.filterId); });
+    };
+    Filter.prototype.enable = function () {
+        var _this = this;
+        this.disabled = false;
+        this.outerTarget
+            .removeClass('disabled')
+            .addClass('enabled');
+        if (!this.collapsed) {
+            this.uncollapse();
+        }
+        this.target.promise().then(function () { return _this.controller.onFilterUpdated(_this.filterId); });
+    };
+    Filter.prototype.collapse = function (duration) {
+        var _this = this;
+        if (duration === void 0) { duration = 400; }
+        if (!this.collapsed) {
+            this.outerTarget.promise()
+                .then(function () {
+                _this.target.slideUp(duration);
+                _this.outerTarget.animate({
+                    'padding-top': 0,
+                    'padding-bottom': 0,
+                    'margin-bottom': '2em'
+                }, duration);
+            });
+        }
+    };
+    Filter.prototype.uncollapse = function () {
+        var _this = this;
+        this.outerTarget.promise()
+            .then(function () {
+            _this.target.slideDown();
+            var style = _this.outerTarget.attr('style');
+            _this.outerTarget.removeAttr('style');
+            var uncollapsedCss = _this.outerTarget.css(['padding-top', 'padding-bottom', 'margin-bottom']);
+            _this.outerTarget.attr('style', style);
+            _this.outerTarget.animate(uncollapsedCss);
+        });
+    };
     Filter.prototype.isVisible = function (rowId) {
-        return true;
+        return this.options.hasOwnProperty('show if undefined') && this.options['show if undefined'] === true;
     };
     Filter.prototype.getId = function () {
         return this.filterId;
     };
-    Filter.prototype.addControlForCollapsing = function (filtercontrols) {
-        var collapsible = this.options.hasOwnProperty('collapsible') ? this.options['collapsible'] : undefined;
-        if (collapsible === 'collapsed' || collapsible === 'uncollapsed') {
-            var showControl_1 = $('<span class="filtered-show">');
-            var hideControl_1 = $('<span class="filtered-hide">');
-            filtercontrols
-                .prepend(showControl_1)
-                .prepend(hideControl_1);
-            filtercontrols = $('<div class="filtered-collapsible">')
-                .appendTo(filtercontrols);
-            var outercontrols_1 = filtercontrols;
-            showControl_1.click(function () {
-                outercontrols_1.slideDown();
-                showControl_1.hide();
-                hideControl_1.show();
-            });
-            hideControl_1.click(function () {
-                outercontrols_1.slideUp();
-                showControl_1.show();
-                hideControl_1.hide();
-            });
-            if (collapsible === 'collapsed') {
-                hideControl_1.hide();
-                outercontrols_1.slideUp(0);
-            }
-            else {
-                showControl_1.hide();
+    Filter.prototype.buildEmptyControl = function () {
+        this.target = $('<div class="filtered-filter-container">');
+        this.outerTarget
+            .append(this.target)
+            .addClass('enabled');
+        this.addOnOffSwitch();
+        this.addLabel();
+        this.addControlForCollapsing();
+        return this.target;
+    };
+    Filter.prototype.addLabel = function () {
+        // insert the label of the printout this filter filters on
+        this.target.before("<div class=\"filtered-filter-label\">" + this.options['label'] + "</div>");
+    };
+    Filter.prototype.addOnOffSwitch = function () {
+        var _this = this;
+        if (this.options.hasOwnProperty('switches')) {
+            var switches = this.options['switches'];
+            if (switches.length > 0 && $.inArray('on off', switches) >= 0) {
+                var onOffControl = $("<div class=\"filtered-filter-onoff on\"></div>");
+                this.target.before(onOffControl);
+                onOffControl.click(function () {
+                    if (_this.outerTarget.hasClass('enabled')) {
+                        _this.disable();
+                    }
+                    else {
+                        _this.enable();
+                    }
+                });
             }
         }
-        return filtercontrols;
+    };
+    Filter.prototype.addControlForCollapsing = function () {
+        var _this = this;
+        var collapsible = this.options.hasOwnProperty('collapsible') ? this.options['collapsible'] : undefined;
+        if (collapsible === 'collapsed' || collapsible === 'uncollapsed') {
+            var collapseControl_1 = $('<span class="filtered-filter-collapse">');
+            this.target.before(collapseControl_1);
+            collapseControl_1.click(function () {
+                if (collapseControl_1.hasClass('collapsed')) {
+                    _this.uncollapse();
+                    _this.collapsed = false;
+                    collapseControl_1
+                        .removeClass('collapsed')
+                        .addClass('uncollapsed');
+                }
+                else {
+                    _this.collapse();
+                    _this.collapsed = true;
+                    collapseControl_1
+                        .removeClass('uncollapsed')
+                        .addClass('collapsed');
+                }
+            });
+            if (collapsible === 'collapsed') {
+                this.collapse(0);
+                this.collapsed = true;
+                collapseControl_1.addClass('collapsed');
+            }
+            else {
+                collapseControl_1.addClass('uncollapsed');
+            }
+        }
     };
     return Filter;
 }());
@@ -312,9 +428,12 @@ exports.Filter = Filter;
 },{}],4:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -322,8 +441,9 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 exports.__esModule = true;
+///<reference path="../../../../node_modules/@types/ion.rangeslider/index.d.ts"/>
 var Filter_1 = require("./Filter");
-var NumberFilter = (function (_super) {
+var NumberFilter = /** @class */ (function (_super) {
     __extends(NumberFilter, _super);
     function NumberFilter() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -337,109 +457,137 @@ var NumberFilter = (function (_super) {
         return _this;
     }
     NumberFilter.prototype.init = function () {
-        var _a = this.getRange(), minValue = _a[0], maxValue = _a[1];
-        var precision = Math.pow(10, (Math.floor(Math.log(maxValue - minValue) * Math.LOG10E) - 1));
-        var requestedMax = this.options['max'];
-        if (requestedMax !== undefined && !isNaN(Number(requestedMax))) {
-            maxValue = Math.max(requestedMax, maxValue);
-        }
-        else {
-            maxValue = Math.ceil(maxValue / precision) * precision;
-        }
-        var requestedMin = this.options['min'];
-        if (requestedMin !== undefined && !isNaN(Number(requestedMin))) {
-            minValue = Math.min(requestedMin, minValue);
-        }
-        else {
-            minValue = Math.floor(minValue / precision) * precision;
-        }
-        var step = this.options['step'];
-        if (step === undefined || isNaN(Number(step))) {
-            step = precision / 10;
-        }
-        this.filterValueUpper = maxValue;
-        this.filterValueLower = minValue;
-        // build filter controls
-        var filtercontrols = this.target;
-        filtercontrols
-            .append('<div class="filtered-number-label"><span>' + this.options['label'] + '</span></div>');
-        filtercontrols = this.addControlForCollapsing(filtercontrols);
-        var readoutLeft = $('<div class="filtered-number-readout">');
-        var readoutRight = $('<div class="filtered-number-readout">');
-        var caption = '';
-        if (this.options['caption']) {
-            caption = '<tr><td colspan=3 class="filtered-number-caption-cell">' + this.options['caption'] + '</td></tr>';
-        }
-        var table = $('<table class="filtered-number-table"><tbody><tr>' +
-            '<td class="filtered-number-min-cell">' + minValue + '</td>' +
-            '<td class="filtered-number-slider-cell"></td>' +
-            '<td class="filtered-number-max-cell">' + maxValue + '</td></tr>' +
-            caption +
-            '</tbody></table>');
-        var sliderContainer = $('<div class="filtered-number-slider">');
-        var lowerHandle = $('<div class="ui-slider-handle ui-slider-handle-lower">');
-        var upperHandle = $('<div class="ui-slider-handle ui-slider-handle-upper">');
-        var selectHandle = $('<div class="ui-slider-handle ui-slider-handle-select">');
-        var slideroptions = {
-            animate: true,
-            min: minValue,
-            max: maxValue,
-            step: step
+        var values = this.getValues();
+        var _a = this.getRangeParameters(values), minValue = _a.minValue, maxValue = _a.maxValue, precision = _a.precision;
+        var sliderOptions = {
+            prettify_enabled: false,
+            force_edges: true,
+            grid: true
         };
-        switch (this.options['sliders']) {
-            case 'max':
-                this.mode = this.MODE_MAX;
-                slideroptions.range = 'min';
-                slideroptions.value = maxValue;
-                readoutLeft.text(maxValue);
-                upperHandle.append(readoutLeft);
-                sliderContainer.append(upperHandle);
-                break;
-            case 'min':
-                this.mode = this.MODE_MIN;
-                slideroptions.range = 'max';
-                slideroptions.value = minValue;
-                readoutLeft.text(minValue);
-                lowerHandle.append(readoutLeft);
-                sliderContainer.append(lowerHandle);
-                break;
-            case 'select':
-                this.mode = this.MODE_SELECT;
-                slideroptions.value = maxValue;
-                readoutLeft.text(maxValue);
-                selectHandle.append(readoutLeft);
-                sliderContainer.append(selectHandle);
-                this.filterValueUpper = maxValue;
-                this.filterValueLower = maxValue;
-                break;
-            default:
-                this.mode = this.MODE_RANGE;
-                slideroptions.range = true;
-                slideroptions.values = [minValue, maxValue];
-                readoutLeft.text(minValue);
-                lowerHandle.append(readoutLeft);
-                readoutRight.text(maxValue);
-                upperHandle.append(readoutRight);
-                sliderContainer.append(lowerHandle).append(upperHandle);
+        if (this.options.hasOwnProperty('values')) {
+            sliderOptions = this.adjustSliderOptionsFromValues(sliderOptions, values);
         }
-        filtercontrols.append(table);
-        table
-            .find('.filtered-number-slider-cell')
-            .append(sliderContainer);
-        var that = this;
-        mw.loader.using('jquery.ui.slider').then(function () {
-            sliderContainer.slider(slideroptions)
-                .on('slidechange', undefined, { 'filter': that }, function (eventObject, ui) {
-                eventObject.data.ui = ui;
-                eventObject.data.filter.onFilterUpdated(eventObject);
-            })
-                .on('slide', undefined, { 'filter': that }, function (eventObject, ui) {
-                ui.handle.firstElementChild.innerHTML = ui.value.toString();
-            });
-        });
+        else {
+            sliderOptions = this.adjustSliderOptionsFromRangeParameters(sliderOptions, minValue, maxValue, precision);
+        }
+        switch (this.options['sliders']) {
+            case "min":
+                this.mode = this.MODE_MIN;
+                sliderOptions.type = 'single';
+                break;
+            case "max":
+                this.mode = this.MODE_MAX;
+                sliderOptions.from = sliderOptions.to;
+                sliderOptions.type = 'single';
+                break;
+            case "select":
+                this.mode = this.MODE_SELECT;
+                maxValue = minValue;
+                sliderOptions.type = 'single';
+                break;
+            default: // == case "range"
+                this.mode = this.MODE_RANGE;
+                sliderOptions.type = 'double';
+        }
+        this.buildFilterControls(sliderOptions);
+        this.filterValueLower = minValue;
+        this.filterValueUpper = maxValue;
         return this;
     };
-    NumberFilter.prototype.getRange = function () {
+    NumberFilter.prototype.adjustSliderOptionsFromRangeParameters = function (sliderOptions, minValue, maxValue, precision) {
+        var _this = this;
+        sliderOptions.min = minValue;
+        sliderOptions.max = maxValue;
+        sliderOptions.step = this.getStep(precision);
+        sliderOptions.grid_num = Math.min(4, Math.round((maxValue - minValue) / sliderOptions.step));
+        sliderOptions.from = minValue;
+        sliderOptions.to = maxValue;
+        sliderOptions.onFinish = function (data) { return _this.onFilterUpdated(data.from, data.to); };
+        return sliderOptions;
+    };
+    NumberFilter.prototype.adjustSliderOptionsFromValues = function (sliderOptions, values) {
+        var _this = this;
+        sliderOptions.values = values;
+        sliderOptions.from = 0;
+        sliderOptions.to = values.length - 1;
+        sliderOptions.onFinish = function (data) { return _this.onFilterUpdated(data.from_value, data.to_value); };
+        return sliderOptions;
+    };
+    NumberFilter.prototype.getRangeParameters = function (values) {
+        var minValue = values[0];
+        var maxValue = values[values.length - 1];
+        var precision = this.getPrecision(minValue, maxValue);
+        if (!this.options.hasOwnProperty('values')) {
+            minValue = this.getMinSliderValue(minValue, precision);
+            maxValue = this.getMaxSliderValue(maxValue, precision);
+        }
+        return { minValue: minValue, maxValue: maxValue, precision: precision };
+    };
+    NumberFilter.prototype.getValues = function () {
+        var values;
+        if (this.options.hasOwnProperty('values') && this.options['values'][0] !== 'auto') {
+            values = this.options['values'];
+        }
+        else {
+            values = this.getSortedValues();
+        }
+        if (values.length === 0) {
+            values = [0, 0];
+        }
+        else if (values.length === 1) {
+            values.push(values[0]);
+        }
+        return values;
+    };
+    NumberFilter.prototype.buildFilterControls = function (sliderOptions) {
+        var filterClassNames = {};
+        filterClassNames[this.MODE_MIN.toString()] = "mode-min";
+        filterClassNames[this.MODE_MAX] = "mode-max";
+        filterClassNames[this.MODE_RANGE] = "mode-range";
+        filterClassNames[this.MODE_SELECT] = "mode-select";
+        var filtercontrols = this.buildEmptyControl();
+        var slider = $('<input type="text" value="" />');
+        var sliderContainer = $("<div class=\"filtered-number-slider " + filterClassNames[this.mode] + "\" />").append(slider);
+        filtercontrols.append(sliderContainer);
+        if (this.options.hasOwnProperty('caption')) {
+            var caption = "<div class=\"filtered-number-caption\">" + this.options['caption'] + "</div>";
+            filtercontrols.append(caption);
+        }
+        mw.loader.using('ext.srf.filtered.slider').then(function () { return slider.ionRangeSlider(sliderOptions); });
+    };
+    NumberFilter.prototype.getMinSliderValue = function (minValue, precision) {
+        var requestedMin = this.options['min'];
+        if (requestedMin === undefined || isNaN(Number(requestedMin))) {
+            return Math.floor(minValue / precision) * precision;
+        }
+        return Math.min(requestedMin, minValue);
+    };
+    NumberFilter.prototype.getMaxSliderValue = function (maxValue, precision) {
+        var requestedMax = this.options['max'];
+        if (requestedMax === undefined || isNaN(Number(requestedMax))) {
+            return Math.ceil(maxValue / precision) * precision;
+        }
+        return Math.max(requestedMax, maxValue);
+    };
+    NumberFilter.prototype.getPrecision = function (minValue, maxValue) {
+        if (maxValue - minValue > 0) {
+            return Math.pow(10, (Math.floor(Math.log(maxValue - minValue) * Math.LOG10E) - 1));
+        }
+        else {
+            return 1;
+        }
+    };
+    NumberFilter.prototype.getStep = function (precision) {
+        var step = this.options['step'];
+        if (step !== undefined) {
+            step = Number(step);
+            if (!isNaN(step)) {
+                return step;
+            }
+        }
+        return precision / 10;
+    };
+    NumberFilter.prototype.getRangeFromValues = function () {
         var rows = this.controller.getData();
         var min = Infinity;
         var max = -Infinity;
@@ -452,36 +600,53 @@ var NumberFilter = (function (_super) {
         }
         return [min, max];
     };
-    NumberFilter.prototype.onFilterUpdated = function (eventObject) {
+    NumberFilter.prototype.getSortedValues = function () {
+        var valueArray = [];
+        var rows = this.controller.getData();
+        for (var rowId in rows) {
+            var cells = rows[rowId].data;
+            if (cells.hasOwnProperty(this.filterId)) {
+                var values = cells[this.filterId].values;
+                for (var valueId in values) {
+                    var value = Number(values[valueId]);
+                    if (valueArray.indexOf(value) === -1) {
+                        valueArray.push(value);
+                    }
+                }
+            }
+        }
+        return valueArray.sort(function (a, b) { return a - b; });
+    };
+    NumberFilter.prototype.onFilterUpdated = function (from, to) {
         switch (this.mode) {
-            case this.MODE_RANGE:
-                this.filterValueLower = eventObject.data.ui.values[0];
-                this.filterValueUpper = eventObject.data.ui.values[1];
-                break;
             case this.MODE_MIN:
-                this.filterValueLower = eventObject.data.ui.value;
+                this.filterValueLower = from;
                 break;
             case this.MODE_MAX:
-                this.filterValueUpper = eventObject.data.ui.value;
+                this.filterValueUpper = from;
                 break;
             case this.MODE_SELECT:
-                this.filterValueLower = eventObject.data.ui.value;
-                this.filterValueUpper = eventObject.data.ui.value;
+                this.filterValueLower = from;
+                this.filterValueUpper = from;
                 break;
+            default: // case this.MODE_RANGE:
+                this.filterValueLower = from;
+                this.filterValueUpper = to;
         }
         this.controller.onFilterUpdated(this.getId());
     };
     NumberFilter.prototype.isVisible = function (rowId) {
         var rowdata = this.controller.getData()[rowId].data;
-        if (rowdata.hasOwnProperty(this.filterId)) {
+        if (rowdata.hasOwnProperty(this.filterId) && rowdata[this.filterId].values.length > 0) {
             for (var _i = 0, _a = rowdata[this.filterId].values; _i < _a.length; _i++) {
                 var value = _a[_i];
                 if (value >= this.filterValueLower && value <= this.filterValueUpper) {
                     return true;
                 }
             }
+            return false;
         }
-        return false;
+        return _super.prototype.isVisible.call(this, rowId);
     };
     return NumberFilter;
 }(Filter_1.Filter));
@@ -490,9 +655,12 @@ exports.NumberFilter = NumberFilter;
 },{"./Filter":3}],5:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -501,7 +669,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 exports.__esModule = true;
 var Filter_1 = require("./Filter");
-var ValueFilter = (function (_super) {
+var ValueFilter = /** @class */ (function (_super) {
     __extends(ValueFilter, _super);
     function ValueFilter() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -521,88 +689,137 @@ var ValueFilter = (function (_super) {
     ValueFilter.prototype.getSortedValues = function () {
         /** Map of value => label distinct values */
         var distinctValues = {};
+        /** Map of value => sort value distinct values */
+        var distinctSortValues = {};
         if (this.options.hasOwnProperty('values')) {
-            return this.options['values'].reduce(function (values, item) {
-                values[item] = item;
-                return values;
-            }, {});
+            return this.options['values'].map(function (item) {
+                return {
+                    printoutValue: item,
+                    formattedValue: item
+                };
+            });
         }
         else {
             // build filter values from available values in result set
             var data = this.controller.getData();
+            var sortedEntries = [];
             for (var id in data) {
                 var printoutValues = data[id]['printouts'][this.printrequestId]['values'];
                 var printoutFormattedValues = data[id]['printouts'][this.printrequestId]['formatted values'];
+                var printoutSortValues = data[id]['printouts'][this.printrequestId]['sort values'];
                 for (var i in printoutValues) {
                     var printoutFormattedValue = printoutFormattedValues[i];
                     if (printoutFormattedValue.indexOf('<a') > -1) {
                         printoutFormattedValue = /<a.*>(.*?)<\/a>/.exec(printoutFormattedValue)[1];
                     }
                     distinctValues[printoutValues[i]] = printoutFormattedValue;
+                    distinctSortValues[printoutValues[i]] = printoutSortValues[i];
                 }
             }
+            for (var printoutValue in distinctSortValues) {
+                sortedEntries.push({
+                    printoutValue: printoutValue,
+                    sortValue: distinctSortValues[printoutValue],
+                    formattedValue: distinctValues[printoutValue]
+                });
+            }
+            sortedEntries.sort(function (a, b) {
+                return a.sortValue.localeCompare(b.sortValue);
+            });
+            return sortedEntries;
         }
-        return distinctValues;
     };
     ValueFilter.prototype.buildControl = function () {
-        var filtercontrols = this.target;
-        // insert the label of the printout this filter filters on
-        filtercontrols.append('<div class="filtered-value-label"><span>' + this.options['label'] + '</span></div>');
-        filtercontrols = this.addControlForCollapsing(filtercontrols);
-        this.addControlForSwitches(filtercontrols);
-        var height = this.options.hasOwnProperty('height') ? this.options['height'] : undefined;
-        if (height !== undefined) {
-            filtercontrols = $('<div class="filtered-value-scrollable">')
-                .appendTo(filtercontrols);
-            filtercontrols.height(height);
+        var filtercontrols = this.buildEmptyControl();
+        filtercontrols = this.addControlForSwitches(filtercontrols);
+        var maxCheckboxes = this.options.hasOwnProperty('max checkboxes') ? this.options['max checkboxes'] : 5;
+        if (this.values.length > maxCheckboxes) {
+            filtercontrols.append(this.getSelected2Control());
         }
-        // insert options (checkboxes and labels) and attach event handlers
-        for (var _i = 0, _a = Object.keys(this.values).sort(); _i < _a.length; _i++) {
+        else {
+            filtercontrols.append(this.getCheckboxesControl());
+        }
+    };
+    ValueFilter.prototype.getCheckboxesControl = function () {
+        var _this = this;
+        var checkboxes = $('<div class="filtered-value-checkboxes" style="width: 100%;">');
+        // insert options (checkboxes and labels)
+        for (var _i = 0, _a = this.values; _i < _a.length; _i++) {
             var value = _a[_i];
-            var option = $('<div class="filtered-value-option">');
-            var checkbox = $('<input type="checkbox" class="filtered-value-value" value="' + value + '"  >');
-            // attach event handler
-            checkbox
-                .on('change', undefined, { 'filter': this }, function (eventObject) {
-                eventObject.data.filter.onFilterUpdated(eventObject);
-            });
-            // Try to get label, if not fall back to value id
-            var label = this.values[value] || value;
-            option.append(checkbox).append(label);
-            filtercontrols.append(option);
+            checkboxes.append("<div class=\"filtered-value-option\"><label><input type=\"checkbox\" value=\"" + value.printoutValue + "\" ><div class=\"filtered-value-option-label\">" + (value.formattedValue || value.printoutValue) + "</div></label></div>");
         }
+        // attach event handler
+        checkboxes
+            .on('change', ':checkbox', function (eventObject) {
+            var checkboxElement = eventObject.currentTarget;
+            _this.onFilterUpdated(checkboxElement.value, checkboxElement.checked);
+        });
+        return checkboxes;
+    };
+    ValueFilter.prototype.getSelected2Control = function () {
+        var _this = this;
+        var select = $('<select class="filtered-value-select" style="width: 100%;">');
+        var data = [];
+        // insert options (checkboxes and labels) and attach event handlers
+        for (var _i = 0, _a = this.values; _i < _a.length; _i++) {
+            var value = _a[_i];
+            // Try to get label, if not fall back to value id
+            var label = value.formattedValue || value.printoutValue;
+            data.push({ id: value.printoutValue, text: label });
+        }
+        mw.loader.using('ext.srf.filtered.value-filter.select').then(function () {
+            select.select2({
+                multiple: true,
+                placeholder: mw.message('srf-filtered-value-filter-placeholder').text(),
+                data: data
+            });
+            select.on("select2:select", function (e) {
+                _this.onFilterUpdated(e.params.data.id, true);
+            });
+            select.on("select2:unselect", function (e) {
+                _this.onFilterUpdated(e.params.data.id, false);
+            });
+        });
+        return select;
     };
     ValueFilter.prototype.addControlForSwitches = function (filtercontrols) {
         // insert switches
         var switches = this.options.hasOwnProperty('switches') ? this.options['switches'] : undefined;
-        if (switches !== undefined && switches.length > 0) {
+        if (switches !== undefined && $.inArray('and or', switches) >= 0) {
             var switchControls = $('<div class="filtered-value-switches">');
-            if ($.inArray('and or', switches) >= 0) {
-                var andorControl = $('<div class="filtered-value-andor">');
-                var andControl = $('<input type="radio" name="filtered-value-' +
-                    this.printrequestId + '"  class="filtered-value-and ' + this.printrequestId + '" value="and">');
-                var orControl_1 = $('<input type="radio" name="filtered-value-' +
-                    this.printrequestId + '"  class="filtered-value-or ' + this.printrequestId + '" value="or" checked>');
-                andControl
-                    .add(orControl_1)
-                    .on('change', undefined, { 'filter': this }, function (eventObject) {
-                    eventObject.data.filter.useOr(orControl_1.is(':checked'));
-                });
-                andorControl
-                    .append(orControl_1)
-                    .append(' OR ')
-                    .append(andControl)
-                    .append(' AND ')
-                    .appendTo(switchControls);
-            }
+            var andorControl = $('<div class="filtered-value-andor">');
+            var orControl = this.getRadioControl('or', true);
+            var andControl = this.getRadioControl('and');
+            andorControl
+                .append(orControl)
+                .append(andControl)
+                .appendTo(switchControls);
+            andorControl
+                .find('input')
+                .on('change', undefined, { 'filter': this }, function (eventObject) {
+                return eventObject.data.filter.useOr(eventObject.target.getAttribute('value') === 'or');
+            });
             filtercontrols.append(switchControls);
         }
+        return filtercontrols;
+    };
+    ValueFilter.prototype.getRadioControl = function (type, isChecked) {
+        if (isChecked === void 0) { isChecked = false; }
+        var checkedAttr = isChecked ? 'checked' : '';
+        var labelText = mw.message('srf-filtered-value-filter-' + type).text();
+        var controlText = "<label for=\"filtered-value-" + type + "-" + this.printrequestId + "\">" +
+            ("<input type=\"radio\" name=\"filtered-value-" + this.printrequestId + "\"  class=\"filtered-value-" + type + "\" id=\"filtered-value-" + type + "-" + this.printrequestId + "\" value=\"" + type + "\" " + checkedAttr + ">") +
+            (labelText + "</label>");
+        return $(controlText);
     };
     ValueFilter.prototype.isVisible = function (rowId) {
         if (this.visibleValues.length === 0) {
             return true;
         }
         var values = this.controller.getData()[rowId].printouts[this.printrequestId].values;
+        if (values.length === 0) {
+            return _super.prototype.isVisible.call(this, rowId);
+        }
         if (this._useOr) {
             for (var _i = 0, _a = this.visibleValues; _i < _a.length; _i++) {
                 var expectedValue = _a[_i];
@@ -622,11 +839,8 @@ var ValueFilter = (function (_super) {
             return true;
         }
     };
-    ValueFilter.prototype.onFilterUpdated = function (eventObject) {
-        var target = $(eventObject.target);
-        var value = target.val();
+    ValueFilter.prototype.onFilterUpdated = function (value, isChecked) {
         var index = this.visibleValues.indexOf(value);
-        var isChecked = target.is(':checked');
         if (isChecked && index === -1) {
             this.visibleValues.push(value);
         }
@@ -657,7 +871,7 @@ var NumberFilter_1 = require("./Filter/NumberFilter");
  *
  * Factory to setup everyhting else
  */
-var Filtered = (function () {
+var Filtered = /** @class */ (function () {
     /**
      *
      * @param target
@@ -678,29 +892,9 @@ var Filtered = (function () {
         this.config = config;
         this.target = target;
     }
-    /**
-     *
-     */
     Filtered.prototype.run = function () {
-        this.showStartupMessage();
-        this.startDeferred();
-    };
-    /**
-     *
-     */
-    Filtered.prototype.showStartupMessage = function () {
-        // this.target.text( "Loading..." );
-        // TODO: Use spinner from srf.util
-    };
-    /**
-     *
-     */
-    Filtered.prototype.startDeferred = function () {
-        setTimeout(this.start(), 0);
-    };
-    Filtered.prototype.start = function () {
         var controller = new Controller_1.Controller(this.target, this.config.data, this.config.printrequests);
-        this.attachFilters(controller, this.target.find('div.filtered-filters'));
+        this.attachFilters(controller, this.target.children('div.filtered-filters'));
         this.attachViewSelector(controller, this.target.find('div.filtered-views-selectors-container'));
         this.attachViews(controller, this.target.find('div.filtered-views-container'));
         // lift-off
@@ -717,7 +911,6 @@ var Filtered = (function () {
                         //  target: JQuery, printrequest: string,
                         // controller: Controller, options?: Options
                         var filter = new this.filterTypes[pr.filters[filterid].type](filterid, filtersContainer.children('#' + filterid), prId, controller, pr.filters[filterid]);
-                        filter.init();
                         controller.attachFilter(filter);
                     }
                 }
@@ -745,9 +938,12 @@ exports.Filtered = Filtered;
 },{"./Controller":1,"./Filter/DistanceFilter":2,"./Filter/NumberFilter":4,"./Filter/ValueFilter":5,"./View/CalendarView":7,"./View/ListView":8,"./View/MapView":9,"./View/TableView":10,"./View/View":11,"./ViewSelector":12}],7:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -756,7 +952,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 exports.__esModule = true;
 var View_1 = require("./View");
-var CalendarView = (function (_super) {
+var CalendarView = /** @class */ (function (_super) {
     __extends(CalendarView, _super);
     function CalendarView() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -819,7 +1015,6 @@ var CalendarView = (function (_super) {
             titleFormat: _i18n.titleFormat,
             columnFormat: _i18n.columnFormat
         });
-        return this;
     };
     CalendarView.prototype.getEvent = function (rowId, rowData) {
         var eventdata = {
@@ -864,9 +1059,12 @@ exports.CalendarView = CalendarView;
 },{"./View":11}],8:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -875,21 +1073,28 @@ var __extends = (this && this.__extends) || (function () {
 })();
 exports.__esModule = true;
 var View_1 = require("./View");
-var ListView = (function (_super) {
+var ListView = /** @class */ (function (_super) {
     __extends(ListView, _super);
     function ListView() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    ListView.prototype.getItemClassName = function () {
+        return '.filtered-list-item';
+    };
     return ListView;
 }(View_1.View));
 exports.ListView = ListView;
 
 },{"./View":11}],9:[function(require,module,exports){
 "use strict";
+/// <reference types="leaflet" />
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -898,7 +1103,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 exports.__esModule = true;
 var View_1 = require("./View");
-var MapView = (function (_super) {
+var MapView = /** @class */ (function (_super) {
     __extends(MapView, _super);
     function MapView() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
@@ -908,46 +1113,98 @@ var MapView = (function (_super) {
         _this.markerClusterGroup = undefined;
         _this.bounds = undefined;
         _this.initialized = false;
+        _this.zoom = -1;
+        _this.minZoom = -1;
+        _this.maxZoom = -1;
+        _this.leafletPromise = undefined;
         return _this;
     }
     MapView.prototype.init = function () {
+        var _this = this;
         var data = this.controller.getData();
         var markers = {};
-        var bounds = undefined;
-        var markerClusterGroup = L.markerClusterGroup({
-            animateAddingMarkers: true
+        if (this.options.hasOwnProperty('height')) {
+            this.target.height(this.options.height);
+        }
+        this.leafletPromise = mw.loader.using('ext.srf.filtered.map-view.leaflet')
+            .then(function () {
+            var bounds = undefined;
+            var disableClusteringAtZoom = _this.getZoomForUnclustering();
+            var clusterOptions = {
+                animateAddingMarkers: true,
+                disableClusteringAtZoom: disableClusteringAtZoom,
+                spiderfyOnMaxZoom: disableClusteringAtZoom === null
+            };
+            clusterOptions = _this.getOptions(['maxClusterRadius', 'zoomToBoundsOnClick'], clusterOptions);
+            var markerClusterGroup = L.markerClusterGroup(clusterOptions);
+            for (var rowId in data) {
+                if (data[rowId]['data'].hasOwnProperty(_this.id)) {
+                    var positions = data[rowId]['data'][_this.id]['positions'];
+                    markers[rowId] = [];
+                    for (var _i = 0, positions_1 = positions; _i < positions_1.length; _i++) {
+                        var pos = positions_1[_i];
+                        bounds = (bounds === undefined) ? new L.LatLngBounds(pos, pos) : bounds.extend(pos);
+                        var marker = _this.getMarker(pos, data[rowId]);
+                        markers[rowId].push(marker);
+                        markerClusterGroup.addLayer(marker);
+                    }
+                }
+            }
+            _this.markerClusterGroup = markerClusterGroup;
+            _this.markers = markers;
+            _this.bounds = (bounds === undefined) ? new L.LatLngBounds([-180, -90], [180, 90]) : bounds;
         });
-        for (var rowId in data) {
-            var positions = data[rowId]['data'][this.id]['positions'];
-            markers[rowId] = [];
-            for (var _i = 0, positions_1 = positions; _i < positions_1.length; _i++) {
-                var pos = positions_1[_i];
-                bounds = (bounds === undefined) ? new L.LatLngBounds(pos, pos) : bounds.extend(pos);
-                var marker = this.getMarker(pos, data[rowId]);
-                markers[rowId].push(marker);
-                markerClusterGroup.addLayer(marker);
+        return this.leafletPromise;
+    };
+    MapView.prototype.getZoomForUnclustering = function () {
+        if (this.options.hasOwnProperty('marker cluster') && this.options['marker cluster'] === false) {
+            return 0;
+        }
+        if (this.options.hasOwnProperty('marker cluster max zoom')) {
+            return this.options['marker cluster max zoom'] + 1;
+        }
+        return null;
+    };
+    MapView.prototype.getIcon = function (row) {
+        if (this.icon === undefined) {
+            this.buildIconList();
+        }
+        if (this.options.hasOwnProperty('marker icon property')) {
+            var vals = row['printouts'][this.options['marker icon property']]['values'];
+            if (vals.length > 0 && this.icon.hasOwnProperty(vals[0])) {
+                return this.icon[vals[0]];
             }
         }
-        this.markerClusterGroup = markerClusterGroup;
-        this.markers = markers;
-        this.bounds = bounds;
-        return _super.prototype.init.call(this);
+        return this.icon['default'];
     };
-    MapView.prototype.getIcon = function () {
-        if (this.icon === undefined) {
-            var iconPath = this.controller.getPath() + 'css/images/';
-            this.icon = new L.Icon({
-                'iconUrl': iconPath + 'marker-icon.png',
-                'iconRetinaUrl': iconPath + 'marker-icon-2x.png',
-                'shadowUrl': iconPath + 'marker-shadow.png',
-                'iconSize': [25, 41],
-                'iconAnchor': [12, 41],
-                'popupAnchor': [1, -34],
-                // 'tooltipAnchor': [16, -28],
-                'shadowSize': [41, 41]
-            });
+    MapView.prototype.buildIconList = function () {
+        this.icon = {};
+        var iconPath = this.controller.getPath() + 'css/images/';
+        this.icon['default'] = new L.Icon({
+            'iconUrl': iconPath + 'marker-icon.png',
+            'iconRetinaUrl': iconPath + 'marker-icon-2x.png',
+            'shadowUrl': iconPath + 'marker-shadow.png',
+            'iconSize': [25, 41],
+            'iconAnchor': [12, 41],
+            'popupAnchor': [1, -34],
+            // 'tooltipAnchor': [16, -28],
+            'shadowSize': [41, 41]
+        });
+        if (this.options.hasOwnProperty('marker icons')) {
+            for (var value in this.options['marker icons']) {
+                this.icon[value] = new L.Icon({
+                    'iconUrl': this.options['marker icons'][value],
+                    // 'iconRetinaUrl': iconPath + 'marker-icon-2x.png',
+                    'shadowUrl': iconPath + 'marker-shadow.png',
+                    'iconSize': [32, 32],
+                    'iconAnchor': [16, 32],
+                    'popupAnchor': [1, -30],
+                    // 'tooltipAnchor': [16, -28],
+                    'shadowSize': [41, 41],
+                    'shadowAnchor': [12, 41]
+                });
+            }
         }
-        return this.icon;
     };
     MapView.prototype.getMarker = function (latLng, row) {
         var title = undefined;
@@ -968,35 +1225,73 @@ var MapView = (function (_super) {
         }
         var marker = L.marker(latLng, { title: title, alt: title });
         marker.bindPopup(popup.join('<br>'));
-        marker.setIcon(this.getIcon());
+        marker.setIcon(this.getIcon(row));
         return marker;
     };
     MapView.prototype.lateInit = function () {
+        var _this = this;
         if (this.initialized) {
             return;
         }
         this.initialized = true;
         var that = this;
-        $(function () {
-            setTimeout(function () {
-                that.map = L.map(that.getTargetElement().get(0))
-                    .addLayer(L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: ''
-                }))
-                    .addLayer(that.markerClusterGroup)
-                    .fitBounds(that.bounds);
-            }, 0);
+        this.leafletPromise.then(function () {
+            var mapOptions = {
+                center: _this.bounds !== undefined ? _this.bounds.getCenter() : [0, 0]
+            };
+            mapOptions = that.getOptions(['zoom', 'minZoom', 'maxZoom'], mapOptions);
+            // TODO: Limit zoom values to map max zoom
+            that.map = L.map(that.getTargetElement().get(0), mapOptions);
+            that.map.addLayer(that.markerClusterGroup);
+            if (_this.options.hasOwnProperty('map provider')) {
+                L.tileLayer.provider(_this.options['map provider']).addTo(that.map);
+            }
+            if (!mapOptions.hasOwnProperty('zoom')) {
+                that.map.fitBounds(that.bounds);
+            }
         });
+    };
+    MapView.prototype.getOptions = function (keys, defaults) {
+        if (defaults === void 0) { defaults = {}; }
+        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+            var key = keys_1[_i];
+            if (this.options.hasOwnProperty(key)) {
+                defaults[key] = this.options[key];
+            }
+        }
+        return defaults;
     };
     MapView.prototype.showRows = function (rowIds) {
         var _this = this;
-        var markers = rowIds.map(function (rowId) { return _this.markers[rowId]; });
-        this.markerClusterGroup.addLayers(markers.reduce(function (result, layers) { return result.concat(layers); }));
+        this.leafletPromise.then(function () {
+            _this.manipulateLayers(rowIds, function (layers) {
+                _this.markerClusterGroup.addLayers(layers);
+            });
+        });
     };
     MapView.prototype.hideRows = function (rowIds) {
         var _this = this;
-        var markers = rowIds.map(function (rowId) { return _this.markers[rowId]; });
-        this.markerClusterGroup.removeLayers(markers.reduce(function (result, layers) { return result.concat(layers); }));
+        this.leafletPromise.then(function () {
+            _this.manipulateLayers(rowIds, function (layers) {
+                _this.markerClusterGroup.removeLayers(layers);
+            });
+        });
+    };
+    MapView.prototype.manipulateLayers = function (rowIds, cb) {
+        var layersFromRowIds = this.getLayersFromRowIds(rowIds);
+        if (layersFromRowIds.length > 0) {
+            cb(layersFromRowIds);
+        }
+    };
+    MapView.prototype.getLayersFromRowIds = function (rowIds) {
+        return this.flatten(this.getLayersFromRowIdsRaw(rowIds));
+    };
+    MapView.prototype.getLayersFromRowIdsRaw = function (rowIds) {
+        var _this = this;
+        return rowIds.map(function (rowId) { return _this.markers[rowId] ? _this.markers[rowId] : []; });
+    };
+    MapView.prototype.flatten = function (markers) {
+        return markers.reduce(function (result, layers) { return result.concat(layers); }, []);
     };
     MapView.prototype.show = function () {
         _super.prototype.show.call(this);
@@ -1009,9 +1304,12 @@ exports.MapView = MapView;
 },{"./View":11}],10:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -1020,11 +1318,14 @@ var __extends = (this && this.__extends) || (function () {
 })();
 exports.__esModule = true;
 var View_1 = require("./View");
-var TableView = (function (_super) {
+var TableView = /** @class */ (function (_super) {
     __extends(TableView, _super);
     function TableView() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
+    TableView.prototype.getItemClassName = function () {
+        return '.filtered-table-item';
+    };
     return TableView;
 }(View_1.View));
 exports.TableView = TableView;
@@ -1032,39 +1333,72 @@ exports.TableView = TableView;
 },{"./View":11}],11:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
-var View = (function () {
+var View = /** @class */ (function () {
     function View(id, target, c, options) {
         if (options === void 0) { options = {}; }
         this.id = undefined;
         this.target = undefined;
         this.controller = undefined;
         this.options = undefined;
+        this.visible = false;
+        this.rows = {};
         this.id = id;
         this.target = target;
         this.controller = c;
         this.options = options;
     }
-    View.prototype.init = function () { };
+    View.prototype.init = function () {
+        var _this = this;
+        var rowIds = Object.keys(this.controller.getData());
+        var rows = this.target.find(this.getItemClassName());
+        rows.each(function (index, elem) {
+            var classes = elem.classList;
+            for (var i = 0; i < classes.length; i++) {
+                if (rowIds.indexOf(classes[i]) >= 0) {
+                    _this.rows[classes[i]] = $(rows[index]);
+                }
+            }
+        });
+    };
+    View.prototype.getItemClassName = function () {
+        return '.filtered-item';
+    };
     View.prototype.getTargetElement = function () {
         return this.target;
     };
     View.prototype.showRows = function (rowIds) {
         var _this = this;
-        rowIds.forEach(function (rowId) {
-            _this.target.find('.' + rowId).slideDown(400);
-        });
+        if (this.visible && rowIds.length < 200) {
+            rowIds.forEach(function (rowId) {
+                _this.rows[rowId].slideDown(400);
+            });
+        }
+        else {
+            rowIds.forEach(function (rowId) {
+                _this.rows[rowId].css('display', '');
+            });
+        }
     };
     View.prototype.hideRows = function (rowIds) {
         var _this = this;
-        rowIds.forEach(function (rowId) {
-            _this.target.find('.' + rowId).slideUp(400);
-        });
+        if (this.visible && rowIds.length < 200) {
+            rowIds.forEach(function (rowId) {
+                _this.rows[rowId].slideUp(400);
+            });
+        }
+        else {
+            rowIds.forEach(function (rowId) {
+                _this.rows[rowId].css('display', 'none');
+            });
+        }
     };
     View.prototype.show = function () {
         this.target.show();
+        this.visible = true;
     };
     View.prototype.hide = function () {
         this.target.hide();
+        this.visible = false;
     };
     return View;
 }());
@@ -1073,7 +1407,7 @@ exports.View = View;
 },{}],12:[function(require,module,exports){
 "use strict";
 exports.__esModule = true;
-var ViewSelector = (function () {
+var ViewSelector = /** @class */ (function () {
     function ViewSelector(target, viewIDs, controller) {
         this.target = undefined;
         this.viewIDs = undefined;
@@ -1107,11 +1441,14 @@ exports.ViewSelector = ViewSelector;
 exports.__esModule = true;
 var Filtered_1 = require("./Filtered/Filtered");
 var config = mw.config.get('srfFilteredConfig');
-for (var id in config) {
+var _loop_1 = function (id) {
     if (config.hasOwnProperty(id)) {
-        var f = new Filtered_1.Filtered($('#' + id), config[id]);
-        f.run();
+        var f_1 = new Filtered_1.Filtered($('#' + id), config[id]);
+        mw.hook('wikipage.content').add(function () { return f_1.run(); });
     }
+};
+for (var id in config) {
+    _loop_1(id);
 }
 
 },{"./Filtered/Filtered":6}]},{},[13])

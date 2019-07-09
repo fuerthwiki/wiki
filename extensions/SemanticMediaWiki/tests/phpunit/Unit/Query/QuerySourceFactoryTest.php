@@ -4,10 +4,10 @@ namespace SMW\Tests\Query;
 
 use SMW\Query\QuerySourceFactory;
 use SMW\QueryEngine;
-use SMW\StoreAware;
 use SMW\Store;
-use SMWQuery as Query;
+use SMW\StoreAware;
 use SMW\Tests\TestEnvironment;
+use SMWQuery as Query;
 
 /**
  * @covers SMW\Query\QuerySourceFactory
@@ -49,14 +49,32 @@ class QuerySourceFactoryTest extends \PHPUnit_Framework_TestCase {
 
 		$instance = new QuerySourceFactory(
 			$this->store,
-			array(
+			[
 				'foo' => FakeQueryEngine::class
-			)
+			]
 		);
 
 		$this->assertInstanceOf(
 			'\SMW\QueryEngine',
 			$instance->get( 'foo' )
+		);
+	}
+
+	public function testGetStandardStore() {
+
+		$instance = new QuerySourceFactory(
+			$this->store,
+			[]
+		);
+
+		$this->assertInstanceOf(
+			'\SMW\SQLStore\SQLStore',
+			$instance->get( 'sql_store' )
+		);
+
+		$this->assertEquals(
+			'SMWSQLStore',
+			$instance->toString( 'sql_store' )
 		);
 	}
 
@@ -66,14 +84,18 @@ class QuerySourceFactoryTest extends \PHPUnit_Framework_TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$store->expects( $this->once() )
+			->method( 'getInfo' )
+			->will( $this->returnValue( [ 'SPARQLStore' ] ) );
+
 		$instance = new QuerySourceFactory(
 			$store,
-			array()
+			[]
 		);
 
 		$this->assertContains(
-			'(SMWSQLStore3)',
-			$instance->getAsString()
+			'SPARQLStore',
+			$instance->toString()
 		);
 	}
 
@@ -81,7 +103,7 @@ class QuerySourceFactoryTest extends \PHPUnit_Framework_TestCase {
 
 		$store = $this->getMockBuilder( '\SMW\Store' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'getConnection' ) )
+			->setMethods( [ 'getConnection' ] )
 			->getMockForAbstractClass();
 
 		$store->expects( $this->once() )
@@ -90,9 +112,9 @@ class QuerySourceFactoryTest extends \PHPUnit_Framework_TestCase {
 
 		$instance = new QuerySourceFactory(
 			$store,
-			array(
+			[
 				'bar' => AnotherFakeQueryEngine::class
-			)
+			]
 		);
 
 		$this->assertInstanceOf(

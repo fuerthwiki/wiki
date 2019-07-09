@@ -2,13 +2,15 @@
 
 namespace SMW\Services;
 
+use ImportStreamSource;
+use ImportStringSource;
+use JobQueueGroup;
+use LBFactory;
 use MediaWiki\Logger\LoggerFactory;
 use MediaWiki\MediaWikiServices;
-use ImportStringSource;
-use ImportStreamSource;
-use WikiImporter;
-use LBFactory;
 use Psr\Log\NullLogger;
+use SMW\Utils\Logger;
+use WikiImporter;
 
 /**
  * @codeCoverageIgnore
@@ -21,7 +23,7 @@ use Psr\Log\NullLogger;
  *
  * @author mwjames
  */
-return array(
+return [
 
 	/**
 	 * ImportStringSource
@@ -85,7 +87,11 @@ return array(
 	 */
 	'DBLoadBalancerFactory' => function( $containerBuilder ) {
 
-		 $containerBuilder->registerExpectedReturnType( 'DBLoadBalancerFactory', '\LBFactory' );
+		if ( class_exists( '\Wikimedia\Rdbms\LBFactory' ) ) {
+			$containerBuilder->registerExpectedReturnType( 'DBLoadBalancerFactory', '\Wikimedia\Rdbms\LBFactory' );
+		} else {
+			$containerBuilder->registerExpectedReturnType( 'DBLoadBalancerFactory', '\LBFactory' );
+		}
 
 		// > MW 1.28
 		if ( class_exists( '\MediaWiki\MediaWikiServices' ) && method_exists( '\MediaWiki\MediaWikiServices', 'getDBLoadBalancerFactory' ) ) {
@@ -131,15 +137,29 @@ return array(
 	 *
 	 * @return callable
 	 */
-	'MediaWikiLogger' => function( $containerBuilder ) {
+	'MediaWikiLogger' => function( $containerBuilder, $channel = 'smw', $role = Logger::ROLE_DEVELOPER ) {
 
 		$containerBuilder->registerExpectedReturnType( 'MediaWikiLogger', '\Psr\Log\LoggerInterface' );
 
 		if ( class_exists( '\MediaWiki\Logger\LoggerFactory' ) ) {
-			return LoggerFactory::getInstance( 'smw' );
+			$logger = LoggerFactory::getInstance( $channel );
+		} else {
+			$logger = new NullLogger();
 		}
 
-		return new NullLogger();
+		return new Logger( $logger, $role );
 	},
 
-);
+	/**
+	 * JobQueueGroup
+	 *
+	 * @return callable
+	 */
+	'JobQueueGroup' => function( $containerBuilder ) {
+
+		$containerBuilder->registerExpectedReturnType( 'JobQueueGroup', '\JobQueueGroup' );
+
+		return JobQueueGroup::singleton();
+	},
+
+];

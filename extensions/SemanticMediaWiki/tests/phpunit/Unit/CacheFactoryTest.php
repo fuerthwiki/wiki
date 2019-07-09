@@ -2,9 +2,9 @@
 
 namespace SMW\Tests;
 
-use SMW\CacheFactory;
-use Onoi\Cache\NullCache;
 use Onoi\Cache\Cache;
+use Onoi\Cache\NullCache;
+use SMW\CacheFactory;
 
 /**
  * @covers \SMW\CacheFactory
@@ -16,6 +16,8 @@ use Onoi\Cache\Cache;
  * @author mwjames
  */
 class CacheFactoryTest extends \PHPUnit_Framework_TestCase {
+
+	use PHPUnitCompat;
 
 	public function testCanConstruct() {
 
@@ -52,14 +54,32 @@ class CacheFactoryTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
+	public function testGetPurgeCacheKey() {
+
+		$title = $this->getMockBuilder( '\Title' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$title->expects( $this->once() )
+			->method( 'getArticleID' )
+			->will( $this->returnValue( 42 ) );
+
+		$instance = new CacheFactory( 'hash' );
+
+		$this->assertInternalType(
+			'string',
+			$instance->getPurgeCacheKey( $title )
+		);
+	}
+
 	public function testCanConstructCacheOptions() {
 
 		$instance = new CacheFactory( 'hash' );
 
-		$cacheOptions = $instance->newCacheOptions( array(
+		$cacheOptions = $instance->newCacheOptions( [
 			'useCache' => true,
 			'ttl' => 0
-		) );
+		] );
 
 		$this->assertTrue(
 			$cacheOptions->useCache
@@ -72,9 +92,9 @@ class CacheFactoryTest extends \PHPUnit_Framework_TestCase {
 
 		$this->setExpectedException( 'RuntimeException' );
 
-		$cacheOptions = $instance->newCacheOptions( array(
+		$cacheOptions = $instance->newCacheOptions( [
 			'useCache' => true
-		) );
+		] );
 	}
 
 	public function testCanConstructFixedInMemoryCache() {

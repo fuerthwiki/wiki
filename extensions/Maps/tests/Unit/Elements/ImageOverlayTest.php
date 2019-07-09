@@ -1,55 +1,49 @@
 <?php
 
-namespace Maps\Tests\Elements;
+namespace Maps\Tests\Unit\Elements;
 
+use DataValues\Geo\Values\LatLongValue;
+use Jeroen\SimpleGeocoder\Geocoders\Decorators\CoordinateFriendlyGeocoder;
+use Jeroen\SimpleGeocoder\Geocoders\NullGeocoder;
 use Maps\Elements\ImageOverlay;
+use Maps\Presentation\WikitextParsers\ImageOverlayParser;
+use PHPUnit\Framework\TestCase;
 
 /**
- * @covers Maps\Elements\ImageOverlay
+ * @covers \Maps\Elements\ImageOverlay
  *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
-class ImageOverlayTest extends RectangleTest {
+class ImageOverlayTest extends TestCase {
 
-	/**
-	 * @see BaseElementTest::getClass
-	 *
-	 * @since 3.0
-	 *
-	 * @return string
-	 */
-	public function getClass() {
-		return ImageOverlay::class;
+	public function testGetImage() {
+		$imageOverlay = new ImageOverlay(
+			new LatLongValue( 4, 2 ),
+			new LatLongValue( -4, -2 ),
+			'Foo.png'
+		);
+
+		$this->assertSame( 'Foo.png', $imageOverlay->getImage() );
 	}
 
-	public function validConstructorProvider() {
-		$argLists = parent::validConstructorProvider();
+	public function testGivenMetaData_overlayHasProvidedMetaData() {
+		$parser = new ImageOverlayParser( new CoordinateFriendlyGeocoder( new NullGeocoder() ) );
 
-		foreach ( $argLists as &$argList ) {
-			$argList[] = 'Foo.png';
-		}
+		$overlay = $parser->parse( "1,2:3,4:https://such.an/image.png~Semantic MediaWiki~World domination imminent!~https://such.link" );
 
-		return $argLists;
+		$this->assertSame( 'https://such.an/image.png', $overlay->getImage() );
+		$this->assertSame( 'Semantic MediaWiki', $overlay->getTitle() );
+		$this->assertSame( 'World domination imminent!', $overlay->getText() );
+		$this->assertSame( 'https://such.link', $overlay->getLink() );
 	}
 
-	public function invalidConstructorProvider() {
-		$argLists = parent::validConstructorProvider();
+	public function testGivenLinkWithPrefix_linkIsParsedAndPrefixIsRemoved() {
+		$parser = new ImageOverlayParser( new CoordinateFriendlyGeocoder( new NullGeocoder() ) );
 
-		foreach ( $argLists as &$argList ) {
-			$argList[] = null;
-		}
+		$overlay = $parser->parse( "1,2:3,4:https://such.an/image.png~Semantic MediaWiki~World domination imminent!~link:https://such.link" );
 
-		return $argLists;
-	}
-
-	/**
-	 * @dataProvider instanceProvider
-	 * @param ImageOverlay $imageOverlay
-	 * @param array $arguments
-	 */
-	public function testGetImage( ImageOverlay $imageOverlay, array $arguments ) {
-		$this->assertEquals( $arguments[2], $imageOverlay->getImage() );
+		$this->assertSame( 'https://such.link', $overlay->getLink() );
 	}
 
 }

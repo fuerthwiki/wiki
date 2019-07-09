@@ -26,6 +26,11 @@
  * @author mwjames
  */
 
+.smwb-container .smw-overlay-spinner {
+	left: 45%;
+	top: 40%;
+}
+
 .smwb-datasheet, .smwb-content {
 	margin-right: 0.5em;
 }
@@ -35,18 +40,22 @@
 	width: 100%
 }
 
-.smwb-factbox .smwb-propvalue .smwb-prophead, .smwb-ifactbox .smwb-ipropvalue .smwb-prophead, .smwb-ifactbox .smwb-propvalue .smwb-prophead {
-	width: 25%
+.smwb-factbox .smwb-propvalue.smwb-group {
+	width: 100%;
 }
 
-/* Only apply when less then 350*/
-@media (max-width: 400px) {
-	.smwb-factbox .smwb-propvalue .smwb-prophead, .smwb-ifactbox .smwb-ipropvalue .smwb-prophead, .smwb-ifactbox .smwb-propvalue .smwb-prophead {
-		width: 50%
-	}
+.smwb-prophead a {
+	overflow-wrap: break-word;
+	word-break: break-word;
+	word-wrap: break-word;
+	-webkit-hyphens: auto;
+	-moz-hyphens: auto;
+	hyphens: auto;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
 }
 
-.smwb-cell {
+.smwb-factbox .smwb-cell {
 	border: 0px solid #999999;
 	border-top: 2px solid #fff;
 /*	border-bottom: 2px solid #fff; */
@@ -57,7 +66,6 @@
 }
 
 .smwb-prophead {
-	min-width: 5em;
 	background-color: #ddd;
 }
 
@@ -92,9 +100,19 @@
 	vertical-align: top;
 }
 
-.smwb-center {
+.smwb-center,  .smwb-actions {
 	background-color: #DDDDDD;
 	padding: 0px;
+}
+
+.smwb-actions {
+	line-height: 2.0em;
+}
+
+.smwb-title a, .smwb-center a:first-child, .smwb-actions a:first-child {
+	padding-left: 8px;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
 }
 
 span.smwb-value {
@@ -111,6 +129,12 @@ span.smwb-value {
 .smwb-ifactbox {
 	border-right: 0.5em solid #DDDDDD;
 	width: 100%
+}
+
+.smwb-ifactbox .smwb-cell {
+	border: 0px solid #999999;
+	border-top: 2px solid #fff;
+/*	border-bottom: 2px solid #fff; */
 }
 
 .smwb-ititle {
@@ -140,21 +164,96 @@ span.smwb-value {
 .smwb-ipropvalue .smwb-propval {
 	background-color: #EEEEEE;
 	padding-right: 1em;
+	padding: 0.4em 0.6em;
 }
 
-span.smwb-ivalue {
+.smwb-factbox .group-link:before {
+	content:"▾ ";
 }
 
-.browse-input-resp { display: flex; }
-.browse-input-resp .input-field { flex: 1; margin: 0 0 0 0; }
-.browse-input-resp .button-field { flex: 0; margin: 0 0 0 1rem; }
-
-.skin-chameleon .smwb-datasheet, .skin-chameleon .smwb-content {
-	margin-right: 0em;
+.smwb-ifactbox .group-link:after {
+	content:" ▾";
 }
 
-.browse-input-resp .mw-ui-input:focus {
+.smwb-input {
+	display: flex;
+}
+
+.smwb-input .input-field {
+	flex: 1; margin: 0 0 0 0;
+}
+
+.smwb-input .button-field {
+	flex: 0; margin: 0 0 0 1rem;
+}
+
+.smwb-input .button-field input {
+	padding: 6px;
+}
+
+.smwb-input .mw-ui-input:focus {
 	box-shadow: inset 0 0 0 1px #ddd;
 	border-color: #ddd;
 	outline: 0;
+}
+
+.smwb-input input {
+	padding: 0.52em 1em;
+}
+
+.smwb-factbox .smwb-propvalue .smwb-prophead, .smwb-ifactbox .smwb-ipropvalue .smwb-prophead, .smwb-ifactbox .smwb-propvalue .smwb-prophead {
+	width: 30%;
+}
+
+.mw-ui-input.autocomplete-loading {
+	vertical-align: unset;
+	padding: 0.52em 1em !important;
+}
+
+.smwb-action-separator {
+	display: inline-block;
+	line-height: 1.025em;
+	border-left: 1px solid #a2a9b1;
+	margin: 0.2em 0.2em 0.2em 0.45em;
+	zoom: 1;
+}
+
+/**
+ * Light theme
+ */
+.smwb-theme-light .smwb-factbox {
+	border-left: 0.5em solid #f0f0f0;
+}
+
+.smwb-theme-light .smwb-ifactbox {
+	border-right: 0.5em solid #f0f0f0;
+}
+
+.smwb-theme-light .smwb-title, .smwb-theme-light .smwb-center, .smwb-theme-light .smwb-actions, .smwb-theme-light .smwb-prophead  {
+	background-color: #f0f0f0;
+}
+
+.smwb-theme-light .smwb-propval  {
+	background-color: #f7f7f7;
+}
+
+/**
+ * Responsive settings (#see smw.table.css)
+ */
+@media screen and (max-width: 800px) {
+	.smwb-factbox .smwb-propvalue .smwb-prophead, .smwb-ifactbox .smwb-ipropvalue .smwb-prophead, .smwb-ifactbox .smwb-propvalue .smwb-prophead {
+		width: auto;
+	}
+
+	.smwb-ifactbox .smwb-ipropvalue .smwb-prophead, .smwb-ifactbox .smwb-ipropvalue .smwb-propval, .smwb-ifactbox .smwb-propvalue .smwb-prophead {
+		justify-content: flex-end;
+	}
+
+	.smwb-group .smwb-propval, .smwb-group .smwb-theme-light .smwb-propval {
+		background-color: #d9e8f3;
+	}
+
+	.smwb-emptysheet .smwb-prophead {
+		border-top: none;
+	}
 }

@@ -41,7 +41,7 @@ abstract class PFFormInput {
 	 * @param array $other_args An associative array of other parameters that were present in the
 	 *  input definition.
 	 */
-	public function __construct( $input_number, $cur_value, $input_name, $disabled, $other_args ) {
+	public function __construct( $input_number, $cur_value, $input_name, $disabled, array $other_args ) {
 		$this->mInputNumber = $input_number;
 		$this->mCurrentValue = $cur_value;
 		$this->mInputName = $input_name;
@@ -214,7 +214,7 @@ abstract class PFFormInput {
 	 *
 	 *
 	 * @param string $name The name of the initialization function.
-	 * @param string $param The parameter passed to the initialization function.
+	 * @param string|null $param The parameter passed to the initialization function.
 	 */
 	public function addJsInitFunctionData( $name, $param = null ) {
 		if ( is_string( $param ) ) {

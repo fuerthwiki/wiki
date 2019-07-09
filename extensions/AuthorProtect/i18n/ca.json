@@ -15,7 +15,6 @@
 	"authorprotect-move": "Restricció de reanomenament als autors",
 	"authorprotect-intro": "Useu aquesta pantalla per a blocar aquesta pàgina als no-autors",
 	"authorprotect-success": "Protegida!",
-	"authorprotect-failure": "Desprotegida!",
 	"protect-level-author": "Protecció dels no-autors",
 	"restriction-level-author": "Restringida a l'autor",
 	"right-authorprotect": "Protegir les pàgines amb autoria",

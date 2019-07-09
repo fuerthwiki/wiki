@@ -3,9 +3,9 @@
 namespace SMW\MediaWiki;
 
 use Revision;
+use SMW\ParserData;
 use User;
 use WikiPage;
-use SMW\ParserData;
 
 /**
  * @license GNU GPL v2+
@@ -95,7 +95,12 @@ class EditInfoProvider {
 	}
 
 	private function prepareContentForEdit() {
-		$content  = $this->revision->getContent();
+
+		if ( !$this->revision instanceof Revision ) {
+			return null;
+		}
+
+		$content = $this->revision->getContent();
 
 		return $this->wikiPage->prepareContentForEdit(
 			$content,

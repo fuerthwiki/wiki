@@ -1,5 +1,7 @@
 <?php
 
+declare( strict_types = 1 );
+
 namespace DataValues\Geo;
 
 use DataValues\Geo\Values\GlobeCoordinateValue;
@@ -11,22 +13,22 @@ use DataValues\Geo\Values\LatLongValue;
  *
  * @since 0.2
  *
- * @license GPL-2.0+
- * @author Thiemo Mättig
+ * @license GPL-2.0-or-later
+ * @author Thiemo Kreuz
  */
 class GlobeMath {
 
 	/**
 	 * @todo Move this constant next to GlobeCoordinateValue::GLOBE_EARTH?
 	 */
-	const GLOBE_MOON = 'http://www.wikidata.org/entity/Q405';
+	public const GLOBE_MOON = 'http://www.wikidata.org/entity/Q405';
 
 	/**
 	 * @param string|null $globe IRI of a globe.
 	 *
 	 * @return string Normalized IRI, defaults to 'http://www.wikidata.org/entity/Q2'.
 	 */
-	public function normalizeGlobe( $globe ) {
+	public function normalizeGlobe( ?string $globe ) {
 		if ( !is_string( $globe ) || $globe === '' ) {
 			return GlobeCoordinateValue::GLOBE_EARTH;
 		}
@@ -43,7 +45,7 @@ class GlobeMath {
 	 *
 	 * @return GlobeCoordinateValue
 	 */
-	public function normalizeGlobeCoordinate( GlobeCoordinateValue $value ) {
+	public function normalizeGlobeCoordinate( GlobeCoordinateValue $value ): GlobeCoordinateValue {
 		return new GlobeCoordinateValue(
 			$this->normalizeGlobeLatLong( $value->getLatLong(), $value->getGlobe() ),
 			$value->getPrecision(),
@@ -57,7 +59,7 @@ class GlobeMath {
 	 *
 	 * @return LatLongValue
 	 */
-	public function normalizeGlobeLatLong( LatLongValue $value, $globe = null ) {
+	public function normalizeGlobeLatLong( LatLongValue $value, string $globe = null ): LatLongValue {
 		switch ( $this->normalizeGlobe( $globe ) ) {
 			case GlobeCoordinateValue::GLOBE_EARTH:
 			case self::GLOBE_MOON:
@@ -76,7 +78,7 @@ class GlobeMath {
 	 *
 	 * @return LatLongValue
 	 */
-	public function normalizeLatLong( LatLongValue $value, $minimumLongitude = -180.0 ) {
+	public function normalizeLatLong( LatLongValue $value, float $minimumLongitude = -180.0 ): LatLongValue {
 		$lat = $value->getLatitude();
 		$lon = $value->getLongitude();
 

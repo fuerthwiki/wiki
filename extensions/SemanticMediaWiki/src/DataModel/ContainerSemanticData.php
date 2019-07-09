@@ -2,10 +2,9 @@
 
 namespace SMW\DataModel;
 
-use RuntimeException;
-use SMW\SemanticData;
 use SMW\DIWikiPage;
 use SMW\Exception\DataItemException;
+use SMW\SemanticData;
 
 /**
  * Subclass of SemanticData that is used to store the data in SMWDIContainer
@@ -62,7 +61,7 @@ class ContainerSemanticData extends SemanticData {
 	 * Restore complete serialization which is disabled in SemanticData.
 	 */
 	public function __sleep() {
-		return array(
+		return [
 			'mSubject',
 			'mProperties',
 			'mPropVals',
@@ -70,8 +69,10 @@ class ContainerSemanticData extends SemanticData {
 			'mHasVisibleSpecs',
 			'mNoDuplicates',
 			'skipAnonymousCheck',
-			'subSemanticData'
-		);
+			'subSemanticData',
+			'options',
+			'extensionData'
+		];
 	}
 
 	/**
@@ -131,12 +132,17 @@ class ContainerSemanticData extends SemanticData {
 	 *
 	 * @since 1.7
 	 *
-	 * @param $semanticData SemanticData object to copy from
+	 * @param SemanticData|null $semanticData
 	 */
-	public function copyDataFrom( SemanticData $semanticData ) {
+	public function copyDataFrom( SemanticData $semanticData = null ) {
+
+		if ( $semanticData === null ) {
+			return;
+		}		
+		
 		$this->mSubject = $semanticData->getSubject();
 		$this->mProperties = $semanticData->getProperties();
-		$this->mPropVals = array();
+		$this->mPropVals = [];
 
 		foreach ( $this->mProperties as $property ) {
 			$this->mPropVals[$property->getKey()] = $semanticData->getPropertyValues( $property );

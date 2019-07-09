@@ -19,7 +19,7 @@ class RequestOptionsTest extends \PHPUnit_Framework_TestCase {
 	public function testCanConstruct() {
 
 		$this->assertInstanceOf(
-			'\SMW\RequestOptions',
+			RequestOptions::class,
 			new RequestOptions()
 		);
 	}
@@ -36,12 +36,12 @@ class RequestOptionsTest extends \PHPUnit_Framework_TestCase {
 			);
 
 			$this->assertFalse(
-				$stringCondition->isDisjunctiveCondition
+				$stringCondition->isOr
 			);
 		}
 
 		$this->assertEquals(
-			'[-1,0,false,true,null,true,"Foo#0#",[]]',
+			'[-1,0,false,true,null,true,"Foo#0##",[],[]]',
 			$instance->getHash()
 		);
 	}
@@ -50,18 +50,18 @@ class RequestOptionsTest extends \PHPUnit_Framework_TestCase {
 
 		$instance = new RequestOptions();
 		$instance->addExtraCondition( 'Foo' );
-		$instance->addExtraCondition( array( 'Bar' => 'Foobar' ) );
+		$instance->addExtraCondition( [ 'Bar' => 'Foobar' ] );
 
 		$this->assertEquals(
-			array(
+			[
 				'Foo',
-				array( 'Bar' => 'Foobar' )
-			),
+				[ 'Bar' => 'Foobar' ]
+			],
 			$instance->getExtraConditions()
 		);
 
 		$this->assertEquals(
-			'[-1,0,false,true,null,true,"",["Foo",{"Bar":"Foobar"}]]',
+			'[-1,0,false,true,null,true,"",["Foo",{"Bar":"Foobar"}],[]]',
 			$instance->getHash()
 		);
 	}
@@ -110,15 +110,15 @@ class RequestOptionsTest extends \PHPUnit_Framework_TestCase {
 
 	public function numberProvider() {
 
-		$provider[] = array(
+		$provider[] = [
 			42,
 			42
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'42foo',
 			42
-		);
+		];
 
 		return $provider;
 	}

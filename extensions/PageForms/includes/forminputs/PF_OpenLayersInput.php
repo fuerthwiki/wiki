@@ -46,13 +46,18 @@ class PFOpenLayersInput extends PFFormInput {
 		return $width;
 	}
 
-	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, $other_args ) {
+	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, array $other_args ) {
 		global $wgPageFormsFieldNum, $wgPageFormsTabIndex;
-		global $wgOut;
+		global $wgOut, $wgPageFormsMapsWithFeeders;
 
-		if ( !ExtensionRegistry::getInstance()->isLoaded( 'OpenLayers' ) ) {
+		if ( version_compare( $GLOBALS['wgVersion'], '1.26c', '>' ) &&
+			ExtensionRegistry::getInstance()->isLoaded( 'OpenLayers' )
+		) {
+			$wgOut->addModuleStyles( 'ext.openlayers.main' );
+			$wgOut->addModuleScripts( 'ext.openlayers.main' );
+		} else {
 			$scripts = array(
-				"http://www.openlayers.org/api/OpenLayers.js"
+				"https://www.openlayers.org/api/OpenLayers.js"
 			);
 			$scriptsHTML = '';
 			foreach ( $scripts as $script ) {
@@ -60,40 +65,49 @@ class PFOpenLayersInput extends PFFormInput {
 			}
 			$wgOut->addHeadItem( $scriptsHTML, $scriptsHTML );
 		}
+
 		$wgOut->addModules( 'ext.pageforms.maps' );
+
+		// The address input box is not necessary if we are using other form inputs for the address.
+		if ( array_key_exists( $input_name, $wgPageFormsMapsWithFeeders ) ) {
+			$addressLookupInput = '';
+		} else {
+			$addressLookupInputAttrs = array(
+				'type' => 'text',
+				'tabindex' => $wgPageFormsTabIndex++,
+				'class' => 'pfAddressInput',
+				'size' => 40,
+				'placeholder' => wfMessage( 'pf-maps-enteraddress' )->parse()
+			);
+			$addressLookupInput = Html::element( 'input', $addressLookupInputAttrs, null );
+		}
+		$addressLookupButtonAttrs = array(
+			'type' => 'button',
+			'tabindex' => $wgPageFormsTabIndex++,
+			'class' => 'pfLookUpAddress',
+			'value' => wfMessage( 'pf-maps-lookupcoordinates' )->parse()
+		);
+		$addressLookupButton = Html::element( 'input', $addressLookupButtonAttrs, null );
 
 		$coordsInputAttrs = array(
 			'type' => 'text',
-			'tabindex' => $wgPageFormsTabIndex,
+			'tabindex' => $wgPageFormsTabIndex++,
 			'class' => 'pfCoordsInput',
 			'name' => $input_name,
 			'value' => self::parseCoordinatesString( $cur_value ),
 			'size' => 40
 		);
 		$coordsInput = Html::element( 'input', $coordsInputAttrs );
-		// For OpenLayers, doing an address lookup, i.e. a geocode,
-		// will require a separate geocoding address, which may
-		// require a server-side reader to access that API.
-		// For now, let's just not do this, since the Google Maps
-		// input is much more widely used anyway.
-		// @TODO - add this in.
-		// $wgPageFormsTabIndex++;
-		// $addressLookupInput = Html::element( 'input', array( 'type' => 'text', 'tabindex' => $wgPageFormsTabIndex, 'class' => 'pfAddressInput', 'size' => 40, 'placeholder' => wfMessage( 'pf-maps-enteraddress' )->parse() ), null );
-		// $addressLookupButton = Html::element( 'input', array( 'type' => 'button', 'class' => 'pfLookUpAddress', 'value' => wfMessage( 'pf-maps-lookupcoordinates' )->parse() ), null );
+
 		$height = self::getHeight( $other_args );
 		$width = self::getWidth( $other_args );
 		$mapCanvas = Html::element( 'div', array( 'class' => 'pfMapCanvas', 'id' => 'pfMapCanvas' . $wgPageFormsFieldNum, 'style' => "height: $height; width: $width;" ), null );
 
-/*
 		$fullInputHTML = <<<END
 <div style="padding-bottom: 10px;">
 $addressLookupInput
 $addressLookupButton
 </div>
-
-END;
-*/
-		$fullInputHTML = <<<END
 <div style="padding-bottom: 10px;">
 $coordsInput
 </div>

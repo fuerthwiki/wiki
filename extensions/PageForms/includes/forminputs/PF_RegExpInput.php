@@ -24,7 +24,7 @@ class PFRegExpInput extends PFFormInput {
 	 * @param array $other_args An associative array of other parameters that were present in the
 	 *  input definition.
 	 */
-	public function __construct( $input_number, $cur_value, $input_name, $disabled, $other_args ) {
+	public function __construct( $input_number, $cur_value, $input_name, $disabled, array $other_args ) {
 		global $wgPageFormsFormPrinter;
 
 		parent::__construct( $input_number, $cur_value, $input_name, $disabled, $other_args );
@@ -108,9 +108,25 @@ class PFRegExpInput extends PFFormInput {
 			$newOtherArgs = $this->mOtherArgs;
 		}
 
-		// create base input
+		// Create base input.
 		$this->mBaseInput = new $wgPageFormsFormPrinter->mInputTypeClasses[ $baseType ] (
-				$this->mInputNumber, $this->mCurrentValue, $this->mInputName, $this->mIsDisabled, $newOtherArgs
+			$this->mInputNumber, $this->mCurrentValue, $this->mInputName, $this->mIsDisabled, $newOtherArgs
+		);
+	}
+
+	/**
+	 * Makes this input a wrapper around a previously-defined input.
+	 *
+	 * @param PFFormInput $formInput
+	 * @return PFRegExpInput
+	 */
+	public static function newFromInput( $formInput ) {
+		return new PFRegExpInput(
+			$formInput->mInputNumber,
+			$formInput->mCurrentValue,
+			$formInput->mInputName,
+			$formInput->mIsDisabled,
+			$formInput->mOtherArgs
 		);
 	}
 

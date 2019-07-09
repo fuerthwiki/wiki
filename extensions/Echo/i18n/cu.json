@@ -1,11 +1,14 @@
 {
-    "@metadata": {
-        "authors": [
-            "ОйЛ"
-        ]
-    },
-    "echo-learn-more": "поꙁнаи вѧщє",
-    "echo-category-title-edit-user-talk": "{{PLURAL:$1|напьсаниѥ|напьсании|напьсаниꙗ}} бєсѣдꙑ страницѣ",
-    "echo-category-title-system": "{{PLURAL:$1|сѷстима}}",
-    "echo-date-yesterday": "вьчєра"
+	"@metadata": {
+		"authors": [
+			"ОйЛ"
+		]
+	},
+	"echo-learn-more": "поꙁнаи вѧщє",
+	"echo-category-title-edit-user-talk": "{{PLURAL:$1|напьсаниѥ|напьсании|напьсаниꙗ}} бєсѣдꙑ страницѣ",
+	"echo-category-title-system": "{{PLURAL:$1|сѷстима}}",
+	"tooltip-pt-notifications-alert": "{{GENDER:|твоѩ}} повѣщєниꙗ",
+	"notification-header-edit-user-talk-with-section": "$1 {{GENDER:$2|напьса}} {{GENDER:$3|твоѥи}} бєсѣдꙑ страници въ чѧсти ⁖ $4 ⁖",
+	"echo-date-today": "дьньсь",
+	"echo-date-yesterday": "вьчєра"
 }

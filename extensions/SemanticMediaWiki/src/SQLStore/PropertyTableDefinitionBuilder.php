@@ -5,7 +5,7 @@ namespace SMW\SQLStore;
 use Hooks;
 use SMW\DataTypeRegistry;
 use SMW\DIProperty;
-use SMWDataItem as DataItem;
+use SMW\PropertyRegistry;
 
 /**
  * @private
@@ -30,12 +30,12 @@ class PropertyTableDefinitionBuilder {
 	/**
 	 * @var TableDefinition[]
 	 */
-	protected $propertyTables = array();
+	protected $propertyTables = [];
 
 	/**
 	 * @var array
 	 */
-	protected $fixedPropertyTableIds = array();
+	protected $fixedPropertyTableIds = [];
 
 	/**
 	 * @since 1.9
@@ -61,11 +61,11 @@ class PropertyTableDefinitionBuilder {
 			$specialProperties
 		);
 
-		$customFixedProperties = array();
-		$fixedPropertyTablePrefix = array();
+		$customFixedProperties = [];
+		$fixedPropertyTablePrefix = [];
 
 		// Allow to alter the prefix by an extension
-		Hooks::run( 'SMW::SQLStore::AddCustomFixedPropertyTables', array( &$customFixedProperties, &$fixedPropertyTablePrefix ) );
+		Hooks::run( 'SMW::SQLStore::AddCustomFixedPropertyTables', [ &$customFixedProperties, &$fixedPropertyTablePrefix ] );
 
 		$this->addTableDefinitionForFixedProperties(
 			$customFixedProperties,
@@ -78,7 +78,7 @@ class PropertyTableDefinitionBuilder {
 			$userDefinedFixedProperties
 		);
 
-		Hooks::run( 'SMW::SQLStore::updatePropertyTableDefinitions', array( &$this->propertyTables ) );
+		Hooks::run( 'SMW::SQLStore::updatePropertyTableDefinitions', [ &$this->propertyTables ] );
 
 		$this->createFixedPropertyTableIdIndex();
 	}
@@ -176,7 +176,7 @@ class PropertyTableDefinitionBuilder {
 		}
 	}
 
-	private function addTableDefinitionForFixedProperties( array $properties, array $fixedPropertyTablePrefix = array() ) {
+	private function addTableDefinitionForFixedProperties( array $properties, array $fixedPropertyTablePrefix = [] ) {
 		foreach( $properties as $propertyKey => $propertyTableSuffix ) {
 
 			$tablePrefix = isset( $fixedPropertyTablePrefix[$propertyKey] ) ? $fixedPropertyTablePrefix[$propertyKey] : self::PROPERTY_TABLE_PREFIX;
@@ -186,7 +186,7 @@ class PropertyTableDefinitionBuilder {
 			$propertyKey = is_int( $propertyKey ) ? $propertyTableSuffix : $propertyKey;
 
 			$this->addPropertyTable(
-				DataTypeRegistry::getInstance()->getDataItemId( DIProperty::getPredefinedPropertyTypeId( $propertyKey ) ),
+				DataTypeRegistry::getInstance()->getDataItemByType( PropertyRegistry::getInstance()->getPropertyValueTypeById( $propertyKey ) ),
 				$tablePrefix . strtolower( $propertyTableSuffix ),
 				$propertyKey
 			);
@@ -223,7 +223,7 @@ class PropertyTableDefinitionBuilder {
 			$property = new DIProperty( $propertyKey );
 
 			$this->addPropertyTable(
-				DataTypeRegistry::getInstance()->getDataItemId( $this->propertyTypeFinder->findTypeID( $property ) ),
+				DataTypeRegistry::getInstance()->getDataItemByType( $this->propertyTypeFinder->findTypeID( $property ) ),
 				$this->createHashedTableNameFrom( $propertyKey ),
 				$propertyKey
 			);

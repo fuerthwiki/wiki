@@ -2,10 +2,9 @@
 
 namespace SMW\SQLStore;
 
-use SMW\MediaWiki\Database;
-use SMW\DIProperty;
-use SMWTypesValue as TypesValue;
 use RuntimeException;
+use SMW\DIProperty;
+use SMW\MediaWiki\Database;
 
 /**
  * @private
@@ -58,15 +57,15 @@ class PropertyTypeFinder {
 		try {
 			$row = $this->connection->selectRow(
 				SQLStore::ID_TABLE,
-				array(
+				[
 					'smw_id'
-				),
-				array(
+				],
+				[
 					'smw_namespace' => SMW_NS_PROPERTY,
 					'smw_title' => $property->getKey(),
 					'smw_iw' => '',
 					'smw_subobject' => ''
-				),
+				],
 				__METHOD__
 			);
 		} catch ( \Exception $e ) {
@@ -90,12 +89,12 @@ class PropertyTypeFinder {
 		// type string
 		$row = $this->connection->selectRow(
 			$this->typeTableName,
-			array(
+			[
 				'o_serialized'
-			),
-			array(
+			],
+			[
 				's_id' => $row->smw_id
-			),
+			],
 			__METHOD__
 		);
 

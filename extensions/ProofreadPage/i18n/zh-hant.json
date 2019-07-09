@@ -11,9 +11,11 @@
 			"TianyinLee",
 			"Wrightbus",
 			"LNDDYL",
-			"Cwlin0416"
+			"Cwlin0416",
+			"Wwycheuk"
 		]
 	},
+	"nstab-page": "頁面",
 	"indexpages": "索引頁清單",
 	"pageswithoutscans": "沒有掃瞄的頁面",
 	"proofreadpage_desc": "允許簡易地去比較原掃瞄和文字",
@@ -22,13 +24,9 @@
 	"proofreadpage_index_expected": "錯誤：需要索引",
 	"proofreadpage_nosuch_index": "錯誤：沒有此類索引",
 	"proofreadpage_nosuch_file": "錯誤：沒有這種檔案",
-	"proofreadpage_badpage": "格式錯誤",
-	"proofreadpage_badpagetext": "您試圖儲存的頁面的格式不正確。",
-	"proofreadpage_indexdupe": "重複連結",
 	"proofreadpage_indexdupetext": "在索引頁中，頁面不會被重複列出。",
 	"proofreadpage_nologin": "未登入",
 	"proofreadpage_nologintext": "您必須[[Special:UserLogin|先登入]]才能修改頁面的校對狀態。",
-	"proofreadpage_notallowed": "不允許修改",
 	"proofreadpage_notallowedtext": "您沒有獲得修改這個頁面校對狀態的許可。",
 	"proofreadpage_dataconfig_badformatted": "設定資料中的 Bug",
 	"proofreadpage_dataconfig_badformattedtext": "頁面[[Mediawiki:Proofreadpage index data config]]並非標準 JSON 格式。",
@@ -85,5 +83,8 @@
 	"proofreadpage-indexoai-error-schemanotfound": "無法找尋架構",
 	"proofreadpage-indexoai-error-schemanotfound-text": "$1 架構無法發現。",
 	"proofreadpage-disambiguationspage": "Template:消歧義",
-	"content-model-proofread-page": "頁面：頁面"
+	"content-model-proofread-page": "圖書頁面",
+	"proofreadpage-visualeditor-node-pages-inspector-tooltip": "頁面",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-yes": "是",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "否"
 }

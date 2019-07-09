@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\MediaWiki\Specials\Admin;
 
-use SMW\Tests\TestEnvironment;
 use SMW\MediaWiki\Specials\Admin\SupportListTaskHandler;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\MediaWiki\Specials\Admin\SupportListTaskHandler
@@ -44,7 +44,7 @@ class SupportListTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 
 	public function testGetHtml() {
 
-		$methods = array(
+		$methods = [
 			'setName',
 			'setMethod',
 			'addHiddenField',
@@ -52,7 +52,7 @@ class SupportListTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 			'addParagraph',
 			'addSubmitButton',
 			'setActionUrl'
-		);
+		];
 
 		foreach ( $methods as $method ) {
 			$this->htmlFormRenderer->expects( $this->any() )

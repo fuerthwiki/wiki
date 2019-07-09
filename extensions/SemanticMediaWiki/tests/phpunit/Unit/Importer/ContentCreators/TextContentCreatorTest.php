@@ -1,6 +1,6 @@
 <?php
 
-namespace SMW\TestsImporter\ContentCreators;
+namespace SMW\Tests\Importer\ContentCreators;
 
 use SMW\Importer\ContentCreators\TextContentCreator;
 use SMW\Importer\ImportContents;
@@ -91,7 +91,7 @@ class TextContentCreatorTest extends \PHPUnit_Framework_TestCase {
 		$importContents->setContentType( ImportContents::CONTENT_TEXT );
 		$importContents->setName( 'Foo' );
 
-		$instance->doCreateFrom( $importContents );
+		$instance->create( $importContents );
 	}
 
 }

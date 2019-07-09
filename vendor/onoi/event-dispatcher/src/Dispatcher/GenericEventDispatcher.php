@@ -2,10 +2,12 @@
 
 namespace Onoi\EventDispatcher\Dispatcher;
 
+use Onoi\EventDispatcher\Subscriber;
 use Onoi\EventDispatcher\EventDispatcher;
 use Onoi\EventDispatcher\EventListener;
 use Onoi\EventDispatcher\EventListenerCollection;
 use Onoi\EventDispatcher\DispatchContext;
+use Onoi\EventDispatcher\Exception\EventNotDispatchableException;
 use InvalidArgumentException;
 use RuntimeException;
 use Traversable;
@@ -18,12 +20,17 @@ use Traversable;
  *
  * @author mwjames
  */
-class GenericEventDispatcher implements EventDispatcher {
+class GenericEventDispatcher implements EventDispatcher, Subscriber {
 
 	/**
 	 * @var array
 	 */
 	private $dispatchableListeners = array();
+
+	/**
+	 * @var boolean
+	 */
+	private $throwOnMissingEvent = false;
 
 	/**
 	 * @since 1.0
@@ -96,6 +103,15 @@ class GenericEventDispatcher implements EventDispatcher {
 	}
 
 	/**
+	 * @since 1.1
+	 *
+	 * @param boolean $throwOnMissingEvent
+	 */
+	public function throwOnMissingEvent( $throwOnMissingEvent ) {
+		$this->throwOnMissingEvent = (bool)$throwOnMissingEvent;
+	}
+
+	/**
 	 * @since 1.0
 	 *
 	 * {@inheritDoc}
@@ -109,12 +125,18 @@ class GenericEventDispatcher implements EventDispatcher {
 	 *
 	 * {@inheritDoc}
 	 */
-	public function dispatch( $event, DispatchContext $dispatchContext = null ) {
+	public function dispatch( $event, $dispatchContext = null ) {
 
 		$event = strtolower( $event );
 
-		if ( !$this->hasEvent( $event ) ) {
+		if ( !$this->hasEvent( $event ) && $this->throwOnMissingEvent ) {
+			throw new EventNotDispatchableException( $event );
+		} elseif( !$this->hasEvent( $event ) ) {
 			return;
+		}
+
+		if ( is_array( $dispatchContext ) ) {
+			$dispatchContext = DispatchContext::newFromArray( $dispatchContext );
 		}
 
 		foreach ( $this->dispatchableListeners[$event] as $listener ) {

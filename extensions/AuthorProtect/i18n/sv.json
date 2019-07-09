@@ -16,7 +16,6 @@
 	"authorprotect-move": "Låt endast författaren flytta sidan",
 	"authorprotect-intro": "Använd detta formulär för att låsa sidan för andra än författaren",
 	"authorprotect-success": "Beskyddningen lyckades!",
-	"authorprotect-failure": "Beskyddning misslyckades",
 	"protect-level-author": "Skydda från andra än författaren",
 	"restriction-level-author": "författarskyddad",
 	"right-authorprotect": "Skydda författade sidor",

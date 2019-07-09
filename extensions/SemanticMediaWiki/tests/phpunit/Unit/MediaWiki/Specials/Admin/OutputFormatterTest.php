@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\MediaWiki\Specials\Admin;
 
-use SMW\Tests\TestEnvironment;
 use SMW\MediaWiki\Specials\Admin\OutputFormatter;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\MediaWiki\Specials\Admin\OutputFormatter
@@ -58,7 +58,7 @@ class OutputFormatterTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertInternalType(
 			'string',
-			$instance->encodeAsJson( array() )
+			$instance->encodeAsJson( [] )
 		);
 	}
 

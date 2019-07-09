@@ -2,14 +2,14 @@
 
 namespace SMW\DataValues\ValueFormatters;
 
+use RuntimeException;
 use SMW\ApplicationFactory;
 use SMW\Highlighter;
 use SMW\Localizer;
 use SMW\Message;
-use SMW\DIWikiPage;
 use SMWDataValue as DataValue;
-use SMWPropertyValue as PropertyValue;
-use RuntimeException;
+use SMW\DataValues\PropertyValue;
+use SMW\PropertySpecificationLookup;
 
 /**
  * @license GNU GPL v2+
@@ -18,6 +18,20 @@ use RuntimeException;
  * @author mwjames
  */
 class PropertyValueFormatter extends DataValueFormatter {
+
+	/**
+	 * @var PropertySpecificationLookup
+	 */
+	private $propertySpecificationLookup;
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param PropertySpecificationLookup $propertySpecificationLookup
+	 */
+	public function __construct( PropertySpecificationLookup $propertySpecificationLookup ) {
+		$this->propertySpecificationLookup = $propertySpecificationLookup;
+	}
 
 	/**
 	 * @since 2.5
@@ -33,11 +47,20 @@ class PropertyValueFormatter extends DataValueFormatter {
 	 *
 	 * {@inheritDoc}
 	 */
-	public function format( $type, $linker = null ) {
+	public function format( $dataValue, $options = null ) {
 
-		if ( !$this->dataValue instanceof PropertyValue ) {
+		if ( !is_array( $options ) ) {
+			throw new RuntimeException( "Option is not an array!" );
+		}
+
+		if ( !$dataValue instanceof PropertyValue ) {
 			throw new RuntimeException( "The formatter is missing a valid PropertyValue object" );
 		}
+
+		$this->dataValue = $dataValue;
+
+		$type = $options[0];
+		$linker = isset( $options[1] ) ? $options[1] : null;
 
 		if ( !$this->dataValue->isVisible() ) {
 			return '';
@@ -119,7 +142,7 @@ class PropertyValueFormatter extends DataValueFormatter {
 		}
 
 		// Internal format only used by PropertyValue
-		$format = $this->getOption( PropertyValue::FORMAT_LABEL );
+		$format = $this->dataValue->getOption( PropertyValue::FORMAT_LABEL );
 		$this->dataValue->setCaption( $label );
 
 		if ( $format === self::VALUE ) {
@@ -143,7 +166,7 @@ class PropertyValueFormatter extends DataValueFormatter {
 		// Output both according to the formatting rule set forth by
 		if ( $canonicalLabel !== $label ) {
 			$canonicalLabel = \Html::rawElement(
-				'span', array( 'style' => 'font-size:small;' ), '(' . $canonicalLabel . ')' );
+				'span', [ 'style' => 'font-size:small;' ], '(' . $canonicalLabel . ')' );
 			$output = $output . '&nbsp;'.  $canonicalLabel;
 		}
 
@@ -223,11 +246,13 @@ class PropertyValueFormatter extends DataValueFormatter {
 			$this->dataValue->getOption( PropertyValue::OPT_USER_LANGUAGE )
 		);
 
-		$highlighter->setContent( array (
-			'userDefined' => $this->dataValue->getDataItem()->isUserDefined(),
-			'caption' => $text,
-			'content' => $content !== '' ? $content : Message::get( 'smw_isspecprop' )
-		) );
+		$highlighter->setContent(
+			[
+				'userDefined' => $this->dataValue->getDataItem()->isUserDefined(),
+				'caption' => $text,
+				'content' => $content !== '' ? $content : Message::get( 'smw_isspecprop' )
+			]
+		);
 
 		return $highlighter->getHtml();
 	}
@@ -240,7 +265,7 @@ class PropertyValueFormatter extends DataValueFormatter {
 
 		$dataItem = $this->dataValue->getDataItem();
 
-		$propertyDescription = ApplicationFactory::getInstance()->getPropertySpecificationLookup()->getPropertyDescriptionBy(
+		$propertyDescription = $this->propertySpecificationLookup->getPropertyDescriptionByLanguageCode(
 			$dataItem,
 			$this->dataValue->getOption( PropertyValue::OPT_USER_LANGUAGE ),
 			$linker
@@ -265,7 +290,7 @@ class PropertyValueFormatter extends DataValueFormatter {
 		// When comparing with a caption set from the "outside", normalize
 		// the string to avoid a false negative in case of a non-breaking space
 		$caption = str_replace(
-			array( "&#160;", "&nbsp;", html_entity_decode( '&#160;', ENT_NOQUOTES, 'UTF-8' ) ),
+			[ "&#160;", "&nbsp;", html_entity_decode( '&#160;', ENT_NOQUOTES, 'UTF-8' ) ],
 			" ",
 			$this->dataValue->getCaption()
 		);
@@ -275,13 +300,18 @@ class PropertyValueFormatter extends DataValueFormatter {
 		}
 
 		$label = $property->getLabel();
-		$preferredLabelMarker = '';
 
-		if ( $preferredLabel !== $label ) {
-			$preferredLabelMarker = '&nbsp;' . \Html::rawElement( 'span', array( 'title' => $property->getCanonicalLabel() ), '<sup>ᵖ</sup>' );
+		if ( $preferredLabel === $label ) {
+			return '';
 		}
 
-		return $preferredLabelMarker;
+		return '&nbsp;' . \Html::rawElement(
+			'span',
+			[
+				'title' => $property->getCanonicalLabel()
+			],
+			'<sup>ᵖ</sup>'
+		);
 	}
 
 	private function findTranslatedPropertyLabel( $property ) {
@@ -292,7 +322,13 @@ class PropertyValueFormatter extends DataValueFormatter {
 			return '';
 		}
 
-		return ApplicationFactory::getInstance()->getPropertyLabelFinder()->findPropertyLabelByLanguageCode(
+		$prefix = '';
+
+		if ( $property->isInverse() ) {
+			$prefix = '-';
+		}
+
+		return $prefix . ApplicationFactory::getInstance()->getPropertyLabelFinder()->findPropertyLabelFromIdByLanguageCode(
 			$property->getKey(),
 			$this->dataValue->getOption( PropertyValue::OPT_USER_LANGUAGE )
 		);

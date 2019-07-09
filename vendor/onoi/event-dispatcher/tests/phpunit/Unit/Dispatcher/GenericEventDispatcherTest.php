@@ -218,7 +218,32 @@ class GenericEventDispatcherTest extends \PHPUnit_Framework_TestCase {
 		$instance->dispatch( 'foo', $dispatchContext );
 	}
 
-	public function testTryRegisterNonTraversableCollectionThrowsException() {
+	public function testDispatchListenerWithArrayContext() {
+
+		$instance = new GenericEventDispatcher();
+
+		$eventListener = $this->getMockBuilder( '\Onoi\EventDispatcher\EventListener' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$eventListener->expects( $this->once() )
+			->method( 'execute' )
+			->with( $this->callback( function( $dispatchContext ){ return $dispatchContext->get( 'Bar' ) == 123; } ) );
+
+		$instance->addListener( 'FOO', $eventListener );
+		$instance->dispatch( 'foo', [ 'Bar' => 123 ] );
+	}
+
+	public function testMissingListenerForEventThrowsException() {
+
+		$instance = new GenericEventDispatcher();
+		$instance->throwOnMissingEvent( true );
+
+		$this->setExpectedException( '\Onoi\EventDispatcher\Exception\EventNotDispatchableException' );
+		$instance->dispatch( 'foo' );
+	}
+
+	public function testRegisterNonTraversableCollectionThrowsException() {
 
 		$instance = new GenericEventDispatcher();
 

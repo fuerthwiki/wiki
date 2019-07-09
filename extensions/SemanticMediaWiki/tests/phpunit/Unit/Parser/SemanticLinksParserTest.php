@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\Parser;
 
-use SMW\Parser\SemanticLinksParser;
 use SMW\Parser\LinksProcessor;
+use SMW\Parser\SemanticLinksParser;
 
 /**
  * @covers \SMW\Parser\SemanticLinksParser
@@ -47,49 +47,49 @@ class SemanticLinksParserTest extends \PHPUnit_Framework_TestCase {
 
 	public function textProvider() {
 
-		$provider = array();
+		$provider = [];
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
-			array()
-		);
+			[]
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'[[Foo]]',
-			array()
-		);
+			[]
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'[[Foo|Bar]]',
-			array()
-		);
+			[]
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'[[Foo::[[Bar]]]]',
-			array()
-		);
+			[]
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'[[Foo::Bar]]',
-			array(
-				array(
+			[
+				[
 					'Foo'
-				),
+				],
 				'Bar',
 				false
-			)
-		);
+			]
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'[[Foo::Bar|Foobar]]',
-			array(
-				array(
+			[
+				[
 					'Foo'
-				),
+				],
 				'Bar',
 				'Foobar'
-			)
-		);
+			]
+		];
 
 		return $provider;
 	}

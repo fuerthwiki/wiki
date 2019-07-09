@@ -2,11 +2,11 @@
 
 namespace SMW\Iterators;
 
-use IteratorIterator;
-use Traversable;
 use ArrayIterator;
 use InvalidArgumentException;
+use IteratorIterator;
 use RuntimeException;
+use Traversable;
 
 /**
  * @see Guzzle::ChunkedIterator
@@ -68,7 +68,7 @@ class ChunkedIterator extends IteratorIterator {
 	 * {@inheritDoc}
 	 */
 	public function next() {
-		$this->chunk = array();
+		$this->chunk = [];
 
 		for ( $i = 0; $i < $this->chunkSize && parent::valid(); $i++ ) {
 			$this->chunk[] = parent::current();

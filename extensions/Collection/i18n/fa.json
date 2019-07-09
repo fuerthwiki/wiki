@@ -13,7 +13,9 @@
 			"ZxxZxxZ",
 			"پاناروما",
 			"Alirezaaa",
-			"Bersam"
+			"Bersam",
+			"Macofe",
+			"Arash"
 		]
 	},
 	"coll-desc": "[[Special:Book|کتاب‌ساز]]",
@@ -89,7 +91,9 @@
 	"coll-rendering_page_info_text_article": "{{MediaWiki:Coll-helppage}}/تحویل متن اطلاعات صفحه",
 	"coll-rendering_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/تحویل مجموعه متون اطلاعات",
 	"coll-rendering_finished_title": "رندر به پایان رسید",
-	"coll-rendering_finished_text": "<strong>پرونده ایجاد شده‌است.</strong>\nآن را بر روی رایانهٔ خود <strong>[$1 بارگیری کنید]</strong>.\n\nنکته‌ها:\n* از خروجی راضی نیستید؟ برای مطلع‌شدن از شیوه‌های بهبود آن، [[{{MediaWiki:Coll-helppage}}|راهنمای کتاب‌ها]] را مطالعه فرمایید.",
+	"coll-rendering_finished_text": "<strong>پرونده ایجاد شده‌است.</strong>\nآن را بر روی رایانهٔ خود <strong>[$1 بارگیری کنید]</strong>.",
+	"coll-rendering_finished_notes_heading": "یادداشت‌ها:",
+	"coll-rendering_finished_note_article_rdf2latex": "در حال حاضر برخی اسناد فاقد جدول اند. یک راه جایگزین می‌تواند استفاده از $1، انتخاب گزینهٔ «Print» از منوی مرورگر و استفاده از «Save as PDF» باشد.",
 	"coll-finished_page_info_text_article": "{{MediaWiki:Coll-helppage}}/تحویل متن اطلاعات صفحه",
 	"coll-finished_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/تحویل مجموعه متون اطلاعات",
 	"coll-rendering_failed_title": "تحویل ناموفق",
@@ -120,7 +124,7 @@
 	"coll-suggested_articles": "پیشنهادها",
 	"coll-suggest_reset_bans": "بازنشانی",
 	"coll-suggest_reset_bans_tooltip": "نمایش قبل از پاک‌کردن پیشنهاد‌ها",
-	"coll-suggest_add_selected": "اضافه‌کردن صفحه‌های انتخاب‌شده",
+	"coll-suggest_add_selected": "اضافه کردن صفحه‌های انتخاب‌شده",
 	"coll-suggest_ban_selected": "حذف صفحه‌های انتخاب‌شده",
 	"coll-suggest_your_book": "کتاب شما",
 	"coll-suggest_show": "نمایش",
@@ -187,5 +191,21 @@
 	"coll-attribution-anons": "ناشناس: $1",
 	"coll-attribution-page": "<h1>منابع متن و تصویر، مشارکت‌کنندگان و مجوزها</h1>\n<h2>متن</h2>\n$1<h2>تصاویر</h2>\n$2\n<h2>محتوای مجوز</h2>\n$3",
 	"coll-article-attribution": "<b>$1</b><i>منبع:</i>  $2  <i>مشارکت‌کنندگان:</i>$3",
-	"coll-image-attribution": "<b>$1</b><i>منبع:</i>  $2  <i>مجوز:</i>  $3  <i>مشارکت‌کنندگان:</i>  $4  <i>هنرمند اصلی:</i>$5"
+	"coll-image-attribution": "<b>$1</b><i>منبع:</i>  $2  <i>مجوز:</i>  $3  <i>مشارکت‌کنندگان:</i>  $4  <i>هنرمند اصلی:</i>$5",
+	"coll-warning-disable-pdf-title": "کتاب‌ساز در دست تغییرات است.",
+	"coll-warning-disable-pdf-text": "با توجه به مشکلات شدید سیستم کنونی، کتاب‌ساز دیگر از ذخیرهٔ کتاب در قالب پی‌دی‌اف برای مدتی کوتاه پشتیبانی نخواهد کرد. ما سخت در حال تلاشیم تا سیستم را تعویض و آن را برای تولید پی‌دی‌اف از طریق کتاب‌ساز فعال کنیم.",
+	"coll-warning-learn-more": "بیشتر بدانید",
+	"coll-notice-download-pdf-title": "بارگیری صفحات تکی",
+	"coll-toc-title": "فهرست محتوا",
+	"coll-contributors-title": "مشارکت‌کنندگان",
+	"coll-images-title": "تصاویر",
+	"coll-images-source": "منبع",
+	"coll-images-license": "مجوز",
+	"coll-images-original-artist": "هنرمند اصلی",
+	"coll-license-title": "مجوز محتوا",
+	"coll-rendererror-title": "امکان ساختن کتاب وجود ندارد",
+	"coll-rendererror-pdf": "رندر کردن پی‌دی‌اف شکست خورد: $1",
+	"coll-rendererror-fetch": "دریافت $1 شکست خورد: $2",
+	"coll-rendererror-fetch-wrapper": "گرفتن محتویات صفحه با خطا مواجه شد:\n$1",
+	"coll-rendererror-no-cache": "اطلاعات کتاب در کاشه پیدا نشد. احتمالا خطایی در نرم‌افزار وجود دارد."
 }

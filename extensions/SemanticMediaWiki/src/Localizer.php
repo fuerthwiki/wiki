@@ -2,9 +2,12 @@
 
 namespace SMW;
 
-use SMW\ExtraneousLanguage\ExtraneousLanguage;
+use DateTime;
 use Language;
+use SMW\Lang\Lang;
+use SMW\MediaWiki\LocalTime;
 use Title;
+use User;
 
 /**
  * @license GNU GPL v2+
@@ -73,9 +76,46 @@ class Localizer {
 	}
 
 	/**
+	 * @since 3.0
+	 *
+	 * @param User|null $user
+	 *
+	 * @return boolean
+	 */
+	public function hasLocalTimeOffsetPreference( $user = null ) {
+
+		if ( !$user instanceof User ) {
+			$user = $GLOBALS['wgUser'];
+		}
+
+		return $user->getOption( 'smw-prefs-general-options-time-correction' );
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param DateTime $dateTime
+	 * @param User|null $user
+	 *
+	 * @return DateTime
+	 */
+	public function getLocalTime( DateTime $dateTime, $user = null ) {
+
+		if ( !$user instanceof User ) {
+			$user = $GLOBALS['wgUser'];
+		}
+
+		LocalTime::setLocalTimeOffset(
+			$GLOBALS['wgLocalTZoffset']
+		);
+
+		return LocalTime::getLocalizedTime( $dateTime, $user );
+	}
+
+	/**
 	 * @note
 	 *
-	 * 1. If the page content language is availabe use it as preferred language
+	 * 1. If the page content language is available use it as preferred language
 	 * (as it is clear that the page content was intended to be in a specific
 	 * language)
 	 * 2. If no page content language was assigned use the global content
@@ -109,7 +149,14 @@ class Localizer {
 		// then we assume that an explicit language object was given otherwise
 		// the Title is using the content language as fallback
 		if ( $title instanceof Title ) {
-			$language = $title->getPageLanguage();
+
+			// Avoid "MWUnknownContentModelException ... " when content model
+			// is not registered
+			try {
+				$language = $title->getPageLanguage();
+			} catch ( \Exception $e ) {
+
+			}
 		}
 
 		return $language instanceof Language ? $language : $this->getContentLanguage();
@@ -136,9 +183,9 @@ class Localizer {
 	 *
 	 * @param Language|string $languageCode
 	 *
-	 * @return ExtraneousLanguage
+	 * @return Lang
 	 */
-	public function getExtraneousLanguage( $language = '' ) {
+	public function getLang( $language = '' ) {
 
 		$languageCode = $language;
 
@@ -150,7 +197,7 @@ class Localizer {
 			$languageCode = $this->getContentLanguage()->getCode();
 		}
 
-		return ExtraneousLanguage::getInstance()->fetchByLanguageCode( $languageCode );
+		return Lang::getInstance()->fetch( $languageCode );
 	}
 
 	/**
@@ -222,7 +269,12 @@ class Localizer {
 	 * @return string
 	 */
 	public static function asBCP47FormattedLanguageCode( $languageCode ) {
-		return wfBCP47( $languageCode );
+		if ( !is_callable( [ '\LanguageCode', 'bcp47' ] ) ) {
+			// Backwards compatibility: remove once MW 1.30 is no
+			// longer supported (#3179)
+			return wfBCP47( $languageCode );
+		}
+		return \LanguageCode::bcp47( $languageCode );
 	}
 
 	/**
@@ -261,11 +313,22 @@ class Localizer {
 
 		$namespace = $this->getNamespaceTextById( $index );
 
+		if ( strpos( $url, 'title=' ) !== false ) {
+			return str_replace(
+				[
+					'title=' . wfUrlencode( $namespace ) . ':',
+					'title=' . $namespace . ':'
+				],
+				'title=' . $this->getCanonicalNamespaceTextById( $index ) .':',
+				$url
+			);
+		}
+
 		return str_replace(
-			array(
+			[
 				wfUrlencode( '/' . $namespace .':' ),
 				'/' . $namespace .':'
-			),
+			],
 			'/' . $this->getCanonicalNamespaceTextById( $index ) . ':',
 			$url
 		);
@@ -289,7 +352,7 @@ class Localizer {
 		}
 
 		// Do we want to check here whether isKnownLanguageTag or not?
-		if ( $langCode !== '' && ctype_alpha( str_replace( array( '-' ), '', $langCode ) ) ) {
+		if ( $langCode !== '' && ctype_alpha( str_replace( [ '-' ], '', $langCode ) ) ) {
 			return $langCode;
 		}
 
@@ -316,7 +379,7 @@ class Localizer {
 
 			// http://php.net/manual/en/function.str-split.php, mb_str_split
 			$length = mb_strlen( $fullWidth, "UTF-8" );
-			$full = array();
+			$full = [];
 
 			for ( $i = 0; $i < $length; $i += 1 ) {
 				$full[] = mb_substr( $fullWidth, $i, 1, "UTF-8" );

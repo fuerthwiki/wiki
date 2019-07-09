@@ -3,18 +3,18 @@
 namespace SMW\Query\Result;
 
 use Onoi\BlobStore\BlobStore;
-use SMWQuery as Query;
-use SMWQueryResult as QueryResult;
-use SMW\Store;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use RuntimeException;
+use SMW\ApplicationFactory;
 use SMW\DIWikiPage;
 use SMW\QueryEngine;
 use SMW\QueryFactory;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerAwareInterface;
+use SMW\Store;
 use SMW\Utils\BufferedStatsdCollector;
 use SMW\Utils\Timer;
-use SMW\ApplicationFactory;
-use RuntimeException;
+use SMWQuery as Query;
+use SMWQueryResult as QueryResult;
 
 /**
  * The prefetcher only caches the subject list from a computed a query
@@ -120,7 +120,7 @@ class CachedQueryResultPrefetcher implements QueryEngine, LoggerAwareInterface {
 	 *
 	 * @var string/integer
 	 */
-	private $hashModifier = '';
+	private $dependantHashIdExtension = '';
 
 	/**
 	 * @since 2.5
@@ -158,7 +158,7 @@ class CachedQueryResultPrefetcher implements QueryEngine, LoggerAwareInterface {
 		$misses = $this->sum( 0, $stats['misses'] );
 		$hits = $this->sum( 0, $stats['hits'] );
 
-		$stats['ratio'] = array();
+		$stats['ratio'] = [];
 		$stats['ratio']['hit'] = $hits > 0 ? round( $hits / ( $hits + $misses ), 4 ) : 0;
 		$stats['ratio']['miss'] = $hits > 0 ? round( 1 - $stats['ratio']['hit'], 4 ) : 1;
 
@@ -173,10 +173,10 @@ class CachedQueryResultPrefetcher implements QueryEngine, LoggerAwareInterface {
 	/**
 	 * @since 2.5
 	 *
-	 * @param string|integer $hashModifier
+	 * @param string|integer $dependantHashIdExtension
 	 */
-	public function setHashModifier( $hashModifier ) {
-		$this->hashModifier = $hashModifier;
+	public function setDependantHashIdExtension( $dependantHashIdExtension ) {
+		$this->dependantHashIdExtension = $dependantHashIdExtension;
 	}
 
 	/**
@@ -293,11 +293,15 @@ class CachedQueryResultPrefetcher implements QueryEngine, LoggerAwareInterface {
 		}
 
 		if ( !is_array( $items ) ) {
-			$items = array( $items );
+			$items = [ $items ];
 		}
 
 		$recordStats = false;
 		$context = $context === '' ? 'Undefined' : $context;
+
+		if ( is_array( $context ) ) {
+			$context = implode( '.', $context );
+		}
 
 		foreach ( $items as $item ) {
 			$id = $this->getHashFrom( $item );
@@ -321,8 +325,9 @@ class CachedQueryResultPrefetcher implements QueryEngine, LoggerAwareInterface {
 
 	private function newQueryResultFromCache( $queryId, $query, $container ) {
 
-		$results = array();
+		$results = [];
 		$incrStats = 'hits.Undefined';
+		$resolverJournal = null;
 
 		if ( ( $context = $query->getOption( Query::PROC_CONTEXT ) ) === false ) {
 			$context = 'Undefined';
@@ -344,6 +349,7 @@ class CachedQueryResultPrefetcher implements QueryEngine, LoggerAwareInterface {
 
 			$hasFurtherResults = $queryResult->hasFurtherResults();
 			$countValue = $queryResult->getCountValue();
+			$resolverJournal = $queryResult->getResolverJournal();
 		} else {
 
 			$incrStats = ( $query->getContextPage() !== null ? 'hits.embedded.' : 'hits.nonEmbedded.' ) . $context;
@@ -365,6 +371,10 @@ class CachedQueryResultPrefetcher implements QueryEngine, LoggerAwareInterface {
 
 		$queryResult->setCountValue( $countValue );
 		$queryResult->setFromCache( true );
+
+		if ( $resolverJournal !== null ) {
+			$queryResult->setResolverJournal( $resolverJournal );
+		}
 
 		$time = Timer::getElapsedTime( __CLASS__, 5 );
 
@@ -399,27 +409,27 @@ class CachedQueryResultPrefetcher implements QueryEngine, LoggerAwareInterface {
 			$this->doCacheQueryResult( $queryResult, $queryId, $container, $query );
 		};
 
-		$transactionalDeferredCallableUpdate = ApplicationFactory::getInstance()->newTransactionalDeferredCallableUpdate(
+		$deferredTransactionalUpdate = ApplicationFactory::getInstance()->newDeferredTransactionalCallableUpdate(
 			$callback
 		);
 
-		$transactionalDeferredCallableUpdate->setOrigin( __METHOD__ );
-		$transactionalDeferredCallableUpdate->setFingerprint( __METHOD__ . $queryId );
-		$transactionalDeferredCallableUpdate->waitOnTransactionIdle();
+		$deferredTransactionalUpdate->setOrigin( __METHOD__ );
+		$deferredTransactionalUpdate->setFingerprint( __METHOD__ . $queryId );
+		$deferredTransactionalUpdate->waitOnTransactionIdle();
 
 		// Make sure that in any event the collector is executed after
 		// the process has finished
-		$transactionalDeferredCallableUpdate->addPostCommitableCallback(
+		$deferredTransactionalUpdate->addPostCommitableCallback(
 			BufferedStatsdCollector::class,
 			[ $this, 'recordStats' ]
 		);
 
-		$transactionalDeferredCallableUpdate->pushUpdate();
+		$deferredTransactionalUpdate->pushUpdate();
 	}
 
 	private function doCacheQueryResult( $queryResult, $queryId, $container, $query ) {
 
-		$results = array();
+		$results = [];
 
 		// Keep the simple string representation to avoid unnecessary data cruft
 		// during using PHP serialize( ... )
@@ -483,10 +493,10 @@ class CachedQueryResultPrefetcher implements QueryEngine, LoggerAwareInterface {
 			}
 		}
 
-		return md5( $subject . self::VERSION . $this->hashModifier );
+		return md5( $subject . self::VERSION . $this->dependantHashIdExtension );
 	}
 
-	private function log( $message, $context = array() ) {
+	private function log( $message, $context = [] ) {
 
 		if ( $this->logger === null ) {
 			return;
@@ -522,11 +532,11 @@ class CachedQueryResultPrefetcher implements QueryEngine, LoggerAwareInterface {
 
 		$this->bufferedStatsdCollector->shouldRecord( $this->isEnabled() );
 
-		$this->bufferedStatsdCollector->init( 'misses', array() );
-		$this->bufferedStatsdCollector->init( 'hits', array() );
-		$this->bufferedStatsdCollector->init( 'deletes', array() );
-		$this->bufferedStatsdCollector->init( 'noCache', array() );
-		$this->bufferedStatsdCollector->init( 'medianRetrievalResponseTime', array() );
+		$this->bufferedStatsdCollector->init( 'misses', [] );
+		$this->bufferedStatsdCollector->init( 'hits', [] );
+		$this->bufferedStatsdCollector->init( 'deletes', [] );
+		$this->bufferedStatsdCollector->init( 'noCache', [] );
+		$this->bufferedStatsdCollector->init( 'medianRetrievalResponseTime', [] );
 		$this->bufferedStatsdCollector->set( 'meta.version', self::VERSION );
 		$this->bufferedStatsdCollector->set( 'meta.cacheLifetime.embedded', $GLOBALS['smwgQueryResultCacheLifetime'] );
 		$this->bufferedStatsdCollector->set( 'meta.cacheLifetime.nonEmbedded', $GLOBALS['smwgQueryResultNonEmbeddedCacheLifetime'] );

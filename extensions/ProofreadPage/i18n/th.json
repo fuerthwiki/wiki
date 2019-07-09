@@ -4,7 +4,9 @@
 			"Horus",
 			"Nullzero",
 			"Octahedron80",
-			"Passawuth"
+			"Passawuth",
+			"Aefgh39622",
+			"Ans"
 		]
 	},
 	"indexpages": "รายการหน้าดัชนี",
@@ -15,13 +17,9 @@
 	"proofreadpage_index_expected": "ข้อผิดพลาด: คาดหวังเป็นดัชนี",
 	"proofreadpage_nosuch_index": "ข้อผิดพลาด: ไม่มีดัชนีเช่นนั้น",
 	"proofreadpage_nosuch_file": "ข้อผิดพลาด: ไม่มีแฟ้มเช่นนั้น",
-	"proofreadpage_badpage": "รูปแบบไม่ถูกต้อง",
-	"proofreadpage_badpagetext": "รูปแบบของหน้าที่คุณพยายามบันทึกไม่ถูกต้อง",
-	"proofreadpage_indexdupe": "ลิงก์ซ้ำ",
 	"proofreadpage_indexdupetext": "หน้าต่าง ๆ ไม่สามารถแสดงรายการได้เกินหนึ่งครั้งในหน้าดัชนี",
-	"proofreadpage_nologin": "ไม่ได้ล็อกอิน",
+	"proofreadpage_nologin": "ยังไม่ได้เข้าสู่ระบบ",
 	"proofreadpage_nologintext": "คุณต้อง[[Special:UserLogin|ล็อกอิน]]เพื่อเปลี่ยนสถานะการพิสูจน์อักษรของหน้าต่าง ๆ",
-	"proofreadpage_notallowed": "ไม่อนุญาตให้เปลี่ยนแปลง",
 	"proofreadpage_notallowedtext": "คุณไม่สามารถเปลี่ยนสถานะการพิสูจน์อักษรของหน้านี้",
 	"proofreadpage_dataconfig_badformatted": "ข้อบกพร่องในการกำหนดค่าข้อมูล",
 	"proofreadpage_dataconfig_badformattedtext": "หน้า [[Mediawiki:Proofreadpage index data config]] ไม่อยู่ในรูปแบบเจซันที่เหมาะสม",
@@ -70,10 +68,13 @@
 	"proofreadpage-button-reset-zoom-label": "ขนาดเดิม",
 	"proofreadpage-button-zoom-in-label": "ซูมเข้า",
 	"proofreadpage-button-toggle-layout-label": "เค้าโครงแนวตั้ง/แนวนอน",
+	"proofreadpage-pageinfo-status": "สถานะการพิสูจน์อักษร",
 	"proofreadpage-preferences-showheaders-label": "แสดงเขตข้อมูลหัวเรื่องและท้ายเรื่องเมื่อแก้ไขในเนมสเปซ {{ns:page}}",
 	"proofreadpage-preferences-horizontal-layout-label": "ใช้เค้าโครงแนวนอนเมื่อแก้ไขในเนมสเปซ {{ns:page}}",
 	"proofreadpage-indexoai-repositoryName": "เมทาเดตาของหนังสือจาก {{SITENAME}}",
 	"proofreadpage-indexoai-eprint-content-text": "เมทาเดตาของหนังสือที่จัดการโดย ProofreadPage",
 	"proofreadpage-indexoai-error-schemanotfound": "ไม่พบเค้าร่าง",
-	"proofreadpage-indexoai-error-schemanotfound-text": "ไม่พบเค้าร่าง $1"
+	"proofreadpage-indexoai-error-schemanotfound-text": "ไม่พบเค้าร่าง $1",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-yes": "ใช่",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "ไม่"
 }

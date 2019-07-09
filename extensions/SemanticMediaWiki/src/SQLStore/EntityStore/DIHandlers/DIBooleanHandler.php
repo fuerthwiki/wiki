@@ -2,11 +2,10 @@
 
 namespace SMW\SQLStore\EntityStore\DIHandlers;
 
-use SMW\SQLStore\SQLStore;
-use SMWDataItem as DataItem;
 use SMW\SQLStore\EntityStore\DataItemHandler;
-use SMWDIBoolean as DIBoolean;
 use SMW\SQLStore\TableBuilder\FieldType;
+use SMWDataItem as DataItem;
+use SMWDIBoolean as DIBoolean;
 
 /**
  * This class implements Store access to Boolean data items.
@@ -24,9 +23,9 @@ class DIBooleanHandler extends DataItemHandler {
 	 * {@inheritDoc}
 	 */
 	public function getTableFields() {
-		return array(
+		return [
 			'o_value' => FieldType::TYPE_BOOL
-		);
+		];
 	}
 
 	/**
@@ -35,9 +34,9 @@ class DIBooleanHandler extends DataItemHandler {
 	 * {@inheritDoc}
 	 */
 	public function getFetchFields() {
-		return array(
+		return [
 			'o_value' => FieldType::TYPE_BOOL
-		);
+		];
 	}
 
 	/**
@@ -46,9 +45,9 @@ class DIBooleanHandler extends DataItemHandler {
 	 * {@inheritDoc}
 	 */
 	public function getWhereConds( DataItem $dataItem ) {
-		return array(
+		return [
 			'o_value' => $dataItem->getBoolean() ? 1 : 0,
-		);
+		];
 	}
 
 	/**
@@ -57,9 +56,9 @@ class DIBooleanHandler extends DataItemHandler {
 	 * {@inheritDoc}
 	 */
 	public function getInsertValues( DataItem $dataItem ) {
-		return array(
+		return [
 			'o_value' => $dataItem->getBoolean() ? 1 : 0,
-		);
+		];
 	}
 
 	/**

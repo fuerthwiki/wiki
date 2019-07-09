@@ -37,8 +37,8 @@ class SMWDIGeoCoord extends SMWDataItem {
 
 		if ( $count === 1 && is_array( $args[0] ) ) {
 			if ( array_key_exists( 'lat', $args[0] ) && array_key_exists( 'lon', $args[0] ) ) {
-				$this->latitude = (float)$args[0]['lat'];
-				$this->longitude = (float)$args[0]['lon'];
+				$this->setLatitude( $args[0]['lat'] );
+				$this->setLongitude( $args[0]['lon'] );
 
 				if ( array_key_exists( 'alt', $args[0] ) ) {
 					$this->altitude = (float)$args[0]['alt'];
@@ -49,8 +49,8 @@ class SMWDIGeoCoord extends SMWDataItem {
 			}
 		}
 		elseif ( $count === 2 || $count === 3 ) {
-			$this->latitude = (float)$args[0];
-			$this->longitude = (float)$args[1];
+			$this->setLatitude( $args[0] );
+			$this->setLongitude( $args[1] );
 
 			if ( $count === 3 ) {
 				$this->altitude = (float)$args[2];
@@ -59,6 +59,30 @@ class SMWDIGeoCoord extends SMWDataItem {
 		else {
 			throw new DataItemException( 'Invalid coordinate data passed to the SMWDIGeoCoord constructor' );
 		}
+	}
+
+	private function setLatitude( $latitude ) {
+		if ( is_int( $latitude ) ) {
+			$latitude = (float)$latitude;
+		}
+
+		if ( !is_float( $latitude ) ) {
+			throw new DataItemException( '$latitude should be a float' );
+		}
+
+		$this->latitude = $latitude;
+	}
+
+	private function setLongitude( $longitude ) {
+		if ( is_int( $longitude ) ) {
+			$longitude = (float)$longitude;
+		}
+
+		if ( !is_float( $longitude ) ) {
+			throw new DataItemException( '$longitude should be a float' );
+		}
+
+		$this->longitude = $longitude;
 	}
 
 	/**
@@ -76,7 +100,7 @@ class SMWDIGeoCoord extends SMWDataItem {
 	 * @return array
 	 */
 	public function getCoordinateSet() {
-		$coords = array( 'lat' => $this->latitude, 'lon' => $this->longitude );
+		$coords = [ 'lat' => $this->latitude, 'lon' => $this->longitude ];
 
 		if ( !is_null( $this->altitude ) ) {
 			$coords['alt'] = $this->altitude;
@@ -119,7 +143,7 @@ class SMWDIGeoCoord extends SMWDataItem {
 			throw new DataItemException( 'Unserialization of coordinates failed' );
 		}
 
-		$coords = array( 'lat' => (float)$parts[0], 'lon' => (float)$parts[1] );
+		$coords = [ 'lat' => (float)$parts[0], 'lon' => (float)$parts[1] ];
 
 		if ( $count === 3 ) {
 			$coords['alt'] = (float)$parts[2];

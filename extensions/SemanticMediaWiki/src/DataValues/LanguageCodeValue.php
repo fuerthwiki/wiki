@@ -4,11 +4,10 @@ namespace SMW\DataValues;
 
 use SMW\Localizer;
 use SMWDIBlob as DIBlob;
-use SMWStringValue as StringValue;
 
 /**
  * Handles a string value to adhere the BCP47 normative content declaration for
- * a languge code tag
+ * a language code tag
  *
  * @see https://en.wikipedia.org/wiki/IETF_language_tag
  *
@@ -41,20 +40,20 @@ class LanguageCodeValue extends StringValue {
 		$languageCode = Localizer::asBCP47FormattedLanguageCode( $userValue );
 
 		if ( $languageCode === '' ) {
-			$this->addErrorMsg( array(
+			$this->addErrorMsg( [
 				'smw-datavalue-languagecode-missing',
 				$this->m_property !== null ? $this->m_property->getLabel() : 'UNKNOWN'
-			) );
+			] );
 			return;
 		}
 
 		// Checks whether the language tag is valid in MediaWiki for when
 		// it is not executed in a query context
 		if ( !$this->getOption( self::OPT_QUERY_CONTEXT ) && !Localizer::isKnownLanguageTag( $languageCode ) ) {
-			$this->addErrorMsg( array(
+			$this->addErrorMsg( [
 				'smw-datavalue-languagecode-invalid',
 				$languageCode
-			) );
+			] );
 			return;
 		}
 

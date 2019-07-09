@@ -1,7 +1,7 @@
 # ParamProcessor
 
 ParamProcessor is a parameter processing library that provides a way to
-decoratively define a set of parameters and how they should be processed.
+declaratively define a set of parameters and how they should be processed.
 It can take such declarations together with a list of raw parameters and
 provide the processed values. For example, if one defines a parameter to
 be an integer, in the range `[0, 100]`, then ParamProcessor will verify the
@@ -14,7 +14,6 @@ that builds on top of ParamProcessor and provides MediaWiki integration.
 [![Build Status](https://secure.travis-ci.org/JeroenDeDauw/ParamProcessor.png?branch=master)](http://travis-ci.org/JeroenDeDauw/ParamProcessor)
 [![Code Coverage](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/?branch=master)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/JeroenDeDauw/ParamProcessor/?branch=master)
-[![Dependency Status](https://www.versioneye.com/php/param-processor:param-processor/badge.png)](https://www.versioneye.com/php/param-processor:param-processor)
 
 
 On [Packagist](https://packagist.org/packages/param-processor/param-processor):
@@ -163,6 +162,20 @@ The requires fields currently are: name and message
 		<th>Description</th>
 	</tr>
 	<tr>
+		<th>string</th>
+		<td>string</td>
+		<td>
+			Default type<br />
+			Supported options:
+			<ul>
+				<li>length: int or false (overrides minlength and maxlength)</li>
+				<li>minlength: int or false</li>
+				<li>maxlength: int or false</li>
+				<li>regex: string</li>
+			<ul>
+		</td>
+	</tr>
+	<tr>
 		<th>boolean</th>
 		<td>boolean</td>
 		<td>Accepts "yes", "no", "on", "off", "true" and "false"</td>
@@ -170,27 +183,39 @@ The requires fields currently are: name and message
 	<tr>
 		<th>float</th>
 		<td>float</td>
-		<td></td>
+		<td>
+			Supported options:
+			<ul>
+				<li>lowerbound: int, float or false</li>
+				<li>upperbound: int, float or false</li>
+				<li>range: [lowerbound, upperbound]</li>
+				<li>withinrange: [float $point, float $deviation]</li>
+			<ul>
+		</td>
 	</tr>
 	<tr>
 		<th>integer</th>
 		<td>integer</td>
-		<td></td>
-	</tr>
-	<tr>
-		<th>string</th>
-		<td>string</td>
-		<td></td>
-	</tr>
-	<tr>
-		<th>coordinate</th>
-		<td>DataValues\LatLongValue</td>
-		<td></td>
+		<td>
+			Supported options: same as for float
+		</td>
 	</tr>
 	<tr>
 		<th>dimension</th>
 		<td>string</td>
-		<td>Value for a width or height attribute in HTML</td>
+		<td>
+			Value for a width or height attribute in HTML<br />
+			Supported options:
+			<ul>
+				<li>allowauto: bool</li>
+				<li>maxpercentage: int</li>
+				<li>minpercentage: int</li>
+				<li>units: array of string</li>
+				<li>defaultunit: string</li>
+				<li>lowerbound: int, float or false</li>
+				<li>upperbound: int, float or false</li>
+			<ul>
+		</td>
 	</tr>
 </table>
 
@@ -200,46 +225,63 @@ The requires fields currently are: name and message
 * <code>validation-callback</code> Callback that gets the raw value as only parameter and returns a boolean
 * <code>validator</code> Name of a class that implements the `ValueValidators\ValueValidator` interface
 
-## Examples
+As an example, the Maps MediaWiki extension defines a `coordinate` parameter type that turns the input into a `DataValues\LatLongValue` value object.
 
-### Parameter definitions
+## Usage example
+
+### Defining parameters
 
 ```php
-$paramDefinitions = array();
-
-$paramDefinitions[] = array(
-    'name' => 'username',
-);
-
-$paramDefinitions[] = array(
-    'name' => 'job',
-    'default' => 'unknown',
-    'values' => array( 'Developer', 'Designer', 'Manager', 'Tester' ),
-);
-
-$paramDefinitions[] = array(
-    'name' => 'favourite-numbers',
-    'islist' => true,
-    'type' => 'int',
-    'default' => array(),
-);
+$parameterDefinitions = [
+    'username' => [
+        'minlength' => 1,
+        'maxlength' => 20
+    ],
+    'job' => [
+        'default' => 'unknown',
+        'values' => [ 'Developer', 'Designer', 'Peasant' ]
+    ],
+    'favourite-numbers' => [
+        'type' => 'int',
+        'islist' => true,
+        'default' => []
+    ]
+]
 ```
 
-### Processing
+### Processing input using defined parameters
 
 ```php
-$inputParams = array(
-    'username' => 'Jeroen',
-    'job' => 'Developer',
-);
-
 $processor = ParamProcessor\Processor::newDefault();
 
-$processor->setParameters( $inputParams, $paramDefinitions );
+$processor->setParameters(
+    [
+        'username' => 'Jeroen',
+        'favourite-numbers' => '42, 1337, not a number',
+    ],
+    $paramDefinitions
+);
 
-$processingResult = $processor->processParameters();
+foreach ($processor->processParameters()->getParameters() $parameter) {
+    echo $parameter->getName();
+    var_dump($parameter->getValue());
+};
 
-$processedParams = $processingResult->getParameters();
+// username: string(6) "Jeroen"
+// job: string(7) "unknown"
+// favourite-numbers: array(2) {[0]=>int(42), [1]=>int(1337)}
+```
+
+Alternative way to input parameters:
+
+```php
+$processor->setFunctionParams(
+    [
+        'username = Jeroen',
+        'favourite-numbers=42, 1337, not a number',
+    ],
+    $paramDefinitions
+);
 ```
 
 ## Tests
@@ -251,15 +293,37 @@ via TravisCI, as a TravisCI configuration file is also provided in the root dire
 ## Contributing
 
 * [File an issue](https://github.com/JeroenDeDauw/ParamProcessor/issues)
-* [Submit a pull request](https://github.com/JeroenDeDauw/ParamProcessor/pulls) ([tasks for newcommers](https://github.com/JeroenDeDauw/ParamProcessor/issues?q=is%3Aissue+is%3Aopen+label%3Anewcomer))
+* [Submit a pull request](https://github.com/JeroenDeDauw/ParamProcessor/pulls) ([tasks for newcomers](https://github.com/JeroenDeDauw/ParamProcessor/issues?q=is%3Aissue+is%3Aopen+label%3Anewcomer))
 
 ## Authors
 
 ParamProcessor has been written by [Jeroen De Dauw](https://github.com/JeroenDeDauw) to
-support the [Maps](https://github.com/JeroenDeDauw/Maps) and [Semantic MediaWiki]
-(https://semantic-mediawiki.org/) projects.
+support the [Maps](https://github.com/JeroenDeDauw/Maps) and
+[Semantic MediaWiki](https://semantic-mediawiki.org/) projects.
 
 ## Release notes
+
+### 1.4.2 (2018-11-26)
+
+* Fixed defaulting behaviour of list parameters
+
+### 1.4.1 (2018-11-26)
+
+* List parameters are no longer set to their default when a single value is invalid
+
+### 1.4.0 (2018-11-25)
+
+* Dropped support for PHP older than 7.1
+* Added `ParameterTypes` to allow gradual migration away from the now deprecated `$wgParamDefinitions`
+
+### 1.3.4 (2018-05-05)
+
+* Fixed deprecation notice occurring with PHP 7.2+
+
+### 1.3.3 (2017-09-28)
+
+* Installation together with DataValues 2.x is now allowed
+* Installation together with DataValues Common 0.4.x is now allowed
 
 ### 1.3.2 (2017-03-26)
 
@@ -284,8 +348,8 @@ support the [Maps](https://github.com/JeroenDeDauw/Maps) and [Semantic MediaWiki
 
 ### 1.2.3 (2016-04-04)
 
-* Installation together with DataValues Interfaces 0.2.x is now allowed.
-* Installation together with DataValues Common 0.3.x is now allowed.
+* Installation together with DataValues Interfaces 0.2.x is now allowed
+* Installation together with DataValues Common 0.3.x is now allowed
 * The component is now also tested against PHP 7
 
 ### 1.2.2 (2014-10-24)

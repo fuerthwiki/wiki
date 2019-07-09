@@ -2,9 +2,9 @@
 
 namespace SMW\Tests\MediaWiki\Jobs;
 
-use SMW\Tests\TestEnvironment;
 use SMW\DIWikiPage;
 use SMW\MediaWiki\Jobs\EntityIdDisposerJob;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\MediaWiki\Jobs\EntityIdDisposerJob
@@ -30,12 +30,12 @@ class EntityIdDisposerJobTest extends \PHPUnit_Framework_TestCase {
 
 		$connection->expects( $this->any() )
 			->method( 'select' )
-			->will( $this->returnValue( array( 'Foo' ) ) );
+			->will( $this->returnValue( [ 'Foo' ] ) );
 
 		$store = $this->getMockBuilder( '\SMW\SQLStore\SQLStore' )
 			->getMockForAbstractClass();
 
-		$connectionManager = $this->getMockBuilder( '\SMW\ConnectionManager' )
+		$connectionManager = $this->getMockBuilder( '\SMW\Connection\ConnectionManager' )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -60,7 +60,7 @@ class EntityIdDisposerJobTest extends \PHPUnit_Framework_TestCase {
 			->getMock();
 
 		$this->assertInstanceOf(
-			'SMW\MediaWiki\Jobs\EntityIdDisposerJob',
+			EntityIdDisposerJob::class,
 			new EntityIdDisposerJob( $title )
 		);
 	}
@@ -84,13 +84,13 @@ class EntityIdDisposerJobTest extends \PHPUnit_Framework_TestCase {
 
 	public function parametersProvider() {
 
-		$provider[] = array(
-			array()
-		);
+		$provider[] = [
+			[]
+		];
 
-		$provider[] = array(
-			array( 'id' => 42 )
-		);
+		$provider[] = [
+			[ 'id' => 42 ]
+		];
 
 		return $provider;
 	}

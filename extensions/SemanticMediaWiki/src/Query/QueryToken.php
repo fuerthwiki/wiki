@@ -2,13 +2,13 @@
 
 namespace SMW\Query;
 
-use SMW\Query\Language\Description;
-use SMW\Query\Language\ValueDescription;
-use SMW\Query\Language\Conjunction;
-use SMW\Query\Language\SomeProperty;
-use SMWDIBlob as DIBlob;
 use SMW\DIWikiPage;
+use SMW\Query\Language\Conjunction;
+use SMW\Query\Language\Description;
+use SMW\Query\Language\SomeProperty;
+use SMW\Query\Language\ValueDescription;
 use SMW\Utils\Tokenizer;
+use SMWDIBlob as DIBlob;
 
 /**
  * For a wildcard search, build tokens from the query string, and allow to highlight
@@ -35,7 +35,7 @@ class QueryToken {
 	/**
 	 * @var array
 	 */
-	private $tokens = array();
+	private $tokens = [];
 
 	/**
 	 * @var array
@@ -57,7 +57,7 @@ class QueryToken {
 	 *
 	 * @param array $tokens
 	 */
-	public function __construct( array $tokens =  array() ) {
+	public function __construct( array $tokens =  [] ) {
 		$this->tokens = $tokens;
 	}
 
@@ -91,8 +91,10 @@ class QueryToken {
 			return;
 		}
 
-		// [[SomeProperty::~*Foo*]]
-		if ( $description->getComparator() === SMW_CMP_LIKE && $description->getDataItem() instanceof DIBlob ) {
+		$isProximate = $description->getComparator() === SMW_CMP_LIKE || $description->getComparator() === SMW_CMP_PRIM_LIKE;
+
+		// [[SomeProperty::~*Foo*]] / [[SomeProperty::like:*Foo*]]
+		if ( $isProximate && $description->getDataItem() instanceof DIBlob ) {
 			return $this->addTokensFromText( $description->getDataItem()->getString() );
 		}
 
@@ -123,7 +125,7 @@ class QueryToken {
 	 */
 	public function highlight( $text, $type = self::HL_BOLD ) {
 
-		if ( $this->tokens === array() || strpos( strtolower( $this->outputFormat ), '-hl' ) === false ) {
+		if ( $this->tokens === [] || strpos( strtolower( $this->outputFormat ), '-hl' ) === false ) {
 			return $text;
 		}
 
@@ -153,8 +155,8 @@ class QueryToken {
 
 		// Remove query related chars
 		$text = str_replace(
-			array( '*', '"', '~', '_' ),
-			array( '',  '',  '',  ' ' ),
+			[ '*', '"', '~', '_', '+', '-' ],
+			[ '',  '',  '',  ' ', '', '' ],
 			$text
 		);
 

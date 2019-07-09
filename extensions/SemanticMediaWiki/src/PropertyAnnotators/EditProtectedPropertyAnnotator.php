@@ -2,11 +2,11 @@
 
 namespace SMW\PropertyAnnotators;
 
-use SMW\PropertyAnnotator;
+use Html;
 use ParserOutput;
 use SMW\Message;
+use SMW\PropertyAnnotator;
 use Title;
-use Html;
 
 /**
  * @license GNU GPL v2+
@@ -76,15 +76,15 @@ class EditProtectedPropertyAnnotator extends PropertyAnnotatorDecorator {
 
 		$html = Html::rawElement(
 			'div',
-			array(
+			[
 				'class' => 'smw-edit-protection',
 				'title' => Message::get( 'smw-edit-protection-enabled', Message::TEXT, Message::USER_LANGUAGE )
-			), ''
+			], ''
 		);
 
 		$parserOutput->setIndicator(
 			'smw-protection-indicator',
-			Html::rawElement( 'div', array( 'class' => 'smw-protection-indicator' ), $html )
+			Html::rawElement( 'div', [ 'class' => 'smw-protection-indicator' ], $html )
 		);
 	}
 

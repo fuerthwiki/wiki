@@ -2,9 +2,10 @@
 
 namespace SMW\Tests\Integration\JSONScript;
 
+use RuntimeException;
 use SMW\DIWikiPage;
-use SMW\Tests\Utils\UtilityFactory;
 use SMW\MediaWiki\MediaWikiNsContentReader;
+use SMW\Tests\Utils\UtilityFactory;
 
 /**
  * @group semantic-mediawiki
@@ -38,6 +39,16 @@ class ParserTestCaseProcessor extends \PHPUnit_Framework_TestCase {
 	private $stringValidator;
 
 	/**
+	 * @var PageReader
+	 */
+	private $pageReader;
+
+	/**
+	 * @var SerializerFactory
+	 */
+	private $serializerFactory;
+
+	/**
 	 * @var boolean
 	 */
 	private $debug = false;
@@ -53,24 +64,41 @@ class ParserTestCaseProcessor extends \PHPUnit_Framework_TestCase {
 		$this->semanticDataValidator = $semanticDataValidator;
 		$this->incomingSemanticDataValidator = $incomingSemanticDataValidator;
 		$this->stringValidator = $stringValidator;
+		$this->pageReader = UtilityFactory::getInstance()->newPageReader();
+		$this->serializerFactory = \SMW\ApplicationFactory::getInstance()->newSerializerFactory();
 	}
 
 	/**
-	 * @since  2.2
+	 * @since 2.2
+	 *
+	 * @param boolean $debugMode
 	 */
 	public function setDebugMode( $debugMode ) {
 		$this->debug = $debugMode;
 	}
 
+	/**
+	 * @since 2.2
+	 *
+	 * @param array $case
+	 */
 	public function process( array $case ) {
 
 		if ( !isset( $case['subject'] ) ) {
 			return;
 		}
 
-		$this->assertSemanticDataForCase( $case );
-		$this->assertParserOutputForCase( $case );
-		$this->assertParserMsgForCase( $case );
+		$this->assertSemanticDataForCase(
+			$case
+		);
+
+		$this->assertTextFromParserOutputForCase(
+			$case
+		);
+
+		$this->assertTextFromParsedMsgForCase(
+			$case
+		);
 	}
 
 	private function assertSemanticDataForCase( $case ) {
@@ -85,18 +113,16 @@ class ParserTestCaseProcessor extends \PHPUnit_Framework_TestCase {
 			return;
 		}
 
-		$subject = DIWikiPage::newFromText(
-			$case['subject'],
-			isset( $case['namespace'] ) ? constant( $case['namespace'] ) : NS_MAIN
-		);
-
+		$subject = $this->getSubjectFrom( $case, false );
 		$semanticData = $this->store->getSemanticData( $subject );
 
 		if ( $this->debug ) {
-			print_r( $semanticData );
+			print_r(
+				$this->serializerFactory->newSemanticDataSerializer()->serialize( $semanticData )
+			);
 		}
 
-		if ( isset( $case['errors'] ) && $case['errors'] !== array() ) {
+		if ( isset( $case['errors'] ) && $case['errors'] !== [] ) {
 			$this->assertNotEmpty(
 				$semanticData->getErrors()
 			);
@@ -119,36 +145,38 @@ class ParserTestCaseProcessor extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
-	private function assertParserOutputForCase( $case ) {
+	private function assertTextFromParserOutputForCase( $case ) {
 
 		if ( !isset( $case['assert-output'] ) ) {
 			return;
 		}
 
-		$subject = DIWikiPage::newFromText(
-			$case['subject'],
-			isset( $case['namespace'] ) ? constant( $case['namespace'] ) : NS_MAIN
-		);
+		$title = $this->getSubjectFrom( $case )->getTitle();
 
-		$parserOutput = UtilityFactory::getInstance()->newPageReader()->getEditInfo( $subject->getTitle() )->output;
+		$parserOutput = $this->pageReader->getParserOutputFromEdit(
+			$title
+		);
 
 		if ( isset( $case['assert-output']['onOutputPage'] ) && $case['assert-output']['onOutputPage'] ) {
 			$context = new \RequestContext();
-			$context->setTitle( $subject->getTitle() );
+			$context->setTitle( $title );
 			// Ensures the OutputPageBeforeHTML hook is run
 			$context->getOutput()->addParserOutput( $parserOutput );
 			$output = $context->getOutput()->getHtml();
 		} elseif ( isset( $case['assert-output']['onPageView'] ) ) {
-			$parameters = isset( $case['assert-output']['onPageView']['parameters'] ) ? $case['assert-output']['onPageView']['parameters'] : array();
+			$parameters = isset( $case['assert-output']['onPageView']['parameters'] ) ? $case['assert-output']['onPageView']['parameters'] : [];
 			$context = \RequestContext::newExtraneousContext(
-				$subject->getTitle(),
+				$title,
 				$parameters
 			);
-			\Article::newFromTitle( $subject->getTitle(), $context )->view();
+			\Article::newFromTitle( $title, $context )->view();
 			$output = $context->getOutput()->getHtml();
 		} else {
 			$output = $parserOutput->getText();
 		}
+
+		// Strip HTML comments
+		$output = preg_replace('/<!--(.*)-->/Uis', '', $output );
 
 		if ( isset( $case['assert-output']['to-contain'] ) ) {
 			$this->stringValidator->assertThatStringContains(
@@ -167,7 +195,7 @@ class ParserTestCaseProcessor extends \PHPUnit_Framework_TestCase {
 		}
 	}
 
-	private function assertParserMsgForCase( $case ) {
+	private function assertTextFromParsedMsgForCase( $case ) {
 
 		if ( !isset( $case['assert-msgoutput'] ) ) {
 			return;
@@ -194,6 +222,26 @@ class ParserTestCaseProcessor extends \PHPUnit_Framework_TestCase {
 				$case['about']
 			);
 		}
+	}
+
+	private function getSubjectFrom( $case, $checkExists = true ) {
+
+		$subject = DIWikiPage::newFromText(
+			$case['subject'],
+			isset( $case['namespace'] ) ? constant( $case['namespace'] ) : NS_MAIN
+		);
+
+		$title = $subject->getTitle();
+
+		if ( $title === null ) {
+			throw new RuntimeException( 'Could not create Title object for subject page "' . $case['subject'] . '".' );
+		}
+
+		if ( $checkExists && !$title->exists() ) {
+			throw new RuntimeException( 'Subject page "' . $case['subject'] . '" does not exist.' );
+		}
+
+		return $subject;
 	}
 
 }

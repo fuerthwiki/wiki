@@ -39,8 +39,8 @@ class StringValidator extends \PHPUnit_Framework_Assert {
 	public function assertThatStringNotContains( $expected, $actual, $message = '' ) {
 
 		$callback = function( &$expected, $actual, &$actualCounted ) {
-			foreach ( $expected as $key => $string ) {
-				if ( strpos( $actual, $string ) === false ) {
+			foreach ( $expected as $key => $pattern ) {
+				if ( $this->isMatch( $pattern, $actual ) === false ) {
 					$actualCounted++;
 					unset( $expected[$key] );
 				}
@@ -53,12 +53,12 @@ class StringValidator extends \PHPUnit_Framework_Assert {
 	private function doAssertWith( $expected, $actual, $message = '', $method = '', $callback ) {
 
 		if ( !is_array( $expected ) ) {
-			$expected = array( $expected );
+			$expected = [ $expected ];
 		}
 
 		$expected = array_filter( $expected, 'strlen' );
 
-		if ( $expected === array() ) {
+		if ( $expected === [] ) {
 			return self::assertTrue( true, $message );
 		}
 
@@ -72,32 +72,42 @@ class StringValidator extends \PHPUnit_Framework_Assert {
 
 		call_user_func_array(
 			$callback,
-			array( &$expected, $actual, &$actualCounted )
+			[ &$expected, $actual, &$actualCounted ]
 		);
 
 		self::assertEquals(
 			$expectedToCount,
 			$actualCounted,
-			"Failed on `{$message}` for $actual with ($method) " . $this->toString( $expected )
+			"Failed \"{$message}\" for $method:\n==== (actual) ====\n$actual\n==== (expected) ====\n" . $this->toString( $expected )
 		);
 	}
 
 	private function isMatch( $pattern, $source ) {
 
-		// .* indicator to use the preg_match/wildcard search match otherwise
-		// use a simple strpos (as it is faster)
-		if ( strpos( $pattern, '.*' ) === false ) {
-			return strpos( $source, $pattern ) !== false;
+		// use /.../ indicator to use the preg_match search match
+		if ( strlen( $pattern) >= 2 && substr( $pattern, 0, 1) === '/' && substr( $pattern, -1) === '/' ) {
+
+			return (bool) preg_match( $pattern, $source );
+
 		}
 
-		$pattern = preg_quote( $pattern, '/' );
-		$pattern = str_replace( '\.\*' , '.*?', $pattern );
+		// use .* indicator to use the wildcard search match
+		if ( strpos( $pattern, '.*' ) !== false ) {
 
-		return (bool)preg_match( '/' . $pattern . '/' , $source );
+			$pattern = preg_quote( $pattern, '/' );
+			$pattern = str_replace( '\.\*', '.*?', $pattern );
+
+			return (bool) preg_match( '/' . $pattern . '/', $source );
+
+		}
+
+		// use a simple strpos (as it is faster)
+		return strpos( $source, $pattern ) !== false;
+
 	}
 
 	private function toString( $expected ) {
-		return "[ " . ( is_array( $expected ) ? implode( ', ', $expected ) : $expected ) . " ]";
+		return "[ " . ( is_array( $expected ) ? implode( " ], [ ", $expected ) : $expected ) . " ]\n";
 	}
 
 }

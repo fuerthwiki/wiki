@@ -2,13 +2,16 @@
 
 namespace ValueValidators;
 
+use Exception;
+
 /**
  * ValueValidator that validates a list of values.
  *
  * @since 0.1
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0-or-later
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
+ * @author Thiemo Kreuz
  */
 class ListValidator extends ValueValidatorObject {
 
@@ -17,7 +20,9 @@ class ListValidator extends ValueValidatorObject {
 	 *
 	 * @since 0.1
 	 *
-	 * @param mixed $value
+	 * @param array $value
+	 *
+	 * @throws Exception
 	 */
 	public function doValidation( $value ) {
 		if ( !is_array( $value ) ) {
@@ -25,13 +30,23 @@ class ListValidator extends ValueValidatorObject {
 			return;
 		}
 
-		$optionMap = array(
-			'elementcount' => 'range',
-			'maxelements' => 'upperbound',
-			'minelements' => 'lowerbound',
-		);
+		$options = array();
 
-		$this->runSubValidator( count( $value ), new RangeValidator(), 'length', $optionMap );
+		if ( array_key_exists( 'elementcount', $this->options ) ) {
+			$options['range'] = $this->options['elementcount'];
+		}
+
+		if ( array_key_exists( 'minelements', $this->options ) ) {
+			$options['lowerbound'] = $this->options['minelements'];
+		}
+
+		if ( array_key_exists( 'maxelements', $this->options ) ) {
+			$options['upperbound'] = $this->options['maxelements'];
+		}
+
+		$validator = new RangeValidator();
+		$validator->setOptions( $options );
+		$this->runSubValidator( count( $value ), $validator, 'length' );
 	}
 
 	/**
@@ -39,7 +54,7 @@ class ListValidator extends ValueValidatorObject {
 	 *
 	 * @since 0.1
 	 *
-	 * @return boolean
+	 * @return bool
 	 */
 	protected function enableWhitelistRestrictions() {
 		return false;

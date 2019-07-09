@@ -2,6 +2,8 @@
 
 namespace SMW;
 
+use Onoi\Cache\Cache;
+
 /**
  * @license GNU GPL v2
  * @since 2.4
@@ -11,29 +13,46 @@ namespace SMW;
 class PropertyAliasFinder {
 
 	/**
+	 * Identifies the cache namespace
+	 */
+	const CACHE_NAMESPACE = 'smw:property:alias';
+
+	/**
+	 * Identifies the cache TTL (one week)
+	 */
+	const CACHE_TTL = 604800;
+
+	/**
+	 * @var Cache
+	 */
+	private $cache;
+
+	/**
 	 * Array with entries "property alias" => "property id"
 	 *
 	 * @var string[]
 	 */
-	private $propertyAliases = array();
+	private $propertyAliases = [];
 
 	/**
 	 * @var string[]
 	 */
-	private $propertyAliasesByMsgKey = array();
+	private $propertyAliasesByMsgKey = [];
 
 	/**
 	 * @var string[]
 	 */
-	private $canonicalPropertyAliases = array();
+	private $canonicalPropertyAliases = [];
 
 	/**
 	 * @since 2.4
 	 *
+	 * @param Cache $cache
 	 * @param array $propertyAliases
 	 * @param array $canonicalPropertyAliases
 	 */
-	public function __construct( array $propertyAliases = array(), array $canonicalPropertyAliases = array() ) {
+	public function __construct( Cache $cache, array $propertyAliases = [], array $canonicalPropertyAliases = [] ) {
+		$this->cache = $cache;
 		$this->canonicalPropertyAliases = $canonicalPropertyAliases;
 
 		foreach ( $propertyAliases as $alias => $id ) {
@@ -57,6 +76,38 @@ class PropertyAliasFinder {
 	 */
 	public function getKnownPropertyAliasesWithMsgKey() {
 		return $this->propertyAliasesByMsgKey;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $languageCode
+	 *
+	 * @return array
+	 */
+	public function getKnownPropertyAliasesByLanguageCode( $languageCode = 'en' ) {
+
+		$key = smwfCacheKey(
+			self::CACHE_NAMESPACE,
+			[
+				$languageCode,
+				$this->propertyAliasesByMsgKey
+			]
+		);
+
+		if ( ( $propertyAliases = $this->cache->fetch( $key ) ) !== false ) {
+			return $propertyAliases;
+		}
+
+		$propertyAliases = [];
+
+		foreach ( $this->propertyAliasesByMsgKey as $msgKey => $id ) {
+			$propertyAliases[Message::get( $msgKey, Message::TEXT, $languageCode )] = $id;
+		}
+
+		$this->cache->save( $key, $propertyAliases, self::CACHE_TTL );
+
+		return $propertyAliases;
 	}
 
 	/**

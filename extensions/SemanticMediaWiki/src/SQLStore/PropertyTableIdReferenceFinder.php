@@ -2,7 +2,9 @@
 
 namespace SMW\SQLStore;
 
+use SMW\ApplicationFactory;
 use SMW\DIProperty;
+use SMWDataItem as DataItem;
 
 /**
  * @license GNU GPL v2+
@@ -15,12 +17,17 @@ class PropertyTableIdReferenceFinder {
 	/**
 	 * @var SQLStore
 	 */
-	private $store = null;
+	private $store;
 
 	/**
 	 * @var Database
 	 */
-	private $connection = null;
+	private $connection;
+
+	/**
+	 * @var NamespaceExaminer
+	 */
+	private $namespaceExaminer;
 
 	/**
 	 * @var boolean
@@ -35,6 +42,7 @@ class PropertyTableIdReferenceFinder {
 	public function __construct( SQLStore $store ) {
 		$this->store = $store;
 		$this->connection = $this->store->getConnection( 'mw.db' );
+		$this->namespaceExaminer = ApplicationFactory::getInstance()->getNamespaceExaminer();
 	}
 
 	/**
@@ -79,7 +87,23 @@ class PropertyTableIdReferenceFinder {
 			);
 		}
 
-		return $this->tryToFindAtLeastOneReferenceForId( $sid );
+		return $this->findAtLeastOneActiveReferenceById( $sid );
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param integer $id
+	 *
+	 * @return boolean
+	 */
+	public function hasResidualPropertyTableReference( $id ) {
+
+		if ( $id == SQLStore::FIXED_PROPERTY_ID_UPPERBOUND ) {
+			return true;
+		}
+
+		return (bool)$this->findAtLeastOneActiveReferenceById( $id, false );
 	}
 
 	/**
@@ -95,7 +119,7 @@ class PropertyTableIdReferenceFinder {
 			return true;
 		}
 
-		return (bool)$this->tryToFindAtLeastOneReferenceForId( $id );
+		return (bool)$this->findAtLeastOneActiveReferenceById( $id );
 	}
 
 	/**
@@ -107,7 +131,7 @@ class PropertyTableIdReferenceFinder {
 	 */
 	public function searchAllTablesToFindAtLeastOneReferenceById( $id ) {
 
-		$references = array();
+		$references = [];
 
 		foreach ( $this->store->getPropertyTables() as $proptable ) {
 			$reference = false;
@@ -117,7 +141,7 @@ class PropertyTableIdReferenceFinder {
 			}
 		}
 
-		if ( ( $reference = $this->findReferenceByQueryLinksTable( $id ) ) !== false ) {
+		if ( ( $reference = $this->findQueryLinksTableReferenceById( $id ) ) !== false ) {
 			$references[SQLStore::QUERY_LINKS_TABLE] = $reference;
 		}
 
@@ -128,30 +152,49 @@ class PropertyTableIdReferenceFinder {
 	 * @since 2.4
 	 *
 	 * @param integer $id
+	 * @param boolean $secondary_ref
 	 *
 	 * @return DataItem|false
 	 */
-	public function tryToFindAtLeastOneReferenceForId( $id ) {
+	public function findAtLeastOneActiveReferenceById( $id, $secondary_ref = true ) {
 
 		$reference = false;
 
 		foreach ( $this->store->getPropertyTables() as $proptable ) {
+
 			if ( ( $reference = $this->findReferenceByPropertyTable( $proptable, $id ) ) !== false ) {
-				break;
+
+				// If null is returned it means that a reference was found but no DI could
+				// be matched therefore is categorized as false positive
+				if ( isset( $reference->s_id ) ) {
+					$reference = $this->store->getObjectIds()->getDataItemById( $reference->s_id );
+
+					// If the reference is for some reason not part of a  supported namespace,
+					// it is assumed to be invalid
+					if ( $reference !== null && !$this->namespaceExaminer->isSemanticEnabled( $reference->getNamespace() ) ) {
+						$reference = false;
+					}
+				}
+			}
+
+			if ( $reference instanceof DataItem ) {
+				return $reference;
 			}
 		}
 
-		if ( !isset( $reference->s_id ) ) {
-			$reference = $this->findReferenceByQueryLinksTable( $id );
+		if ( $secondary_ref && !isset( $reference->s_id ) ) {
+			$reference = $this->findQueryLinksTableReferenceById( $id );
 		}
 
-		// If null is returned it means that a reference was found bu no DI could
-		// be matched therefore is categorized as false positive
 		if ( isset( $reference->s_id ) ) {
 			$reference = $this->store->getObjectIds()->getDataItemById( $reference->s_id );
 		}
 
-		return $reference === false || $reference === null ? false : $reference;
+		if ( $reference === false || $reference === null ) {
+			return false;
+		}
+
+		return $reference;
 	}
 
 	private function findReferenceByPropertyTable( $proptable, $id ) {
@@ -161,8 +204,8 @@ class PropertyTableIdReferenceFinder {
 		if ( $proptable->usesIdSubject() ) {
 			$row = $this->connection->selectRow(
 				$proptable->getName(),
-				array( 's_id' ),
-				array( 's_id' => $id ),
+				[ 's_id' ],
+				[ 's_id' => $id ],
 				__METHOD__
 			);
 		}
@@ -177,17 +220,17 @@ class PropertyTableIdReferenceFinder {
 		if ( isset( $fields['o_id'] ) ) {
 
 			// This next time someone ... I'm going to Alaska
-			$field = strpos( $proptable->getName(), 'redi' ) ? array( 's_title', 's_namespace' ) : array( 's_id' );
+			$field = strpos( $proptable->getName(), 'redi' ) ? [ 's_title', 's_namespace' ] : [ 's_id' ];
 
 			$row = $this->connection->selectRow(
 				$proptable->getName(),
 				$field,
-				array( 'o_id' => $id ),
+				[ 'o_id' => $id ],
 				__METHOD__
 			);
 
 			if ( $row !== false && strpos( $proptable->getName(), 'redi' ) ) {
-				$row->s_id = $this->store->getObjectIds()->findRedirectIdFor( $row->s_title, $row->s_namespace );
+				$row->s_id = $this->store->getObjectIds()->findRedirect( $row->s_title, $row->s_namespace );
 			}
 		}
 
@@ -197,8 +240,8 @@ class PropertyTableIdReferenceFinder {
 		if ( $row === false && !$proptable->isFixedPropertyTable() ) {
 			$row = $this->connection->selectRow(
 				$proptable->getName(),
-				array( 's_id' ),
-				array( 'p_id' => $id ),
+				[ 's_id' ],
+				[ 'p_id' => $id ],
 				__METHOD__
 			);
 		}
@@ -206,15 +249,15 @@ class PropertyTableIdReferenceFinder {
 		return $row;
 	}
 
-	private function findReferenceByQueryLinksTable( $id ) {
+	private function findQueryLinksTableReferenceById( $id ) {
 
 		// If the query table contains a reference then we keep the object (could
 		// be a subject, property, or printrequest) where in case the query is
 		// removed the object will also loose its reference
 		$row = $this->connection->selectRow(
 			SQLStore::QUERY_LINKS_TABLE,
-			array( 's_id' ),
-			array( 'o_id' => $id ),
+			[ 's_id' ],
+			[ 'o_id' => $id ],
 			__METHOD__
 		);
 

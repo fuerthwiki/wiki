@@ -4,8 +4,8 @@ namespace SMW\MediaWiki\Api;
 
 use ApiBase;
 use SMW\ApplicationFactory;
-use SMW\NamespaceUriFinder;
 use SMW\Localizer;
+use SMW\NamespaceUriFinder;
 
 /**
  * @license GNU GPL v2+
@@ -14,6 +14,14 @@ use SMW\Localizer;
  * @author mwjames
  */
 class BrowseByProperty extends ApiBase {
+
+	/**
+	 * #2696
+	 * @deprecated since 3.0, use the smwbrowse API module
+	 */
+	public function isDeprecated() {
+		return true;
+	}
 
 	/**
 	 * @see ApiBase::execute
@@ -109,30 +117,30 @@ class BrowseByProperty extends ApiBase {
 	 * @return array
 	 */
 	public function getAllowedParams() {
-		return array(
-			'property' => array(
+		return [
+			'property' => [
 				ApiBase::PARAM_TYPE => 'string',
 				ApiBase::PARAM_ISMULTI => false,
 				ApiBase::PARAM_REQUIRED => false,
-			),
-			'limit' => array(
+			],
+			'limit' => [
 				ApiBase::PARAM_TYPE => 'string',
 				ApiBase::PARAM_ISMULTI => false,
 				ApiBase::PARAM_DFLT => 50,
 				ApiBase::PARAM_REQUIRED => false,
-			),
-			'lang' => array(
+			],
+			'lang' => [
 				ApiBase::PARAM_TYPE => 'string',
 				ApiBase::PARAM_ISMULTI => false,
 				ApiBase::PARAM_REQUIRED => false,
-			),
-			'listonly' => array(
+			],
+			'listonly' => [
 				ApiBase::PARAM_TYPE => 'string',
 				ApiBase::PARAM_DFLT => false,
 				ApiBase::PARAM_ISMULTI => false,
 				ApiBase::PARAM_REQUIRED => false,
-			)
-		);
+			]
+		];
 	}
 
 	/**
@@ -142,12 +150,12 @@ class BrowseByProperty extends ApiBase {
 	 * @return array
 	 */
 	public function getParamDescription() {
-		return array(
+		return [
 			'property' => 'To match a specific property',
 			'limit'    => 'To specify the size of the list request',
 			'lang'     => 'To specify a specific language used for some attributes (description etc.)',
 			'listonly' => 'To specify that only a property list is returned without further details'
-		);
+		];
 	}
 
 	/**
@@ -157,9 +165,9 @@ class BrowseByProperty extends ApiBase {
 	 * @return array
 	 */
 	public function getDescription() {
-		return array(
+		return [
 			'API module to query a property list or an individual property.'
-		);
+		];
 	}
 
 	/**
@@ -169,11 +177,11 @@ class BrowseByProperty extends ApiBase {
 	 * @return array
 	 */
 	public function getExamples() {
-		return array(
+		return [
 			'api.php?action=browsebyproperty&property=Modification_date',
 			'api.php?action=browsebyproperty&limit=50',
 			'api.php?action=browsebyproperty&limit=5&listonly=true',
-		);
+		];
 	}
 
 	/**

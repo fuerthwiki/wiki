@@ -5,7 +5,6 @@ namespace SMW\Tests\Integration\MediaWiki;
 use SMW\ApplicationFactory;
 use SMW\DIWikiPage;
 use SMW\Tests\MwDBaseUnitTestCase;
-use SMW\Tests\Utils\UtilityFactory;
 use Title;
 
 /**
@@ -40,7 +39,7 @@ class LinksUpdateTest extends MwDBaseUnitTestCase {
 		$this->pageDeleter = $this->testEnvironment->getUtilityFactory()->newPageDeleter();
 
 		$this->applicationFactory = ApplicationFactory::getInstance();
-		$this->testEnvironment->addConfiguration( 'smwgPageSpecialProperties', array( '_MDAT' ) );
+		$this->testEnvironment->addConfiguration( 'smwgPageSpecialProperties', [ '_MDAT' ] );
 
 		$this->title = Title::newFromText( __METHOD__ );
 	}
@@ -49,7 +48,7 @@ class LinksUpdateTest extends MwDBaseUnitTestCase {
 		$this->applicationFactory->clear();
 		$this->mwHooksHandler->restoreListedHooks();
 
-		$this->testEnvironment->flushPages( array( $this->title ) );
+		$this->testEnvironment->flushPages( [ $this->title ] );
 		$this->testEnvironment->tearDown();
 		parent::tearDown();
 	}
@@ -68,9 +67,9 @@ class LinksUpdateTest extends MwDBaseUnitTestCase {
 			$semanticData->getProperties()
 		);
 
-		$expected = array(
-			'propertyKeys' => array( '_SKEY', '_MDAT' )
-		);
+		$expected = [
+			'propertyKeys' => [ '_SKEY', '_MDAT' ]
+		];
 
 		$this->semanticDataValidator->assertThatPropertiesAreSet(
 			$expected,
@@ -132,9 +131,9 @@ class LinksUpdateTest extends MwDBaseUnitTestCase {
 			$semanticData->getProperties()
 		);
 
-		$expected = array(
-			'propertyKeys' => array( '_SKEY', '_MDAT', 'HasFirstLinksUpdatetest', 'HasSecondLinksUpdatetest' )
-		);
+		$expected = [
+			'propertyKeys' => [ '_SKEY', '_MDAT', 'HasFirstLinksUpdatetest', 'HasSecondLinksUpdatetest' ]
+		];
 
 		$this->semanticDataValidator->assertThatPropertiesAreSet(
 			$expected,
@@ -204,9 +203,9 @@ class LinksUpdateTest extends MwDBaseUnitTestCase {
 			$semanticData->getProperties()
 		);
 
-		$expected = array(
-			'propertyKeys' => array( '_SKEY', 'HasFirstLinksUpdatetest', 'HasSecondLinksUpdatetest' )
-		);
+		$expected = [
+			'propertyKeys' => [ '_SKEY', 'HasFirstLinksUpdatetest', 'HasSecondLinksUpdatetest' ]
+		];
 
 		$this->semanticDataValidator->assertThatPropertiesAreSet(
 			$expected,

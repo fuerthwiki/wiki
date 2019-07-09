@@ -14,7 +14,9 @@
 			"Papapep",
 			"Joan manel",
 			"Qllach",
-			"Jaumeortola"
+			"Jaumeortola",
+			"Macofe",
+			"Abella"
 		]
 	},
 	"coll-desc": "[[Special:Book|Crea llibres]]",
@@ -65,7 +67,7 @@
 	"coll-save_collection_text": "Escolliu on desar el vostre llibre:",
 	"coll-login_to_save": "Si voleu desar un llibre per a ús posterior, si us plau [[Special:UserLogin|iniciï la sessió o crei un compte]]",
 	"coll-personal_collection_label": "Llibre personal:",
-	"coll-community_collection_label": "Llibre de la comunitat:",
+	"coll-community_collection_label": "Llibre comunitari:",
 	"coll-save_collection": "Desa llibre",
 	"coll-save_category": "Tots els llibres queden desats en la categoria [[:Category:{{MediaWiki:Coll-bookscategory}}|{{MediaWiki:Coll-bookscategory}}]].",
 	"coll-overwrite_title": "La pàgina existeix. Voleu substituir-la?",
@@ -87,7 +89,7 @@
 	"coll-rendering_page_info_text_article": "{{MediaWiki:Coll-helppage}}/Processant text d'informació de la pàgina",
 	"coll-rendering_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/Processant text d'informació de la col·lecció",
 	"coll-rendering_finished_title": "Renderització finalitzada",
-	"coll-rendering_finished_text": "<strong>S'ha generat el document.</strong>\n<strong>[$1 Descarrega el fitxer]</strong> a l'ordinador.\n\nNotes:\n* No esteu satisfet amb el resultat? Vegeu [[{{MediaWiki:Coll-helppage}}|la pàgina d'ajuda sobre llibres]] per a conèixer més opcions per millorar-lo.",
+	"coll-rendering_finished_text": "<strong>S'ha generat el document.</strong>\n<strong>[$1 Descarrega el fitxer]</strong> a l'ordinador.",
 	"coll-finished_page_info_text_article": "{{MediaWiki:Coll-helppage}}/Processant texte d'informació de la pàgina",
 	"coll-finished_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/Processant text d'informació de la col·lecció",
 	"coll-notfound_title": "Llibre no trobat",
@@ -133,7 +135,7 @@
 	"right-collectionsaveasuserpage": "Desar els llibres com a pàgina d'usuari",
 	"right-collectionsaveascommunitypage": "Desar els llibres com una pàgina de la comunitat",
 	"coll-print_export": "Imprimeix/exporta",
-	"coll-create_a_book": "Crea un llibre",
+	"coll-create_a_book": "Crear un llibre",
 	"coll-create_a_book_tooltip": "Crea un llibre o una col·lecció de pàgines",
 	"coll-book_creator": "Creador de llibres",
 	"coll-download_as": "Baixa com a $1",

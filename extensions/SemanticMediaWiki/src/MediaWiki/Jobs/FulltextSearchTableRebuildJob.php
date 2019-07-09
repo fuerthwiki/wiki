@@ -2,8 +2,9 @@
 
 namespace SMW\MediaWiki\Jobs;
 
-use SMW\SQLStore\QueryEngine\FulltextSearchTableFactory;
+use SMW\MediaWiki\Job;
 use SMW\ApplicationFactory;
+use SMW\SQLStore\QueryEngine\FulltextSearchTableFactory;
 use Title;
 
 /**
@@ -12,7 +13,7 @@ use Title;
  *
  * @author mwjames
  */
-class FulltextSearchTableRebuildJob extends JobBase {
+class FulltextSearchTableRebuildJob extends Job {
 
 	/**
 	 * @since 2.5
@@ -20,8 +21,8 @@ class FulltextSearchTableRebuildJob extends JobBase {
 	 * @param Title $title
 	 * @param array $params job parameters
 	 */
-	public function __construct( Title $title, $params = array() ) {
-		parent::__construct( 'SMW\FulltextSearchTableRebuildJob', $title, $params );
+	public function __construct( Title $title, $params = [] ) {
+		parent::__construct( 'smw.fulltextSearchTableRebuild', $title, $params );
 	}
 
 	/**
@@ -30,6 +31,10 @@ class FulltextSearchTableRebuildJob extends JobBase {
 	 * @since  2.5
 	 */
 	public function run() {
+
+		if ( $this->waitOnCommandLineMode() ) {
+			return true;
+		}
 
 		$fulltextSearchTableFactory = new FulltextSearchTableFactory();
 
@@ -43,6 +48,7 @@ class FulltextSearchTableRebuildJob extends JobBase {
 		} elseif ( $this->hasParameter( 'mode' ) && $this->getParameter( 'mode' ) === 'full' ) {
 			$searchTableRebuilder->rebuild();
 		} else {
+			$searchTableRebuilder->flushTable();
 			$this->createJobsFromTableList( $searchTableRebuilder->getQualifiedTableList() );
 		}
 
@@ -51,18 +57,17 @@ class FulltextSearchTableRebuildJob extends JobBase {
 
 	private function createJobsFromTableList( $tableList ) {
 
-		if ( $tableList === array() ) {
+		if ( $tableList === [] ) {
 			return;
 		}
 
 		foreach ( $tableList as $tableName ) {
-			$fulltextSearchTableRebuildJob = new self( $this->getTitle(), array(
+			$fulltextSearchTableRebuildJob = new self( $this->getTitle(), [
 				'table' => $tableName
-			) );
+			] );
 
 			$fulltextSearchTableRebuildJob->insert();
 		}
-
 	}
 
 }

@@ -3,10 +3,10 @@
 namespace SMW\Tests\MediaWiki\Hooks;
 
 use SMW\ApplicationFactory;
-use SMW\MediaWiki\Hooks\ParserAfterTidy;
-use SMW\Tests\Utils\Mock\MockTitle;
-use SMW\Tests\TestEnvironment;
 use SMW\DataItemFactory;
+use SMW\MediaWiki\Hooks\ParserAfterTidy;
+use SMW\Tests\TestEnvironment;
+use SMW\Tests\Utils\Mock\MockTitle;
 use Title;
 
 /**
@@ -29,11 +29,11 @@ class ParserAfterTidyTest extends \PHPUnit_Framework_TestCase {
 	protected function setUp() {
 		parent::setUp();
 
-		$settings = array(
-			'smwgDeclarationProperties' => array(),
-			'smwgCacheType'        => 'hash',
+		$settings = [
+			'smwgChangePropagationWatchlist' => [],
+			'smwgMainCacheType'        => 'hash',
 			'smwgEnableUpdateJobs' => false
-		);
+		];
 
 		$this->testEnvironment = new TestEnvironment( $settings );
 		$this->dataItemFactory = new DataItemFactory();
@@ -79,6 +79,47 @@ class ParserAfterTidyTest extends \PHPUnit_Framework_TestCase {
 
 		$instance = new ParserAfterTidy( $parser );
 		$instance->isReadOnly( true );
+
+		$text = '';
+		$instance->process( $text );
+	}
+
+	public function testNotEnabledNamespace() {
+
+		$namespaceExaminer = $this->getMockBuilder( '\SMW\NamespaceExaminer' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$namespaceExaminer->expects( $this->once() )
+			->method( 'isSemanticEnabled' )
+			->will( $this->returnValue( false ) );
+
+		$this->testEnvironment->registerObject( 'NamespaceExaminer', $namespaceExaminer );
+
+		$title = MockTitle::buildMock( __METHOD__ );
+
+		$title->expects( $this->atLeastOnce() )
+			->method( 'getNamespace' )
+			->will( $this->returnValue( NS_MAIN ) );
+
+		$title = $this->getMockBuilder( 'Title' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		// Using this step to verify that the previous NS check
+		// bailed out.
+		$title->expects( $this->never() )
+			->method( 'isSpecialPage' );
+
+		$parser = $this->getMockBuilder( 'Parser' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$parser->expects( $this->any() )
+			->method( 'getTitle' )
+			->will( $this->returnValue( $title ) );
+
+		$instance = new ParserAfterTidy( $parser );
 
 		$text = '';
 		$instance->process( $text );
@@ -143,13 +184,12 @@ class ParserAfterTidyTest extends \PHPUnit_Framework_TestCase {
 
 	public function testSemanticDataParserOuputUpdateIntegration() {
 
-		$settings = array(
-			'smwgCacheType'             => 'hash',
+		$settings = [
+			'smwgMainCacheType'             => 'hash',
 			'smwgEnableUpdateJobs'      => false,
-			'smwgUseCategoryHierarchy'  => false,
-			'smwgCategoriesAsInstances' => true,
-			'smwgShowHiddenCategories'  => true
-		);
+			'smwgParserFeatures'        => SMW_PARSER_HID_CATS,
+			'smwgCategoryFeatures'      => SMW_CAT_REDIRECT | SMW_CAT_INSTANCE
+		];
 
 		$this->testEnvironment->withConfiguration( $settings );
 
@@ -168,11 +208,11 @@ class ParserAfterTidyTest extends \PHPUnit_Framework_TestCase {
 			$instance->process( $text  )
 		);
 
-		$expected = array(
+		$expected = [
 			'propertyCount'  => 2,
-			'propertyKeys'   => array( '_INST', '_SKEY' ),
-			'propertyValues' => array( 'Foo', 'Bar', $title->getText() ),
-		);
+			'propertyKeys'   => [ '_INST', '_SKEY' ],
+			'propertyValues' => [ 'Foo', 'Bar', $title->getText() ],
+		];
 
 		$parserData = $this->applicationFactory->newParserData(
 			$title,
@@ -190,7 +230,7 @@ class ParserAfterTidyTest extends \PHPUnit_Framework_TestCase {
 		#0 Runs store update
 		$store = $this->getMockBuilder( 'SMW\Store' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'updateData' ) )
+			->setMethods( [ 'updateData' ] )
 			->getMockForAbstractClass();
 
 		$store->expects( $this->any() )
@@ -210,20 +250,20 @@ class ParserAfterTidyTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getArticleID' )
 			->will( $this->returnValue( 5001 ) );
 
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'store'    => $store,
 				'title'    => $title,
 				'cache-contains' => true,
 				'cache-fetch'    => true,
 				'data-status' => true
-			)
-		);
+			]
+		];
 
 		#1 No cache entry, no store update
 		$store = $this->getMockBuilder( 'SMW\Store' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'updateData' ) )
+			->setMethods( [ 'updateData' ] )
 			->getMockForAbstractClass();
 
 		$store->expects( $this->never() )
@@ -239,20 +279,20 @@ class ParserAfterTidyTest extends \PHPUnit_Framework_TestCase {
 			->method( 'inNamespace' )
 			->will( $this->returnValue( false ) );
 
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'store'    => $store,
 				'title'    => $title,
 				'cache-contains' => false,
 				'cache-fetch'    => false,
 				'data-status' => true
-			)
-		);
+			]
+		];
 
 		#2 SpecialPage, no store update
 		$store = $this->getMockBuilder( 'SMW\Store' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'updateData' ) )
+			->setMethods( [ 'updateData' ] )
 			->getMockForAbstractClass();
 
 		$store->expects( $this->never() )
@@ -261,23 +301,27 @@ class ParserAfterTidyTest extends \PHPUnit_Framework_TestCase {
 		$title = MockTitle::buildMock( __METHOD__ );
 
 		$title->expects( $this->atLeastOnce() )
+			->method( 'getNamespace' )
+			->will( $this->returnValue( NS_MAIN ) );
+
+		$title->expects( $this->atLeastOnce() )
 			->method( 'isSpecialPage' )
 			->will( $this->returnValue( true ) );
 
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'store'    => $store,
 				'title'    => $title,
 				'cache-contains' => false,
 				'cache-fetch'    => false,
 				'data-status' => true
-			)
-		);
+			]
+		];
 
 		#3 NS_FILE, no store update
 		$store = $this->getMockBuilder( 'SMW\Store' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'updateData' ) )
+			->setMethods( [ 'updateData' ] )
 			->getMockForAbstractClass();
 
 		$store->expects( $this->never() )
@@ -293,20 +337,20 @@ class ParserAfterTidyTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getNamespace' )
 			->will( $this->returnValue( NS_FILE ) );
 
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'store'    => $store,
 				'title'    => $title,
 				'cache-contains' => true,
 				'cache-fetch'    => true,
 				'data-status' => true
-			)
-		);
+			]
+		];
 
 		#4, 1131, No store update when fetch return FALSE
 		$store = $this->getMockBuilder( 'SMW\Store' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'updateData' ) )
+			->setMethods( [ 'updateData' ] )
 			->getMockForAbstractClass();
 
 		$store->expects( $this->never() )
@@ -326,15 +370,15 @@ class ParserAfterTidyTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getArticleID' )
 			->will( $this->returnValue( 5001 ) );
 
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'store'    => $store,
 				'title'    => $title,
 				'cache-contains' => true,
 				'cache-fetch'    => false,
 				'data-status' => true
-			)
-		);
+			]
+		];
 
 		#5, 1410 displaytitle
 		$store = $this->getMockBuilder( 'SMW\Store' )
@@ -351,16 +395,16 @@ class ParserAfterTidyTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getArticleID' )
 			->will( $this->returnValue( 5001 ) );
 
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'store'    => $store,
 				'title'    => $title,
 				'cache-contains' => true,
 				'cache-fetch'    => true,
 				'data-status' => false,
 				'displaytitle' => 'Foo'
-			)
-		);
+			]
+		];
 
 		return $provider;
 	}

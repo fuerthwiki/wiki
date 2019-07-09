@@ -1,9 +1,10 @@
 <?php
 
-namespace SMW\Iterators\Tests;
+namespace SMW\Tests\Iterators;
 
-use SMW\Iterators\MappingIterator;
 use ArrayIterator;
+use SMW\Iterators\MappingIterator;
+use SMW\Tests\PHPUnitCompat;
 
 /**
  * @covers \SMW\Iterators\MappingIterator
@@ -16,11 +17,13 @@ use ArrayIterator;
  */
 class MappingIteratorTest extends \PHPUnit_Framework_TestCase {
 
+	use PHPUnitCompat;
+
 	public function testCanConstruct() {
 
 		$this->assertInstanceOf(
 			MappingIterator::class,
-			new MappingIterator( array(), function() {
+			new MappingIterator( [], function() {
 			} )
 		);
 	}
@@ -34,9 +37,9 @@ class MappingIteratorTest extends \PHPUnit_Framework_TestCase {
 
 	public function testdoIterateOnArray() {
 
-		$expected = array(
+		$expected = [
 			1 , 42
-		);
+		];
 
 		$mappingIterator = new MappingIterator( $expected, function( $counter ) {
 			return $counter;
@@ -52,9 +55,9 @@ class MappingIteratorTest extends \PHPUnit_Framework_TestCase {
 
 	public function testdoIterateOnArrayIterator() {
 
-		$expected = array(
+		$expected = [
 			1001 , 42
-		);
+		];
 
 		$mappingIterator = new MappingIterator( new ArrayIterator( $expected ), function( $counter ) {
 			return $counter;

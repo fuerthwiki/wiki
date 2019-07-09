@@ -3,12 +3,13 @@
 namespace SMW\Tests\SPARQLStore\RepositoryConnectors;
 
 use SMW\SPARQLStore\RepositoryClient;
+use SMW\Tests\PHPUnitCompat;
 
 /**
- * @covers \SMW\SPARQLStore\RepositoryConnectors\FusekiHttpRepositoryConnector
- * @covers \SMW\SPARQLStore\RepositoryConnectors\FourstoreHttpRepositoryConnector
- * @covers \SMW\SPARQLStore\RepositoryConnectors\VirtuosoHttpRepositoryConnector
- * @covers \SMW\SPARQLStore\RepositoryConnectors\GenericHttpRepositoryConnector
+ * @covers \SMW\SPARQLStore\RepositoryConnectors\FusekiRepositoryConnector
+ * @covers \SMW\SPARQLStore\RepositoryConnectors\FourstoreRepositoryConnector
+ * @covers \SMW\SPARQLStore\RepositoryConnectors\VirtuosoRepositoryConnector
+ * @covers \SMW\SPARQLStore\RepositoryConnectors\GenericRepositoryConnector
  *
  * @group semantic-mediawiki
  *
@@ -19,19 +20,21 @@ use SMW\SPARQLStore\RepositoryClient;
  */
 class RepositoryConnectorsExceptionTest extends \PHPUnit_Framework_TestCase {
 
+	use PHPUnitCompat;
+
 	private $defaultGraph;
 
-	private $databaseConnectors = array(
-		'\SMW\SPARQLStore\RepositoryConnectors\GenericHttpRepositoryConnector',
-		'\SMW\SPARQLStore\RepositoryConnectors\FusekiHttpRepositoryConnector',
-		'\SMW\SPARQLStore\RepositoryConnectors\FourstoreHttpRepositoryConnector',
-		'\SMW\SPARQLStore\RepositoryConnectors\VirtuosoHttpRepositoryConnector',
+	private $databaseConnectors = [
+		'\SMW\SPARQLStore\RepositoryConnectors\GenericRepositoryConnector',
+		'\SMW\SPARQLStore\RepositoryConnectors\FusekiRepositoryConnector',
+		'\SMW\SPARQLStore\RepositoryConnectors\FourstoreRepositoryConnector',
+		'\SMW\SPARQLStore\RepositoryConnectors\VirtuosoRepositoryConnector',
 
 		// Legacy and should be removed once obsolete
 		'SMWSparqlDatabase4Store',
 		'SMWSparqlDatabaseVirtuoso',
 		'SMWSparqlDatabase'
-	);
+	];
 
 	protected function setUp() {
 		parent::setUp();
@@ -49,7 +52,7 @@ class RepositoryConnectorsExceptionTest extends \PHPUnit_Framework_TestCase {
 			->getMock();
 
 		$this->assertInstanceOf(
-			'\SMW\SPARQLStore\RepositoryConnectors\GenericHttpRepositoryConnector',
+			'\SMW\SPARQLStore\RepositoryConnectors\GenericRepositoryConnector',
 			new $httpConnector( new RepositoryClient( $this->defaultGraph, '' ), $httpRequest )
 		);
 	}
@@ -68,7 +71,7 @@ class RepositoryConnectorsExceptionTest extends \PHPUnit_Framework_TestCase {
 			$httpRequest
 		);
 
-		$this->setExpectedException( '\SMW\SPARQLStore\Exception\BadHttpDatabaseResponseException' );
+		$this->setExpectedException( '\SMW\SPARQLStore\Exception\BadHttpEndpointResponseException' );
 		$instance->doQuery( '' );
 	}
 
@@ -86,7 +89,7 @@ class RepositoryConnectorsExceptionTest extends \PHPUnit_Framework_TestCase {
 			$httpRequest
 		);
 
-		$this->setExpectedException( '\SMW\SPARQLStore\Exception\BadHttpDatabaseResponseException' );
+		$this->setExpectedException( '\SMW\SPARQLStore\Exception\BadHttpEndpointResponseException' );
 		$instance->doUpdate( '' );
 	}
 
@@ -104,7 +107,7 @@ class RepositoryConnectorsExceptionTest extends \PHPUnit_Framework_TestCase {
 			$httpRequest
 		);
 
-		$this->setExpectedException( '\SMW\SPARQLStore\Exception\BadHttpDatabaseResponseException' );
+		$this->setExpectedException( '\SMW\SPARQLStore\Exception\BadHttpEndpointResponseException' );
 		$instance->doHttpPost( '' );
 	}
 
@@ -132,10 +135,10 @@ class RepositoryConnectorsExceptionTest extends \PHPUnit_Framework_TestCase {
 
 	public function httpDatabaseConnectorInstanceNameProvider() {
 
-		$provider = array();
+		$provider = [];
 
 		foreach ( $this->databaseConnectors as $databaseConnector ) {
-			$provider[] = array( $databaseConnector );
+			$provider[] = [ $databaseConnector ];
 		}
 
 		return $provider;

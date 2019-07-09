@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\MediaWiki\Specials\Admin;
 
-use SMW\Tests\TestEnvironment;
 use SMW\MediaWiki\Specials\Admin\OperationalStatisticsListTaskHandler;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\MediaWiki\Specials\Admin\OperationalStatisticsListTaskHandler
@@ -44,7 +44,7 @@ class OperationalStatisticsListTaskHandlerTest extends \PHPUnit_Framework_TestCa
 	public function testCanConstruct() {
 
 		$this->assertInstanceOf(
-			'\SMW\MediaWiki\Specials\Admin\OperationalStatisticsListTaskHandler',
+			OperationalStatisticsListTaskHandler::class,
 			new OperationalStatisticsListTaskHandler( $this->outputFormatter )
 		);
 	}
@@ -61,9 +61,20 @@ class OperationalStatisticsListTaskHandlerTest extends \PHPUnit_Framework_TestCa
 		);
 	}
 
+	public function testIsTaskFor() {
+
+		$instance = new OperationalStatisticsListTaskHandler(
+			$this->outputFormatter
+		);
+
+		$this->assertTrue(
+			$instance->isTaskFor( 'stats')
+		);
+	}
+
 	public function testHandleRequest() {
 
-		$semanticStatistics = array(
+		$semanticStatistics = [
 			'PROPUSES' => 0,
 			'ERRORUSES' => 0,
 			'USEDPROPS' => 0,
@@ -74,7 +85,7 @@ class OperationalStatisticsListTaskHandlerTest extends \PHPUnit_Framework_TestCa
 			'SUBOBJECTS' => 0,
 			'QUERY' => 0,
 			'CONCEPTS' => 0
-		);
+		];
 
 		$this->store->expects( $this->once() )
 			->method( 'getStatistics' )
@@ -87,9 +98,39 @@ class OperationalStatisticsListTaskHandlerTest extends \PHPUnit_Framework_TestCa
 			$this->outputFormatter
 		);
 
+		$instance->setStore( $this->store );
+
 		$webRequest = $this->getMockBuilder( '\WebRequest' )
 			->disableOriginalConstructor()
 			->getMock();
+
+		$instance->handleRequest( $webRequest );
+	}
+
+	public function testHandleSubRequest() {
+
+		$webRequest = $this->getMockBuilder( '\WebRequest' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$taskHandler = $this->getMockBuilder( '\SMW\MediaWiki\Specials\Admin\TaskHandler' )
+			->disableOriginalConstructor()
+			->getMockForAbstractClass();
+
+		$taskHandler->expects( $this->once() )
+			->method( 'isTaskFor' )
+			->will( $this->returnValue( true ) );
+
+		$taskHandler->expects( $this->once() )
+			->method( 'handleRequest' )
+			->with( $this->equalTo( $webRequest ) );
+
+		$instance = new OperationalStatisticsListTaskHandler(
+			$this->outputFormatter,
+			[ $taskHandler ]
+		);
+
+		$instance->setStore( $this->store );
 
 		$instance->handleRequest( $webRequest );
 	}

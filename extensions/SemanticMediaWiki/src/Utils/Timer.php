@@ -13,7 +13,7 @@ class Timer {
 	/**
 	 * @var float|integer
 	 */
-	private static $start = array();
+	private static $start = [];
 
 	/**
 	 * @since 3.0
@@ -37,6 +37,7 @@ class Timer {
 	/**
 	 * @since 2.5
 	 *
+	 * @param string $name
 	 * @param integer|null $round
 	 *
 	 * @return float|integer
@@ -54,6 +55,18 @@ class Timer {
 		}
 
 		return round( $time, $round );
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $name
+	 * @param integer|null $round
+	 *
+	 * @return string
+	 */
+	public static function getElapsedTimeAsLoggableMessage( $name, $round = null ) {
+		return $name . ' (procTime in sec: '. self::getElapsedTime( $name, $round ) . ')';
 	}
 
 }

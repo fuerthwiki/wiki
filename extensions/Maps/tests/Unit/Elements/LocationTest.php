@@ -1,17 +1,18 @@
 <?php
 
-namespace Maps\Tests\Elements;
+namespace Maps\Tests\Unit\Elements;
 
 use DataValues\Geo\Values\LatLongValue;
 use Maps\Elements\Location;
+use PHPUnit\Framework\TestCase;
 
 /**
- * @covers Maps\Elements\Location
+ * @covers \Maps\Elements\Location
  *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
-class LocationTest extends \PHPUnit_Framework_TestCase {
+class LocationTest extends TestCase {
 
 	public function latLongValueProvider() {
 		$argLists = [];

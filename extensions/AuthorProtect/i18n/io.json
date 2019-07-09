@@ -1,8 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"Malafaya"
+			"Malafaya",
+			"Lakaoso"
 		]
 	},
-	"authorprotect-notauthor": "Vu ne es l'autoro di ca pagino"
+	"authorprotect-notauthor": "{{GENDER:$1|Vu}} ne es la {{GENDER:$1|autoro}} di ca pagino."
 }

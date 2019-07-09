@@ -4,7 +4,6 @@ namespace SMW\Utils;
 
 use Onoi\BlobStore\BlobStore;
 use SMW\ApplicationFactory;
-use RuntimeException;
 
 /**
  * Collect statistics in a provisional schema-free storage that depends on the
@@ -54,7 +53,7 @@ class BufferedStatsdCollector {
 	/**
 	 * @var array
 	 */
-	private $stats = array();
+	private $stats = [];
 
 	/**
 	 * Identifies an update fingerprint to compare invoked deferred updates
@@ -68,7 +67,7 @@ class BufferedStatsdCollector {
 	/**
 	 * @var array
 	 */
-	private $operations = array();
+	private $operations = [];
 
 	/**
 	 * @since 2.5
@@ -164,7 +163,7 @@ class BufferedStatsdCollector {
 	 */
 	public function saveStats() {
 
-		if ( $this->stats === array() ) {
+		if ( $this->stats === [] ) {
 			return;
 		}
 
@@ -198,7 +197,7 @@ class BufferedStatsdCollector {
 			$container
 		);
 
-		$this->stats = array();
+		$this->stats = [];
 	}
 
 	/**
@@ -209,7 +208,7 @@ class BufferedStatsdCollector {
 	public function recordStats( $asPending = false ) {
 
 		if ( $this->shouldRecord === false ) {
-			return $this->stats = array();
+			return $this->stats = [];
 		}
 
 		// #2046
@@ -217,20 +216,20 @@ class BufferedStatsdCollector {
 		// environment therefore rely on the deferred update and any caller
 		// that invokes the recordStats method
 
-		$transactionalDeferredCallableUpdate = ApplicationFactory::getInstance()->newTransactionalDeferredCallableUpdate(
+		$deferredTransactionalUpdate = ApplicationFactory::getInstance()->newDeferredTransactionalCallableUpdate(
 			function() { $this->saveStats();
 			}
 		);
 
-		$transactionalDeferredCallableUpdate->setOrigin( __METHOD__ );
-		$transactionalDeferredCallableUpdate->waitOnTransactionIdle();
+		$deferredTransactionalUpdate->setOrigin( __METHOD__ );
+		$deferredTransactionalUpdate->waitOnTransactionIdle();
 
-		$transactionalDeferredCallableUpdate->setFingerprint(
+		$deferredTransactionalUpdate->setFingerprint(
 			__METHOD__ . $this->fingerprint
 		);
 
-		$transactionalDeferredCallableUpdate->markAsPending( $asPending );
-		$transactionalDeferredCallableUpdate->pushUpdate();
+		$deferredTransactionalUpdate->markAsPending( $asPending );
+		$deferredTransactionalUpdate->pushUpdate();
 	}
 
 }

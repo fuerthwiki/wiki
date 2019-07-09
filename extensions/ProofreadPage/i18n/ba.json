@@ -4,7 +4,8 @@
 			"Assele",
 			"Comp1089",
 			"Ebe123",
-			"ҒатаУлла"
+			"ҒатаУлла",
+			"Ләйсән"
 		]
 	},
 	"indexpages": "Индекс биттәренең исемлеге",
@@ -15,13 +16,9 @@
 	"proofreadpage_index_expected": "Хата: индекс көтөлә",
 	"proofreadpage_nosuch_index": "Хата: бындай индекс юҡ",
 	"proofreadpage_nosuch_file": "Хата: бындай файл юҡ",
-	"proofreadpage_badpage": "Формат дөрөҫ түгел",
-	"proofreadpage_badpagetext": "Һеҙ һаҡларға теләгән биттең форматы дөрөҫ түгел.",
-	"proofreadpage_indexdupe": "Ҡабатланған һылтанма",
 	"proofreadpage_indexdupetext": "Биттәр индекс битендә бер тапҡыр ғына осрарға тейеш.",
 	"proofreadpage_nologin": "Танылмағанһығыҙ",
 	"proofreadpage_nologintext": "Биттәрҙең корректураһын уҡыу торошон үҙгәртеү өсөн, һеҙ [[Special:UserLogin|танылырға]] тейешһегеҙ.",
-	"proofreadpage_notallowed": "Үҙгәртеү рөхсәт ителмәй",
 	"proofreadpage_notallowedtext": "Һеҙгә биттәрҙең корректураһын уҡыу торошон үҙгәртеү рөхсәт ителмәй.",
 	"proofreadpage_number_expected": "Хата: һан көтөлә",
 	"proofreadpage_interval_too_large": "Хата: бигерәк ҙур арауыҡ",
@@ -59,5 +56,8 @@
 	"proofreadpage-button-zoom-out-label": "Йырағайтырға",
 	"proofreadpage-button-reset-zoom-label": "Сығанаҡ ҙурлыҡ",
 	"proofreadpage-button-zoom-in-label": "Яҡынайтырға",
-	"proofreadpage-button-toggle-layout-label": "Текә/арҡыры билдә"
+	"proofreadpage-button-toggle-layout-label": "Текә/арҡыры билдә",
+	"proofreadpage-visualeditor-node-pages-inspector-tooltip": "Биттәр",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-yes": "Эйе",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "Юҡ"
 }

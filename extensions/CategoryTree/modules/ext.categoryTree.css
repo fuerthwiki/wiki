@@ -1,39 +1,62 @@
 /**
  * Stylesheet for the CategoryTree extension.
  *
+ * © 2006 Daniel Kinzler
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * http://www.gnu.org/copyleft/gpl.html
+ *
  * @file
  * @ingroup Extensions
  * @author Daniel Kinzler, brightbyte.de
- * @copyright © 2006 Daniel Kinzler
- * @licence GNU General Public Licence 2.0 or later
  */
 
-#mw-subcategories ul {
+.client-js #mw-subcategories ul {
 	list-style: none none;
 	margin-left: 0.25em;
 }
 
 #mw-panel div.portal div.body .CategoryTreeTag {
-        margin: 0;
-        font-size: 0.75em;
-        line-height: 1.125em;
+	margin: 0;
+	font-size: 0.75em;
+	line-height: 1.125em;
 }
 
 #mw-panel div.portal div.body .CategoryTreeItem {
-        padding: 0.25em 0;
+	padding: 0.25em 0;
 }
 
 .CategoryTreeChildren {
 	margin-left: 1.25em;
 }
 
-.CategoryTreeBullet {
+.CategoryTreeBullet,
+.CategoryTreeEmptyBullet {
+	cursor: default;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.CategoryTreeToggleHandlerAttached {
 	cursor: pointer;
 }
 
 .CategoryTreeEmptyBullet {
-	cursor: default;
-	color: #C0C0C0;
+	color: #c0c0c0;
 }
 
 .CategoryTreeBullet a,
@@ -45,8 +68,14 @@
 	speak: none;
 }
 
+/* Hide toggle buttons for clients without JavaScript */
+.client-nojs .CategoryTreeBullet,
+.client-nojs .CategoryTreeEmptyBullet {
+	display: none;
+}
+
 .CategoryTreeToggle {
-	color: #0645AD;
+	color: #0645ad;
 }
 
 .CategoryTreeLabelPage {
@@ -77,11 +106,11 @@
 	display: inline-block;
 	/* why is the -0.5ex needed? */
 	margin: -0.5ex 0 0 1ex;
-	padding:0;
+	padding: 0;
 	vertical-align: top;
 	/* IE6-7 Hack for display: inline-block */
 	zoom: 1;
-	*display: inline;
+	*display: inline; /* stylelint-disable-line declaration-block-no-duplicate-properties */
 }
 
 .CategoryTreeSection {

@@ -5,6 +5,7 @@ namespace SMW\Tests\DataValues\ValueFormatters;
 use SMW\DataValues\MonolingualTextValue;
 use SMW\DataValues\ValueFormatters\MonolingualTextValueFormatter;
 use SMW\DataValues\ValueParsers\MonolingualTextValueParser;
+use SMW\Tests\PHPUnitCompat;
 
 /**
  * @covers \SMW\DataValues\ValueFormatters\MonolingualTextValueFormatter
@@ -16,6 +17,8 @@ use SMW\DataValues\ValueParsers\MonolingualTextValueParser;
  * @author mwjames
  */
 class MonolingualTextValueFormatterTest extends \PHPUnit_Framework_TestCase {
+
+	use PHPUnitCompat;
 
 	private $dataValueServiceFactory;
 
@@ -114,40 +117,40 @@ class MonolingualTextValueFormatterTest extends \PHPUnit_Framework_TestCase {
 
 	public function stringValueProvider() {
 
-		$provider[] = array(
+		$provider[] = [
 			'foo@en',
 			MonolingualTextValueFormatter::VALUE,
 			null,
 			'foo@en'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'foo@en',
 			MonolingualTextValueFormatter::WIKI_SHORT,
 			null,
 			'foo (en)'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'foo@en',
 			MonolingualTextValueFormatter::HTML_SHORT,
 			null,
 			'foo (en)'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'foo@en',
 			MonolingualTextValueFormatter::WIKI_LONG,
 			null,
 			'foo (en)'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'foo@en',
 			MonolingualTextValueFormatter::HTML_LONG,
 			null,
 			'foo (en)'
-		);
+		];
 
 		return $provider;
 	}

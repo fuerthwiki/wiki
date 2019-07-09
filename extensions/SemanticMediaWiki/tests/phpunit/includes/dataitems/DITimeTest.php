@@ -14,6 +14,8 @@ use SMWDITime as DITime;
  */
 class DITimeTest extends \PHPUnit_Framework_TestCase {
 
+	use PHPUnitCompat;
+
 	public function testCanConstruct() {
 
 		$this->assertInstanceOf(
@@ -145,20 +147,20 @@ class DITimeTest extends \PHPUnit_Framework_TestCase {
 
 	public function jdProvider() {
 
-		$provider[] = array(
+		$provider[] = [
 			'2488345.500000',
 			'1/2100/10/04'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'2488346.0804977',
 			'1/2100/10/4/13/55/55'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'1',
 			'2/-4713/01/02/12'
-		);
+		];
 
 		return $provider;
 	}

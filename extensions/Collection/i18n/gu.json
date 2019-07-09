@@ -6,7 +6,8 @@
 			"Sushant savla",
 			"KartikMistry",
 			"Arbhatt",
-			"NehalDaveND"
+			"NehalDaveND",
+			"Macofe"
 		]
 	},
 	"coll-desc": "[[ખાસ:પુસ્તક|પુસ્તક બનાવો]]",
@@ -59,7 +60,7 @@
 	"coll-personal_collection_label": "વ્યક્તિગત પુસ્તક:",
 	"coll-community_collection_label": "સમૂહ પુસ્તક",
 	"coll-save_collection": "પુસ્તક સાચવો",
-	"coll-save_category": "સાચવેલા બધા પુસ્તકો શ્રેણી [[:Category:{{MediaWiki:Coll-bookscategory}}|{{MediaWiki:Coll-bookscategory}}]]માં ઉમેરવામાં આવે છે",
+	"coll-save_category": "સાચવેલા બધા પુસ્તકોને [[:Category:{{MediaWiki:Coll-bookscategory}}|{{MediaWiki:Coll-bookscategory}}]] શ્રેણીમાં ઉમેરવામાં આવે છે.",
 	"coll-overwrite_title": "પાનું અસ્તિત્વમાં છે.\nજૂનું ભૂંસી નવું લખાણ સાચવવું છે?",
 	"coll-overwrite_text": "[[:$1]] નામ વાળું પાનું પહેલેથી અસ્તિત્વમાં છે.\nતેની જગ્યાએ તમે તમારું પુસ્તક સાચવવા માંગો છો?",
 	"coll-yes": "હા",
@@ -79,7 +80,7 @@
 	"coll-rendering_page_info_text_article": "{{MediaWiki:Coll-helppage}}/Rendering page info text",
 	"coll-rendering_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/Rendering collection info text",
 	"coll-rendering_finished_title": "ચિત્રણ સંપૂર્ણ",
-	"coll-rendering_finished_text": "<strong>દસ્તાવેજ ફાઇલ તૈયાર છે.</strong>\nતમારા કમ્પ્યૂટર પર <strong>[$1 ફાઇલ ડાઉનલોડ કરો]</strong>.\n\nનોંધ:\n* પરિણામથી સંતુષ્ટ નથી? ગુણવત્તા સુધારવાની શક્યતાઓ માટે [[{{MediaWiki:Coll-helppage}}|પુસ્તક માટેની મદદનું પાનું]] જુઓ.",
+	"coll-rendering_finished_text": "<strong>દસ્તાવેજ ફાઇલ તૈયાર છે.</strong>\nતમારા કમ્પ્યૂટર પર <strong>[$1 ફાઇલ ડાઉનલોડ કરો]</strong>.",
 	"coll-finished_page_info_text_article": "{{MediaWiki:Coll-helppage}}/Rendering page info text",
 	"coll-finished_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/Rendering collection info text",
 	"coll-notfound_title": "પુસ્તક મળ્યું નથી",
@@ -142,7 +143,7 @@
 	"coll-helppage": "Help:પુસ્તકો",
 	"coll-load_collection": "પુસ્તક લાદો",
 	"coll-load_collection_tooltip": "આ પુસ્તકને તમારા પ્રસ્તુત તરીકે લાદો",
-	"coll-n_pages": "$1 {{PLURAL:$1|પાનું|પાના}}",
+	"coll-n_pages": "$1 {{PLURAL:$1|પાનું|પાનાં}}",
 	"coll-printable_version_pdf": "PDF સંસ્કરણ",
 	"coll-remove_this_page": "આ પાનું તમારા પુસ્તકમાંથી કાઢી નાખો",
 	"coll-remove_page_tooltip": "પ્રસ્તુત વિકિ પાનું તમારા પુસ્તકમાંથી કાઢી નાંખો",
@@ -157,7 +158,7 @@
 	"coll-setting-toc-yes": "હા",
 	"coll-setting-toc-no": "ના",
 	"coll-setting-columns": "સ્તંભો :",
-	"coll-attribution-anons": "અજ્ઞાત : $1",
+	"coll-attribution-anons": "અજ્ઞાત: $1",
 	"coll-article-attribution": "<b>$1</b> <i>સ્રોત:</i> $2 <i>યોગદાનકર્તા:</i> $3",
 	"coll-image-attribution": "<b>$1</b> <i>સ્રોત:</i> $2 <i>પરવાનો:</i> $3 <i>યોગદાનકર્તા:</i> $4 <i>અસલ કલાકાર:</i> $5"
 }

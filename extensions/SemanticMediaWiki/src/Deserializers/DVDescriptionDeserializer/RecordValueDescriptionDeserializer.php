@@ -4,11 +4,11 @@ namespace SMW\Deserializers\DVDescriptionDeserializer;
 
 use InvalidArgumentException;
 use SMW\DataValueFactory;
+use SMW\DataValues\ReferenceValue;
 use SMW\Query\Language\Conjunction;
 use SMW\Query\Language\SomeProperty;
 use SMW\Query\Language\ThingDescription;
 use SMWRecordValue as RecordValue;
-use SMW\DataValues\ReferenceValue;
 
 /**
  * @private
@@ -48,7 +48,7 @@ class RecordValueDescriptionDeserializer extends DescriptionDeserializer {
 			return new ThingDescription();
 		}
 
-		$subdescriptions = array();
+		$subdescriptions = [];
 		$values = $this->dataValue->getValuesFromString( $value );
 
 		$valueIndex = 0; // index in value array
@@ -75,7 +75,7 @@ class RecordValueDescriptionDeserializer extends DescriptionDeserializer {
 			++$propertyIndex;
 		}
 
-		if ( $subdescriptions === array() ) {
+		if ( $subdescriptions === [] ) {
 			$this->addError( wfMessage( 'smw_novalues' )->text() );
 		}
 

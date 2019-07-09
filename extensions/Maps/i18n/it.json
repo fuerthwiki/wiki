@@ -10,7 +10,8 @@
 			"Rosh",
 			"Viscontino",
 			"Matteocng",
-			"Kaspo"
+			"Kaspo",
+			"S4b1nuz E.656"
 		]
 	},
 	"maps-desc": "Consente di includere mappe dinamiche nelle pagine wiki, la geocodifica degli indirizzi ed altre operazioni geografiche",
@@ -91,7 +92,6 @@
 	"maps-par-maxclusterradius": "Il raggio massimo coperto da un cluster.",
 	"maps-googlemaps3-par-clusteraveragecenter": "Se il centro di ogni cluster dovrebbe essere la media di tutti i marcatori del cluster.",
 	"maps-googlemaps3-par-clusterminsize": "Il numero minimo di marcatori presenti in un cluster dopo il quale tutti i marcatori saranno nascosti e sarà mostrato il loro numero.",
-	"maps-openlayers-par-controls": "I controlli da posizionare sulla mappa.",
 	"mapeditor": "Editor della mappa",
 	"specialpages-group-maps": "Mappe",
 	"mapeditor-parser-error": "Si verificato un errore durante l'analisi dei metadati. Ignorato l'input dell'utente.",
@@ -121,6 +121,7 @@
 	"mapeditor-form-field-showonhover": "Visualizza solo al passaggio del mouse",
 	"mapeditor-mapparam-title": "Modifica i parametri della mappa",
 	"mapeditor-mapparam-defoption": "-Selezionare parametro-",
+	"mapeditor-imageoverlay-button": "Aggiungi sovrapposizione dell'immagine",
 	"mapeditor-form-field-image": "Immagine",
 	"mapeditor-imageoverlay-title": "Dettagli di sovrapposizione di immagini",
 	"mapeditor-form-field-visitedicon": "Icona visitato",
@@ -157,5 +158,6 @@
 	"validator-type-mapsrectangle": "Rettangolo geografico",
 	"validator-type-mapsrectangle-list": "Elenco di rettangoli",
 	"validator-type-mapspolygon": "Poligono geografico",
-	"validator-type-mapspolygon-list": "Elenco dei poligoni geografici"
+	"validator-type-mapspolygon-list": "Elenco dei poligoni geografici",
+	"validator-type-jsonfile": "testo"
 }

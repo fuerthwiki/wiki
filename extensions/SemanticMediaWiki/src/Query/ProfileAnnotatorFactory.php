@@ -3,12 +3,14 @@
 namespace SMW\Query;
 
 use SMW\DIWikiPage;
-use SMW\Query\ProfileAnnotators\NullProfileAnnotator;
 use SMW\Query\ProfileAnnotators\DescriptionProfileAnnotator;
-use SMW\Query\ProfileAnnotators\FormatProfileAnnotator;
-use SMW\Query\ProfileAnnotators\ParametersProfileAnnotator;
 use SMW\Query\ProfileAnnotators\DurationProfileAnnotator;
+use SMW\Query\ProfileAnnotators\FormatProfileAnnotator;
+use SMW\Query\ProfileAnnotators\NullProfileAnnotator;
+use SMW\Query\ProfileAnnotators\ParametersProfileAnnotator;
 use SMW\Query\ProfileAnnotators\SourceProfileAnnotator;
+use SMW\Query\ProfileAnnotators\StatusCodeProfileAnnotator;
+use SMW\Query\ProfileAnnotators\SchemaLinkProfileAnnotator;
 use SMWContainerSemanticData as ContainerSemanticData;
 use SMWDIContainer as DIContainer;
 use SMWQuery as Query;
@@ -22,27 +24,6 @@ use SMWQuery as Query;
 class ProfileAnnotatorFactory {
 
 	/**
-	 * @since 2.5
-	 *
-	 * @param Query $query
-	 *
-	 * @return DescriptionProfileAnnotator
-	 */
-	public function newDescriptionProfileAnnotator( Query $query ) {
-
-		$profileAnnotator = new NullProfileAnnotator(
-			$this->newDIContainer( $query )
-		);
-
-		$profileAnnotator = new DescriptionProfileAnnotator(
-			$profileAnnotator,
-			$query->getDescription()
-		);
-
-		return $profileAnnotator;
-	}
-
-	/**
 	 * @since 2.1
 	 *
 	 * @param Query $query
@@ -50,7 +31,7 @@ class ProfileAnnotatorFactory {
 	 *
 	 * @return ProfileAnnotator
 	 */
-	public function newCombinedProfileAnnotator( Query $query, $format ) {
+	public function newProfileAnnotator( Query $query, $format ) {
 
 		$profileAnnotator = $this->newDescriptionProfileAnnotator(
 			$query
@@ -76,6 +57,37 @@ class ProfileAnnotatorFactory {
 			$query->getQuerySource()
 		);
 
+		$profileAnnotator = $this->newStatusCodeProfileAnnotator(
+			$profileAnnotator,
+			$query->getOption( Query::PROC_STATUS_CODE )
+		);
+
+		$profileAnnotator = $this->newSchemaLinkProfileAnnotator(
+			$profileAnnotator,
+			$query->getOption( 'schema_link' )
+		);
+
+		return $profileAnnotator;
+	}
+
+	/**
+	 * @since 2.5
+	 *
+	 * @param Query $query
+	 *
+	 * @return DescriptionProfileAnnotator
+	 */
+	public function newDescriptionProfileAnnotator( Query $query ) {
+
+		$profileAnnotator = new NullProfileAnnotator(
+			$this->newDIContainer( $query )
+		);
+
+		$profileAnnotator = new DescriptionProfileAnnotator(
+			$profileAnnotator,
+			$query->getDescription()
+		);
+
 		return $profileAnnotator;
 	}
 
@@ -93,16 +105,39 @@ class ProfileAnnotatorFactory {
 	}
 
 	private function newDurationProfileAnnotator( $profileAnnotator, $duration ) {
+
+		if ( $duration == 0 ) {
+			return $profileAnnotator;
+		}
+
 		return new DurationProfileAnnotator( $profileAnnotator, $duration );
 	}
 
 	private function newSourceProfileAnnotator( $profileAnnotator, $querySource ) {
 
-		if ( $querySource === '' ) {
+		if ( $querySource === '' || $querySource === null ) {
 			return $profileAnnotator;
 		}
 
 		return new SourceProfileAnnotator( $profileAnnotator, $querySource );
+	}
+
+	private function newStatusCodeProfileAnnotator( $profileAnnotator, $statusCodes ) {
+
+		if ( $statusCodes === false || $statusCodes === null || $statusCodes === [] ) {
+			return $profileAnnotator;
+		}
+
+		return new StatusCodeProfileAnnotator( $profileAnnotator, $statusCodes );
+	}
+
+	private function newSchemaLinkProfileAnnotator( $profileAnnotator, $schemaLink ) {
+
+		if ( $schemaLink === false || $schemaLink === null ) {
+			return $profileAnnotator;
+		}
+
+		return new SchemaLinkProfileAnnotator( $profileAnnotator, $schemaLink );
 	}
 
 	/**

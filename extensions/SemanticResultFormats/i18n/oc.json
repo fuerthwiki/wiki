@@ -3,7 +3,8 @@
 		"authors": [
 			"Boulaur",
 			"Cedric31",
-			"Nemo bis"
+			"Nemo bis",
+			"Unuaiga"
 		]
 	},
 	"srf-desc": "Formats adicionals d'afichatge de resultat per las requèstas de Semantic MediaWiki",
@@ -98,7 +99,7 @@
 	"srf-ui-datatables-label-oAria-sSortAscending": ": activar per triar la colomna en òrdre creissent",
 	"srf-printername-tree": "Arbre",
 	"srf-printername-ultree": "Arbre UL",
-	"srf-printername-oltree": "Arbre OL",
+	"srf-printername-oltree": "Arbre Ol",
 	"srf-tree-rootinvalid": "$1 es pas un títol de pagina valid.",
 	"srf-paramdesc-tree-root": "La pagina raiç de l’arbre",
 	"srf-printername-slideshow": "Diaporama",
@@ -115,6 +116,9 @@
 	"srf-ui-eventcalendar-label-month": "Mes",
 	"srf-ui-eventcalendar-label-week": "Setmana",
 	"srf-ui-eventcalendar-label-day": "Jorn",
+	"srf-ui-eventcalendar-label-listmonth": "Mes (lista)",
+	"srf-ui-eventcalendar-label-listweek": "Setmana (lista)",
+	"srf-ui-eventcalendar-label-listday": "Jorn (lista)",
 	"srf-ui-eventcalendar-label-allday": "Tota la jornada",
 	"srf-paramdesc-unit": "Unitat",
 	"srf-printername-pagewidget": "Widget de pagina",

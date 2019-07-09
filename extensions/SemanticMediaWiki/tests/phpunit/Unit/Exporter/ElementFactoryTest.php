@@ -2,8 +2,9 @@
 
 namespace SMW\Tests\Exporter;
 
-use SMW\Exporter\ElementFactory;
 use SMW\DataItemFactory;
+use SMW\Exporter\ElementFactory;
+use SMW\Tests\PHPUnitCompat;
 
 /**
  * @covers \SMW\Exporter\ElementFactory
@@ -16,16 +17,18 @@ use SMW\DataItemFactory;
  */
 class ElementFactoryTest extends \PHPUnit_Framework_TestCase {
 
+	use PHPUnitCompat;
+
 	/**
 	 * @dataProvider supportedDataItemProvider
 	 */
-	public function testnewByDataItemForSupportedTypes( $dataItem ) {
+	public function testNewFromDataItemForSupportedTypes( $dataItem ) {
 
 		$instance = new ElementFactory();
 
 		$this->assertInstanceOf(
 			'\SMW\Exporter\Element',
-			$instance->newByDataItem( $dataItem )
+			$instance->newFromDataItem( $dataItem )
 		);
 	}
 
@@ -37,7 +40,7 @@ class ElementFactoryTest extends \PHPUnit_Framework_TestCase {
 		$instance = new ElementFactory();
 
 		$this->assertNull(
-			$instance->newByDataItem( $dataItem )
+			$instance->newFromDataItem( $dataItem )
 		);
 	}
 
@@ -46,12 +49,12 @@ class ElementFactoryTest extends \PHPUnit_Framework_TestCase {
 		$dataItemFactory = new DataItemFactory();
 		$instance = new ElementFactory();
 
-		$instance->registerDataItemEncoder( \SMWDataItem::TYPE_BLOB, function( $datatem ) {
+		$instance->registerDataItemMapper( \SMWDataItem::TYPE_BLOB, function( $datatem ) {
 			return new \stdclass;
 		} );
 
 		$this->setExpectedException( 'RuntimeException' );
-		$instance->newByDataItem( $dataItemFactory->newDIBlob( 'foo' ) );
+		$instance->newFromDataItem( $dataItemFactory->newDIBlob( 'foo' ) );
 	}
 
 	public function supportedDataItemProvider() {
@@ -59,49 +62,49 @@ class ElementFactoryTest extends \PHPUnit_Framework_TestCase {
 		$dataItemFactory = new DataItemFactory();
 
 		#0
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDINumber( 42 )
-		);
+		];
 
 		#1
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIBlob( 'Test' )
-		);
+		];
 
 		#2
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIBoolean( true )
-		);
+		];
 
 		#3
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIUri( 'http', '//example.org', '', '' )
-		);
+		];
 
 		#4
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDITime( 1, '1970' )
-		);
+		];
 
 		#5
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIContainer( new \SMWContainerSemanticData( $dataItemFactory->newDIWikiPage( 'Foo', NS_MAIN ) ) )
-		);
+		];
 
 		#6
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIWikiPage( 'Foo', NS_MAIN )
-		);
+		];
 
 		#7
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIProperty( 'Foo' )
-		);
+		];
 
 		#8
-		$provider[] = array(
+		$provider[] = [
 			$dataItemFactory->newDIConcept( 'Foo', '', '', '', '' )
-		);
+		];
 
 		return $provider;
 	}
@@ -110,7 +113,7 @@ class ElementFactoryTest extends \PHPUnit_Framework_TestCase {
 
 		$dataItem = $this->getMockBuilder( '\SMWDataItem' )
 			->disableOriginalConstructor()
-			->setMethods( array( '__toString' ) )
+			->setMethods( [ '__toString' ] )
 			->getMockForAbstractClass();
 
 		$dataItem->expects( $this->any() )
@@ -118,14 +121,14 @@ class ElementFactoryTest extends \PHPUnit_Framework_TestCase {
 			->will( $this->returnValue( 'Foo' ) );
 
 		#0
-		$provider[] = array(
+		$provider[] = [
 			$dataItem
-		);
+		];
 
 		#1
-		$provider[] = array(
-			new \SMWDIGeoCoord( array( 'lat' => 52, 'lon' => 1 ) )
-		);
+		$provider[] = [
+			new \SMWDIGeoCoord( [ 'lat' => 52, 'lon' => 1 ] )
+		];
 
 		return $provider;
 	}

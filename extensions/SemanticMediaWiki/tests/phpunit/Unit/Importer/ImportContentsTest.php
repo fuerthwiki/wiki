@@ -1,6 +1,6 @@
 <?php
 
-namespace SMW\TestsImporter;
+namespace SMW\Tests\Importer;
 
 use SMW\Importer\ImportContents;
 
@@ -102,7 +102,7 @@ class ImportContentsTest extends \PHPUnit_Framework_TestCase {
 		$instance->addError( 'Foo' );
 
 		$this->assertSame(
-			array( 'Foo' ),
+			[ 'Foo' ],
 			$instance->getErrors()
 		);
 	}
@@ -114,7 +114,7 @@ class ImportContentsTest extends \PHPUnit_Framework_TestCase {
 		$instance->setOptions( 'Foo' );
 
 		$this->assertSame(
-			array( 'Foo' ),
+			[ 'Foo' ],
 			$instance->getOptions()
 		);
 

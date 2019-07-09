@@ -52,27 +52,27 @@ class I18nJsonFileIntegrityTest extends \PHPUnit_Framework_TestCase {
 			$contents
 		);
 
-		$expectedKeys = array(
-			'fallbackLanguage',
-			'dataTypeLabels',
-			'dataTypeAliases',
-			'propertyLabels',
-			'propertyAliases',
-			'dateFormatsByPrecision',
-			'namespaces',
-			'namespaceAliases',
-			'dateFormats',
-			'months',
-			'days'
-		);
+		$expectedKeys = [
+			'fallback_language',
+			'datatype'  => [ 'labels', 'aliases' ],
+			'property'  => [ 'labels', 'aliases' ],
+			'namespace' => [ 'labels', 'aliases' ],
+			'date'      => [ 'precision', 'format', 'months', 'days' ]
+		];
 
 		// If the file is marked with isLanguageRedirect then only check for the fallbackLanguage
 		if ( isset( $contents['isLanguageRedirect'] ) && $contents['isLanguageRedirect'] ) {
-			return $this->assertArrayHasKey( 'fallbackLanguage', $contents, $file );
+			return $this->assertArrayHasKey( 'fallback_language', $contents, $file );
 		}
 
-		foreach ( $expectedKeys as $key ) {
-			$this->assertArrayHasKey( $key, $contents, $file );
+		foreach ( $expectedKeys as $key => $val ) {
+			if ( !is_array( $val ) ) {
+				$this->assertArrayHasKey( $val, $contents, "Failed on $file with key: $val" );
+			} else {
+				foreach ( $val as $k => $v ) {
+					$this->assertArrayHasKey( $v, $contents[$key], "Failed on $file with key: $key/$v" );
+				}
+			}
 		}
 	}
 
@@ -86,13 +86,13 @@ class I18nJsonFileIntegrityTest extends \PHPUnit_Framework_TestCase {
 
 	private function findFilesIn( $location ) {
 
-		$provider = array();
+		$provider = [];
 
 		$bulkFileProvider = UtilityFactory::getInstance()->newBulkFileProvider( $location );
 		$bulkFileProvider->searchByFileExtension( 'json' );
 
 		foreach ( $bulkFileProvider->getFiles() as $file ) {
-			$provider[] = array( $file );
+			$provider[] = [ $file ];
 		}
 
 		return $provider;

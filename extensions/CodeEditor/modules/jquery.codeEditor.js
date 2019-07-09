@@ -1,20 +1,11 @@
 /* Ace syntax-highlighting code editor extension for wikiEditor */
-/*global ace, confirm, prompt */
-( function ( $, mw ) {
+/* global ace */
+( function ( $, mw, OO ) {
 	$.wikiEditor.modules.codeEditor = {
 		/**
 		 * Core Requirements
 		 */
 		req: [ 'codeEditor' ],
-		/**
-		 * Compatability map
-		 */
-		browsers: {
-			msie: [ [ '>=', 8 ] ],
-			ipod: [ [ '>=', 6 ] ],
-			iphone: [ [ '>=', 6 ] ],
-			android: [ [ '>=', 4 ] ]
-		},
 		/**
 		 * Configuration
 		 */
@@ -74,11 +65,19 @@
 			paste: returnFalse,
 			ready: returnFalse,
 			codeEditorSubmit: function () {
+				var form = this;
 				context.evt.codeEditorSync();
 				if ( hasErrorsOnSave ) {
 					hasErrorsOnSave = false;
-					return confirm( mw.msg( 'codeeditor-save-with-errors' ) );
+					OO.ui.confirm( mw.msg( 'codeeditor-save-with-errors' ) ).done( function ( confirmed ) {
+						if ( confirmed ) {
+							// Programmatic submit doesn't retrigger this event listener
+							form.submit();
+						}
+					} );
+					return false;
 				}
+				return true;
 			},
 			codeEditorSave: function () {
 				var i,
@@ -96,7 +95,8 @@
 			}
 		} );
 
-		context.codeEditorActive = mw.user.options.get( 'usecodeeditor' ) !== '0';
+		// Make sure to cast '0' to false
+		context.codeEditorActive = !!Number( mw.user.options.get( 'usecodeeditor' ) );
 
 		/**
 		 * Internally used functions
@@ -118,22 +118,38 @@
 				);
 			},
 			aceGotoLineColumn: function () {
-				var lineinput = prompt( 'Enter line number:', 'line:column' ),
-					matches = lineinput ? lineinput.split( ':' ) : [],
-					line = 0,
+				OO.ui.prompt( mw.msg( 'codeeditor-gotoline-prompt' ), {
+					textInput: { placeholder: mw.msg( 'codeeditor-gotoline-placeholder' ) }
+				} ).done( function ( result ) {
+					var matches, line, column;
+
+					if ( !result ) {
+						return;
+					}
+
+					matches = result.split( ':' );
+					line = 0;
 					column = 0;
 
-				if ( matches.length > 0 ) {
-					line = parseInt( matches[ 0 ], 10 ) || 0;
-					line--;
-				}
-				if ( matches.length > 1 ) {
-					column = parseInt( matches[ 1 ], 10 ) || 0;
-					column--;
-				}
-				context.codeEditor.navigateTo( line, column );
-				// Scroll up a bit to give some context
-				context.codeEditor.scrollToRow( line - 4 );
+					if ( matches.length > 0 ) {
+						line = +matches[ 0 ];
+						if ( isNaN( line ) ) {
+							return;
+						} else {
+							// Lines are zero-indexed
+							line--;
+						}
+					}
+					if ( matches.length > 1 ) {
+						column = +matches[ 1 ];
+						if ( isNaN( column ) ) {
+							column = 0;
+						}
+					}
+					context.codeEditor.navigateTo( line, column );
+					// Scroll up a bit to give some context
+					context.codeEditor.scrollToRow( line - 4 );
+				} );
 			},
 			setupCodeEditorToolbar: function () {
 				var toggleEditor,
@@ -201,7 +217,7 @@
 								codeEditor: {
 									labelMsg: 'codeeditor-toolbar-toggle',
 									type: 'button',
-									offset: [ 0, 0 ],
+									oouiIcon: 'markup',
 									action: {
 										type: 'callback',
 										execute: toggleEditor
@@ -214,7 +230,7 @@
 								indent: {
 									labelMsg: 'codeeditor-indent',
 									type: 'button',
-									offset: [ 0, 0 ],
+									oouiIcon: 'indent',
 									action: {
 										type: 'callback',
 										execute: indent
@@ -223,7 +239,7 @@
 								outdent: {
 									labelMsg: 'codeeditor-outdent',
 									type: 'button',
-									offset: [ 0, 0 ],
+									oouiIcon: 'outdent',
 									action: {
 										type: 'callback',
 										execute: outdent
@@ -237,7 +253,7 @@
 								invisibleChars: {
 									labelMsg: 'codeeditor-invisibleChars-toggle',
 									type: 'button',
-									offset: [ 0, 0 ],
+									oouiIcon: 'pilcrow',
 									action: {
 										type: 'callback',
 										execute: toggleInvisibleChars
@@ -246,7 +262,7 @@
 								lineWrapping: {
 									labelMsg: 'codeeditor-lineWrapping-toggle',
 									type: 'button',
-									offset: [ 0, 0 ],
+									oouiIcon: 'wrapping',
 									action: {
 										type: 'callback',
 										execute: toggleLineWrapping
@@ -255,7 +271,7 @@
 								gotoLine: {
 									labelMsg: 'codeeditor-gotoline',
 									type: 'button',
-									offset: [ 0, 0 ],
+									oouiIcon: 'gotoLine',
 									action: {
 										type: 'callback',
 										execute: gotoLine
@@ -264,7 +280,7 @@
 								toggleSearchReplace: {
 									labelMsg: 'codeeditor-searchReplace-toggle',
 									type: 'button',
-									offset: [ 0, 0 ],
+									oouiIcon: 'articleSearch',
 									action: {
 										type: 'callback',
 										execute: toggleSearchReplace
@@ -283,8 +299,9 @@
 			},
 			updateButtonIcon: function ( targetName, iconFn ) {
 				var target = '.tool[rel=' + targetName + ']',
-					$icon = context.modules.toolbar.$toolbar.find( target );
-				$icon.toggleClass( 'icon-active', iconFn() );
+					$button = context.modules.toolbar.$toolbar.find( target );
+
+				$button.data( 'setActive' )( iconFn() );
 			},
 			updateCodeEditorToolbarButton: function () {
 				context.fn.updateButtonIcon( 'codeEditor', context.fn.isCodeEditorActive );
@@ -305,31 +322,31 @@
 				api.abort();
 
 				api.saveOption( 'usecodeeditor', prefValue ? 1 : 0 )
-				.fail( function ( code, result ) {
-					var message;
+					.fail( function ( code, result ) {
+						var message;
 
-					if ( code === 'http' && result.textStatus === 'abort' ) {
-						// Request was aborted. Ignore error
-						return;
-					}
+						if ( code === 'http' && result.textStatus === 'abort' ) {
+							// Request was aborted. Ignore error
+							return;
+						}
 
-					message = 'Failed to set code editor preference: ' + code;
-					if ( result.error && result.error.info ) {
-						message += '\n' + result.error.info;
-					}
-					mw.log.warn( message );
-				} );
+						message = 'Failed to set code editor preference: ' + code;
+						if ( result.error && result.error.info ) {
+							message += '\n' + result.error.info;
+						}
+						mw.log.warn( message );
+					} );
 			},
 			/**
 			 * Sets up the iframe in place of the textarea to allow more advanced operations
 			 */
 			setupCodeEditor: function () {
-				var box, lang, basePath, container, editdiv, session, AceLangMode;
+				var box, lang, basePath, container, editdiv, session;
 
 				box = context.$textarea;
 				lang = mw.config.get( 'wgCodeEditorCurrentLanguage' );
 				basePath = mw.config.get( 'wgExtensionAssetsPath', '' );
-				if ( basePath.substring( 0, 2 ) === '//' ) {
+				if ( basePath.slice( 0, 2 ) === '//' ) {
 					// ACE uses web workers, which have importScripts, which don't like relative links.
 					// This is a problem only when the assets are on another server, so this rewrite should suffice
 					// Protocol relative
@@ -356,9 +373,9 @@
 					box.textSelection( 'register', textSelectionFn );
 
 					// Disable some annoying commands
-					context.codeEditor.commands.removeCommand( 'replace' );          // ctrl+R
+					context.codeEditor.commands.removeCommand( 'replace' ); // ctrl+R
 					context.codeEditor.commands.removeCommand( 'transposeletters' ); // ctrl+T
-					context.codeEditor.commands.removeCommand( 'gotoline' );         // ctrl+L
+					context.codeEditor.commands.removeCommand( 'gotoline' ); // ctrl+L
 
 					context.codeEditor.setReadOnly( box.prop( 'readonly' ) );
 					context.codeEditor.setShowInvisibles( context.showInvisibleChars );
@@ -388,9 +405,11 @@
 
 					mw.hook( 'codeEditor.configure' ).fire( session );
 
-					ace.config.loadModule( 'ace/mode/' + lang, function () {
-						AceLangMode = ace.require( 'ace/mode/' + lang ).Mode;
-						session.setMode( new AceLangMode() );
+					ace.config.loadModule( 'ace/ext/modelist', function ( modelist ) {
+						if ( !modelist || !modelist.modesByName[ lang ] ) {
+							lang = 'text';
+						}
+						session.setMode( 'ace/mode/' + lang );
 					} );
 
 					// Use jquery.ui.resizable so user can make the box taller too
@@ -611,7 +630,7 @@
 				// Function to delay/debounce updates for the StatusBar
 				delayedUpdate = lang.delayedCall( function () {
 					updateStatusBar( editor );
-				}.bind( this ) );
+				} );
 
 				/**
 				 * Click handler that allows you to skip to the next annotation
@@ -659,6 +678,9 @@
 		/**
 		 * Override the base functions in a way that lets
 		 * us fall back to the originals when we turn off.
+		 *
+		 * @param {Object} base
+		 * @param {Object} extended
 		 */
 		saveAndExtend = function ( base, extended ) {
 			$.map( extended, function ( func, name ) {
@@ -681,14 +703,6 @@
 		};
 
 		saveAndExtend( context.fn, {
-			saveCursorAndScrollTop: function () {
-				// Stub out textarea behavior
-				return;
-			},
-			restoreCursorAndScrollTop: function () {
-				// Stub out textarea behavior
-				return;
-			},
 			saveSelection: function () {
 				mw.log( 'codeEditor stub function saveSelection called' );
 			},
@@ -722,6 +736,8 @@
 			/**
 			 * Gets the currently selected text in the content
 			 * DO NOT CALL THIS DIRECTLY, use $.textSelection( 'functionname', options ) instead
+			 *
+			 * @return {string}
 			 */
 			getSelection: function () {
 				return context.codeEditor.getCopyText();
@@ -731,6 +747,9 @@
 			 * Inserts text at the begining and end of a text selection, optionally inserting text at the caret when
 			 * selection is empty.
 			 * DO NOT CALL THIS DIRECTLY, use $.textSelection( 'functionname', options ) instead
+			 *
+			 * @param {Object} options
+			 * @return {jQuery}
 			 */
 			encapsulateSelection: function ( options ) {
 				var sel, range, selText, isSample, text;
@@ -774,6 +793,7 @@
 			 * DO NOT CALL THIS DIRECTLY, use $.textSelection( 'functionname', options ) instead
 			 *
 			 * @param {Object} options
+			 * @return {jQuery}
 			 */
 			setSelection: function ( options ) {
 				var doc, lines, offsetToPos, start, end, sel, range;
@@ -812,6 +832,8 @@
 			/**
 			 * Scroll a textarea to the current cursor position. You can set the cursor position with setSelection()
 			 * DO NOT CALL THIS DIRECTLY, use $.textSelection( 'functionname', options ) instead
+			 *
+			 * @return {jQuery}
 			 */
 			scrollToCaretPosition: function () {
 				mw.log( 'codeEditor stub function scrollToCaretPosition called' );
@@ -826,4 +848,4 @@
 		}
 
 	};
-}( jQuery, mediaWiki ) );
+}( jQuery, mediaWiki, OO ) );

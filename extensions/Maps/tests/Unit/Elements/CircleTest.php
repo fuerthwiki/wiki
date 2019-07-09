@@ -1,12 +1,12 @@
 <?php
 
-namespace Maps\Tests\Elements;
+namespace Maps\Tests\Unit\Elements;
 
 use DataValues\Geo\Values\LatLongValue;
 use Maps\Elements\Circle;
 
 /**
- * @covers Maps\Elements\Circle
+ * @covers \Maps\Elements\Circle
  *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
@@ -38,8 +38,6 @@ class CircleTest extends BaseElementTest {
 	public function invalidConstructorProvider() {
 		$argLists = [];
 
-		$argLists[] = [ new LatLongValue( 4, 2 ), 'foo' ];
-
 		$argLists[] = [ new LatLongValue( 4, 2 ), 0 ];
 		$argLists[] = [ new LatLongValue( 4, 2 ), -42 ];
 
@@ -48,6 +46,7 @@ class CircleTest extends BaseElementTest {
 
 	/**
 	 * @dataProvider instanceProvider
+	 *
 	 * @param Circle $circle
 	 * @param array $arguments
 	 */
@@ -57,6 +56,7 @@ class CircleTest extends BaseElementTest {
 
 	/**
 	 * @dataProvider instanceProvider
+	 *
 	 * @param Circle $circle
 	 * @param array $arguments
 	 */

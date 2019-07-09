@@ -2,14 +2,16 @@
 
 namespace SMW\MediaWiki\Jobs;
 
+use SMW\MediaWiki\Job;
 use Hooks;
 use SMW\ApplicationFactory;
 use SMW\HashBuilder;
-use SMW\SQLStore\QueryDependencyLinksStoreFactory;
 use SMW\RequestOptions;
+use SMW\SQLStore\QueryDependencyLinksStoreFactory;
+use SMW\Utils\Timer;
+use SMW\DIWikiPage;
 use SMWQuery as Query;
 use Title;
-use SMW\Utils\Timer;
 
 /**
  * @license GNU GPL v2+
@@ -17,13 +19,25 @@ use SMW\Utils\Timer;
  *
  * @author mwjames
  */
-class ParserCachePurgeJob extends JobBase {
+class ParserCachePurgeJob extends Job {
 
 	/**
 	 * A balanced size that should be carefully monitored in order to not have a
 	 * negative impact when running the initial update in online mode.
 	 */
 	const CHUNK_SIZE = 300;
+
+	/**
+	 * Using DB update execution mode to immediately execute the purge which may
+	 * cause a surge in DB inserts.
+	 */
+	const EXEC_DB = 'exec.db';
+
+	/**
+	 * Using journal update execution mode to pause the execution and temporary
+	 * store until an actual page is viewed.
+	 */
+	const EXEC_JOURNAL = 'exec.journal';
 
 	/**
 	 * @var ApplicationFactory
@@ -51,9 +65,23 @@ class ParserCachePurgeJob extends JobBase {
 	 * @param Title $title
 	 * @param array $params job parameters
 	 */
-	public function __construct( Title $title, $params = array() ) {
-		parent::__construct( 'SMW\ParserCachePurgeJob', $title, $params );
-		$this->applicationFactory = ApplicationFactory::getInstance();
+	public function __construct( Title $title, $params = [] ) {
+		parent::__construct( 'smw.parserCachePurge', $title, $params );
+		$this->removeDuplicates = true;
+	}
+
+	/**
+	 * @see Job::run
+	 */
+	public function insert() {
+
+		if (
+			$this->hasParameter( 'is.enabled' ) &&
+			$this->getParameter( 'is.enabled' ) === false ) {
+			return;
+		}
+
+		parent::insert();
 	}
 
 	/**
@@ -64,10 +92,11 @@ class ParserCachePurgeJob extends JobBase {
 	public function run() {
 
 		Timer::start( __METHOD__ );
-
+		$this->applicationFactory = ApplicationFactory::getInstance();
 		$this->pageUpdater = $this->applicationFactory->newPageUpdater();
-		$this->store = $this->applicationFactory->getStore();
-		$logger = $this->applicationFactory->getMediaWikiLogger();
+
+		$count = 0;
+		$linksCount = 0;
 
 		if ( $this->hasParameter( 'limit' ) ) {
 			$this->limit = $this->getParameter( 'limit' );
@@ -78,19 +107,37 @@ class ParserCachePurgeJob extends JobBase {
 		}
 
 		if ( $this->hasParameter( 'idlist' ) ) {
-			$this->findEmbeddedQueryTargetLinksBatches(
-				$this->getParameter( 'idlist' ),
-				$logger
-			);
+			$this->purgeTargetLinksFromList( $this->getParameter( 'idlist' ), $count, $linksCount );
 		}
 
-		$this->pageUpdater->addPage( $this->getTitle() );
-		$this->pageUpdater->setOrigin( __METHOD__ );
-		$this->pageUpdater->doPurgeParserCacheAsPool();
+		if ( $this->getParameter( 'exec.mode' ) !== self::EXEC_JOURNAL ) {
+			$this->pageUpdater->addPage( $this->getTitle() );
+			$this->pageUpdater->setOrigin( __METHOD__ );
+			$this->pageUpdater->doPurgeParserCacheAsPool();
+		}
 
-		Hooks::run( 'SMW::Job::AfterParserCachePurgeComplete', array( $this ) );
+		Hooks::run( 'SMW::Job::AfterParserCachePurgeComplete', [ $this ] );
 
-		$logger->info( __METHOD__ . ' (procTime in sec: ' . Timer::getElapsedTime( __METHOD__, 7 ) . ')' );
+		$this->applicationFactory->getMediaWikiLogger()->info(
+			[
+				'Job',
+				"ParserCachePurgeJob",
+				"List count:{count}",
+				"Links count:{linksCount}",
+				"Limit:{limit}",
+				"Offset:{offset}",
+				"procTime in sec: {procTime}"
+			],
+			[
+				'method'  => __METHOD__,
+				'role' => 'user',
+				'procTime' => Timer::getElapsedTime( __METHOD__, 7 ),
+				'limit'  => $this->limit,
+				'offset' => $this->offset,
+				'count'  => $count,
+				'linksCount'  => $linksCount
+			]
+		);
 
 		return true;
 	}
@@ -105,91 +152,105 @@ class ParserCachePurgeJob extends JobBase {
 	 *
 	 * @param array|string $idList
 	 */
-	private function findEmbeddedQueryTargetLinksBatches( $idList, $logger ) {
+	private function purgeTargetLinksFromList( $idList, &$listCount, &$linksCount ) {
 
-		if ( is_string( $idList ) && strpos( $idList, '|') !== false ) {
+		if ( is_string( $idList ) && strpos( $idList, '|' ) !== false ) {
 			$idList = explode( '|', $idList );
 		}
 
-		if ( $idList === array() ) {
+		if ( $idList === [] ) {
 			return true;
 		}
 
-		$queryDependencyLinksStoreFactory = new QueryDependencyLinksStoreFactory();
+		$queryDependencyLinksStoreFactory = $this->applicationFactory->singleton(
+			'QueryDependencyLinksStoreFactory'
+		);
 
 		$queryDependencyLinksStore = $queryDependencyLinksStoreFactory->newQueryDependencyLinksStore(
-			$this->store
+			$this->applicationFactory->getStore()
 		);
+
+		$dependencyLinksUpdateJournal = $queryDependencyLinksStoreFactory->newDependencyLinksUpdateJournal();
 
 		$requestOptions = new RequestOptions();
 
 		// +1 to look ahead
 		$requestOptions->setLimit( $this->limit + 1 );
 		$requestOptions->setOffset( $this->offset );
-		$requestOptions->targetLinksCount = 0;
+		$requestOptions->setOption( 'links.count', 0 );
 
-		$hashList = $queryDependencyLinksStore->findEmbeddedQueryTargetLinksHashListFrom(
+		$hashList = $queryDependencyLinksStore->findDependencyTargetLinks(
 			$idList,
 			$requestOptions
 		);
 
+		$linksCount = $requestOptions->getOption( 'links.count' );
+
 		// If more results are available then use an iterative increase to fetch
 		// the remaining updates by creating successive jobs
-		if ( $requestOptions->targetLinksCount > $this->limit ) {
-			$job = new self( $this->getTitle(), array(
-				'idlist' => $idList,
-				'limit'  => $this->limit,
-				'offset' => $this->offset + self::CHUNK_SIZE
-			) );
+		if ( $linksCount > $this->limit ) {
+			$job = new self(
+				$this->getTitle(),
+				[
+					'idlist'  => $idList,
+					'limit'   => $this->limit,
+					'offset'  => $this->offset + self::CHUNK_SIZE,
+					'exec.mode' => $this->getParameter( 'exec.mode' )
+				]
+			);
 
 			$job->run();
 		}
 
-		if ( $hashList === array() ) {
+		if ( $hashList === [] ) {
 			return true;
 		}
 
-		list( $hashList, $queryList ) = $this->doBuildUniqueTargetLinksHashList(
-			$hashList
+		list( $hashList, $queryList ) = $this->splitList( $hashList	);
+		$listCount = count( $hashList );
+
+		$cachedQueryResultPrefetcher = $this->applicationFactory->singleton(
+			'CachedQueryResultPrefetcher'
 		);
 
-		$logger->info(
-			__METHOD__  .
-			" counted: " . count( $hashList ) .
-			" targetLinksCount: " . $requestOptions->targetLinksCount .
-			" (offset: {$this->offset}  for " . $this->getTitle()->getPrefixedDBKey() . ")"
-		);
-
-		$this->applicationFactory->singleton( 'CachedQueryResultPrefetcher' )->resetCacheBy(
+		$cachedQueryResultPrefetcher->resetCacheBy(
 			$queryList,
 			'ParserCachePurgeJob'
 		);
 
-		$this->addPagesToUpdater( $hashList );
+		if ( $this->getParameter( 'exec.mode' ) === self::EXEC_JOURNAL ) {
+			$dependencyLinksUpdateJournal->updateFromList( $hashList, $this->getTitle()->getLatestRevID() );
+		} else{
+			$this->addPagesToUpdater( $hashList );
+		}
 	}
 
-	private function doBuildUniqueTargetLinksHashList( $targetLinksHashList ) {
+	public function splitList( $hashList ) {
 
-		$uniqueTargetLinksHashList = array();
-		$uniqueQueryList = array();
+		$targetLinksList = [];
+		$queryList = [];
 
-		foreach ( $targetLinksHashList as $targetLinkHash ) {
+		foreach ( $hashList as $hash ) {
 
-			list( $title, $namespace, $iw, $subobjectname ) = explode( '#', $targetLinkHash, 4 );
+			if ( $hash instanceof DIWikiPage ) {
+				$hash = $hash->getHash();
+			}
+
+			list( $title, $namespace, $iw, $subobjectname ) = explode( '#', $hash, 4 );
 
 			// QueryResultCache stores queries with they queryID = $subobjectname
 			if ( strpos( $subobjectname, Query::ID_PREFIX ) !== false ) {
-				$uniqueQueryList[$subobjectname] = true;
+				$queryList[$subobjectname] = true;
 			}
 
 			// We make an assumption (as we avoid to query the DB) about that a
 			// query is bind to its subject by simply removing the subobject
 			// identifier (_QUERY*) and creating the base (or root) subject for
 			// the selected target (embedded query)
-			$uniqueTargetLinksHashList[HashBuilder::createHashIdFromSegments( $title, $namespace, $iw )] = true;
+			$targetLinksList[HashBuilder::createHashIdFromSegments( $title, $namespace, $iw )] = true;
 		}
 
-		return array( array_keys( $uniqueTargetLinksHashList ), array_keys( $uniqueQueryList ) );
+		return [ array_keys( $targetLinksList ), array_keys( $queryList ) ];
 	}
 
 	private function addPagesToUpdater( array $hashList ) {

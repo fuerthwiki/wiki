@@ -8,7 +8,13 @@
 			"Shirayuki",
 			"青子守歌",
 			"Mfuji",
-			"Sujiniku"
+			"Sujiniku",
+			"Macofe",
+			"おはぐろ蜻蛉",
+			"Hinaloe",
+			"Phantomize",
+			"Yusuke1109",
+			"夢蝶葬花"
 		]
 	},
 	"coll-desc": "[[Special:Book|ブックを作成する]]",
@@ -84,7 +90,9 @@
 	"coll-rendering_page_info_text_article": "{{MediaWiki:Coll-helppage}}/ページ情報文を生成中",
 	"coll-rendering_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/コレクション情報文を生成中",
 	"coll-rendering_finished_title": "レンダリング完了",
-	"coll-rendering_finished_text": "<strong>ドキュメントファイルは生成されました。</strong>\nあなたのコンピューターに<strong>[$1 ファイルをダウンロード]</strong>してください。\n\n注:\n* 出力に満足できませんか? 改善の可能性があるか、[[{{MediaWiki:Coll-helppage}}|ブックについてのヘルプページ]]をご覧ください。",
+	"coll-rendering_finished_text": "<strong>ドキュメントファイルは生成されました。</strong>\nあなたのコンピューターに<strong>[$1 ファイルをダウンロード]</strong>してください。",
+	"coll-rendering_finished_notes_heading": "ノート：",
+	"coll-rendering_finished_note_not_satisfied": "出力に満足していない? それを改善する可能性については、[[{{MediaWiki:Coll-helppage}}|ブックに関するヘルプページ]]を参照してください。",
 	"coll-finished_page_info_text_article": "{{MediaWiki:Coll-helppage}}/ページ情報テキストを生成中",
 	"coll-finished_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/コレクション情報テキストを生成中",
 	"coll-rendering_failed_title": "レンダリング失敗",
@@ -176,7 +184,15 @@
 	"coll-setting-toc-no": "いいえ",
 	"coll-setting-columns": "段数:",
 	"coll-attribution-anons": "匿名: $1",
-	"coll-attribution-page": "<h1>文章および画像の出典、投稿者、ライセンス</h1>\n<h2>文章</h2>\n$1<h2>画像</h2>\n$2\n<h2>ライセンス</h2>\n$3",
-	"coll-article-attribution": "<b>$1</b> <i>出典:</i> $2 <i>投稿者:</i> $3",
-	"coll-image-attribution": "<b>$1</b> <i>出典:</i> $2 <i>ライセンス:</i> $3 <i>投稿者:</i> $4 <i>原著者:</i> $5"
+	"coll-attribution-page": "<h1>文章および画像の情報源、投稿者、ライセンス</h1>\n<h2>文章</h2>\n$1<h2>画像</h2>\n$2\n<h2>ライセンス</h2>\n$3",
+	"coll-article-attribution": "<b>$1</b> <i>情報源:</i> $2 <i>投稿者:</i> $3",
+	"coll-image-attribution": "<b>$1</b> <i>情報源:</i> $2 <i>ライセンス:</i> $3 <i>投稿者:</i> $4 <i>原著者:</i> $5",
+	"coll-warning-learn-more": "詳細",
+	"coll-toc-title": "目次",
+	"coll-contributors-title": "貢献者",
+	"coll-images-title": "画像",
+	"coll-images-source": "ソース",
+	"coll-images-license": "ライセンス",
+	"coll-rendererror-fetch": "$1の取得に失敗しました:$2",
+	"coll-rendererror-no-cache": "ブックデータがキャッシュに見つかりません。これはソフトウェアのエラーである可能性が最も高いです。"
 }

@@ -2,14 +2,15 @@
 
 namespace SMW\SQLStore\QueryEngine\DescriptionInterpreters;
 
+use RuntimeException;
 use SMW\Query\Language\ConceptDescription;
-use SMW\Query\Language\Description;
 use SMW\Query\Language\Conjunction;
+use SMW\Query\Language\Description;
 use SMW\Query\Language\Disjunction;
+use SMW\Query\Parser as QueryParser;
 use SMW\SQLStore\QueryEngine\DescriptionInterpreter;
 use SMW\SQLStore\QueryEngine\QuerySegment;
 use SMW\SQLStore\QueryEngine\QuerySegmentListBuilder;
-use SMWQueryParser as QueryParser;
 use SMWSQLStore3;
 
 /**
@@ -28,6 +29,11 @@ class ConceptDescriptionInterpreter implements DescriptionInterpreter {
 	private $querySegmentListBuilder;
 
 	/**
+	 * @var QueryParser
+	 */
+	private $queryParser;
+
+	/**
 	 * @since 2.2
 	 *
 	 * @param QuerySegmentListBuilder $querySegmentListBuilder
@@ -43,6 +49,15 @@ class ConceptDescriptionInterpreter implements DescriptionInterpreter {
 	 */
 	public function canInterpretDescription( Description $description ) {
 		return $description instanceof ConceptDescription;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param QueryParser $queryParser
+	 */
+	public function setQueryParser( QueryParser $queryParser ) {
+		$this->queryParser = $queryParser;
 	}
 
 	/**
@@ -68,10 +83,10 @@ class ConceptDescriptionInterpreter implements DescriptionInterpreter {
 
 		$this->querySegmentListBuilder->getCircularReferenceGuard()->mark( $hash );
 
-		if ( $this->querySegmentListBuilder->getCircularReferenceGuard()->isCircularByRecursionFor( $hash ) ) {
+		if ( $this->querySegmentListBuilder->getCircularReferenceGuard()->isCircular( $hash ) ) {
 
 			$this->querySegmentListBuilder->addError(
-				array( 'smw-query-condition-circular', $description->getQueryString() )
+				[ 'smw-query-condition-circular', $description->getQueryString() ]
 			);
 
 			return $query;
@@ -120,7 +135,7 @@ class ConceptDescriptionInterpreter implements DescriptionInterpreter {
 				}
 			} else {
 				$this->querySegmentListBuilder->addError(
-					array( 'smw_concept_cache_miss', $concept->getDBkey() )
+					[ 'smw_concept_cache_miss', $concept->getDBkey() ]
 				);
 			}
 		} // else: no cache, no description (this may happen); treat like empty concept
@@ -140,8 +155,8 @@ class ConceptDescriptionInterpreter implements DescriptionInterpreter {
 	private function getConceptForId( $db, $id ) {
 		return $db->selectRow(
 			'smw_fpt_conc',
-			array( 'concept_txt', 'concept_features', 'concept_size', 'concept_depth', 'cache_date' ),
-			array( 's_id' => $id ),
+			[ 'concept_txt', 'concept_features', 'concept_size', 'concept_depth', 'cache_date' ],
+			[ 's_id' => $id ],
 			__METHOD__
 		);
 	}
@@ -151,10 +166,13 @@ class ConceptDescriptionInterpreter implements DescriptionInterpreter {
 	 * Unescaping is the same as in SMW_DV_Conept's getWikiValue().
 	 */
 	private function getConceptQueryDescriptionFrom( $conceptQuery ) {
-		$queryParser = new QueryParser();
 
-		return $queryParser->getQueryDescription(
-			str_replace( array( '&lt;', '&gt;', '&amp;' ), array( '<', '>', '&' ), $conceptQuery )
+		if ( $this->queryParser === null ) {
+			throw new RuntimeException( 'Missing a QueryParser instance' );
+		}
+
+		return $this->queryParser->getQueryDescription(
+			str_replace( [ '&lt;', '&gt;', '&amp;' ], [ '<', '>', '&' ], $conceptQuery )
 		);
 	}
 
@@ -163,7 +181,7 @@ class ConceptDescriptionInterpreter implements DescriptionInterpreter {
 		if ( $description instanceof ConceptDescription ) {
 			if ( $description->getConcept()->equals( $concept ) ) {
 				$this->querySegmentListBuilder->addError(
-					array( 'smw-query-condition-circular', $description->getQueryString() )
+					[ 'smw-query-condition-circular', $description->getQueryString() ]
 				);
 				return;
 			}

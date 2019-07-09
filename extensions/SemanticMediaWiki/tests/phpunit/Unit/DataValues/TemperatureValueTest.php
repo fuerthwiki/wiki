@@ -4,8 +4,8 @@ namespace SMW\Tests\DataValues;
 
 use SMW\DataItemFactory;
 use SMW\DataValues\TemperatureValue;
-use SMW\Tests\TestEnvironment;
 use SMW\DataValues\ValueFormatters\NumberValueFormatter;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\DataValues\TemperatureValue
@@ -46,6 +46,10 @@ class TemperatureValueTest extends \PHPUnit_Framework_TestCase {
 		$this->dataValueServiceFactory->expects( $this->any() )
 			->method( 'getConstraintValueValidator' )
 			->will( $this->returnValue( $constraintValueValidator ) );
+
+		$this->dataValueServiceFactory->expects( $this->any() )
+			->method( 'getPropertySpecificationLookup' )
+			->will( $this->returnValue( $this->propertySpecificationLookup ) );
 	}
 
 	protected function tearDown() {
@@ -121,8 +125,8 @@ class TemperatureValueTest extends \PHPUnit_Framework_TestCase {
 	public function testSetUserValueToReturnOnPreferredDisplayUnit() {
 
 		$this->propertySpecificationLookup->expects( $this->once() )
-			->method( 'getDisplayUnitsBy' )
-			->will( $this->returnValue( array( 'Celsius' ) ) );
+			->method( 'getDisplayUnits' )
+			->will( $this->returnValue( [ 'Celsius' ] ) );
 
 		$instance = new TemperatureValue();
 
@@ -162,7 +166,7 @@ class TemperatureValueTest extends \PHPUnit_Framework_TestCase {
 	public function testSetUserValueToReturnOnPreferredDisplayPrecision() {
 
 		$this->propertySpecificationLookup->expects( $this->once() )
-			->method( 'getDisplayPrecisionBy' )
+			->method( 'getDisplayPrecision' )
 			->will( $this->returnValue( 0 ) );
 
 		$instance = new TemperatureValue();

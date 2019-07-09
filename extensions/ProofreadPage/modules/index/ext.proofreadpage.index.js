@@ -1,11 +1,7 @@
-( function ( mw, $ ) {
-	'use strict';
-
-	$( document ).ready( function () {
-		// Set up the help system
-		$( '.prp-help-field' ).tipsy( {
-			gravity: 'nw'
+mw.loader.using( 'oojs-ui-core' ).done( function () {
+	$( function () {
+		$( '.prp-fieldLayout-help' ).map( function () {
+			return OO.ui.infuse( this );
 		} );
 	} );
-
-}( mw, jQuery ) );
+} );

@@ -10,6 +10,10 @@
 			"Inkowik"
 		]
 	},
+	"nstab-page": "Seite",
+	"nstab-index": "Index",
+	"tooltip-ca-nstab-page": "Die Buchseite ansehen",
+	"tooltip-ca-nstab-index": "Den Buchindex ansehen",
 	"indexpages": "Liste von Indexseiten",
 	"pageswithoutscans": "Seiten ohne Scans",
 	"proofreadpage_desc": "Ermöglicht das bequeme Vergleichen von Text mit dem Originalscan",
@@ -18,13 +22,9 @@
 	"proofreadpage_index_expected": "Fehler: Index erwartet",
 	"proofreadpage_nosuch_index": "Fehler: Kein entsprechender Index",
 	"proofreadpage_nosuch_file": "Fehler: Keine entsprechende Datei",
-	"proofreadpage_badpage": "Falsches Format",
-	"proofreadpage_badpagetext": "Das Format der Seite, die du versuchst zu speichern, ist falsch.",
-	"proofreadpage_indexdupe": "Doppelter Link",
 	"proofreadpage_indexdupetext": "Seiten können nicht mehr als einmal auf einer Indexseite aufgelistet werden.",
 	"proofreadpage_nologin": "Nicht angemeldet",
 	"proofreadpage_nologintext": "Du musst [[Special:UserLogin|angemeldet sein]], um den Status des Korrekturlesens von Seiten ändern zu können.",
-	"proofreadpage_notallowed": "Änderung nicht erlaubt",
 	"proofreadpage_notallowedtext": "Du bist nicht berechtigt, den Status des Korrekturlesens dieser Seite zu ändern.",
 	"proofreadpage_dataconfig_badformatted": "Fehler in der Datenkonfiguration",
 	"proofreadpage_dataconfig_badformattedtext": "Die Seite [[Mediawiki:Proofreadpage index data config]] ist nicht in wohlgeformtem JSON.",
@@ -65,6 +65,7 @@
 	"proofreadpage_source": "Quelle",
 	"proofreadpage_source_message": "Zur Erstellung dieses Texts wurde die gescannte Ausgabe benutzt.",
 	"right-pagequality": "Seitenqualität ändern",
+	"right-pagequality-admin": "Unbeschränkte Bearbeitungen an der Seitenqualitätsmarkierung",
 	"proofreadpage-section-tools": "Hilfsmittel zum Korrekturlesen",
 	"proofreadpage-group-zoom": "Zoom",
 	"proofreadpage-group-other": "Anderes",
@@ -82,7 +83,8 @@
 	"proofreadpage-indexoai-error-schemanotfound-text": "Das Schema „$1“ wurde nicht gefunden",
 	"proofreadpage-disambiguationspage": "Template:Begriffsklärung",
 	"proofreadpage-indexquality-alt": "{{PLURAL:$1|Eine bestätigte Seite|$1 bestätigte Seiten}}, {{PLURAL:$2|eine nur korrekturgelesene Seite|$2 nur korrekturgelesene Seiten}} und {{PLURAL:$3|eine nicht korrekturgelesene Seite|$3 nicht korrekturgelesene Seiten}}",
-	"content-model-proofread-page": "Seite: Seite",
+	"content-model-proofread-page": "Buchseite",
+	"content-model-proofread-index": "Buchindex",
 	"apihelp-query+proofread-description": "Gibt Informationen über den Korrekturlesungsstatus der Seiten zurück.",
 	"apihelp-query+proofread-example-1": "Gibt den Korrekturlesungsstatus der Seiten im Namensraum 250 zurück",
 	"apihelp-query+proofreadinfo-description": "Gibt Informationen zur Einstellung der Erweiterung „ProofreadPage“ zurück.",
@@ -93,5 +95,7 @@
 	"proofreadpage-visualeditor-node-pages-inspector-tooltip": "Seiten",
 	"proofreadpage-visualeditor-node-pages-inspector-description": "Einbindung von $1",
 	"proofreadpage-visualeditor-node-pages-inspector-indexselector-yes": "Ja",
-	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "Nein"
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "Nein",
+	"proofreadpage-visualeditor-node-pagequality-inspector-title": "Korrekturlesungsqualität",
+	"proofreadpage-visualeditor-node-pagequality-inspector-tooltip": "Korrekturlesungsqualität"
 }

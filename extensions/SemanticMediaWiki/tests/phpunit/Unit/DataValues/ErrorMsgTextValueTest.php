@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\DataValues;
 
-use SMW\DataValues\ErrorMsgTextValue;
 use SMW\DataItemFactory;
+use SMW\DataValues\ErrorMsgTextValue;
 
 /**
  * @covers \SMW\DataValues\ErrorMsgTextValue
@@ -105,15 +105,15 @@ class ErrorMsgTextValueTest extends \PHPUnit_Framework_TestCase {
 
 	public function textProvider() {
 
-		$provider[] = array(
+		$provider[] = [
 			'Foo',
 			'Foo'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'[2,"Foo"]',
 			'Foo'
-		);
+		];
 
 		return $provider;
 	}

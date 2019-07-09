@@ -3,10 +3,9 @@
 namespace SMW;
 
 use SMWContainerSemanticData as ContainerSemanticData;
-use SMWDataItem as DataItem;
 use SMWDataValue as DataValue;
-use SMWDIContainer as DIContainer;
 use SMWDIBlob as DIBlob;
+use SMWDIContainer as DIContainer;
 
 /**
  * The handler encodes errors into a representation that can be retrieved from
@@ -34,6 +33,17 @@ class ProcessingErrorMsgHandler {
 	}
 
 	/**
+	 * @since 3.0
+	 *
+	 * @param string $message
+	 *
+	 * @return DIProperty|null
+	 */
+	public static function grepPropertyFromRestrictionErrorMsg( $message ) {
+		return PropertyRestrictionExaminer::grepPropertyFromRestrictionErrorMsg( $message );
+	}
+
+	/**
 	 * Turns an encoded array of messages or text elements into a compacted array
 	 * with msg keys and arguments.
 	 *
@@ -47,7 +57,7 @@ class ProcessingErrorMsgHandler {
 	 */
 	public static function normalizeAndDecodeMessages( array $messages, $type = null, $language = null ) {
 
-		$normalizedMessages = array();
+		$normalizedMessages = [];
 
 		if ( $type === null ) {
 			$type = Message::TEXT;
@@ -103,7 +113,7 @@ class ProcessingErrorMsgHandler {
 	public static function getMessagesAsString( array $messages, $type = null, $language = null ) {
 
 		$normalizedMessages = self::normalizeAndDecodeMessages( $messages, $type, $language );
-		$msg = array();
+		$msg = [];
 
 		foreach ( $normalizedMessages as $message ) {
 
@@ -176,15 +186,16 @@ class ProcessingErrorMsgHandler {
 	 */
 	public function newErrorContainerFromDataValue( DataValue $dataValue ) {
 
-		if ( $dataValue->getErrors() === array() ) {
+		if ( $dataValue->getErrors() === [] ) {
 			return null;
 		}
 
 		$property = $dataValue->getProperty();
-		$hash = '';
 
 		if ( $property !== null ) {
 			$hash = $property->getKey();
+		} else {
+			$hash = $dataValue->getDataItem()->getHash();
 		}
 
 		$containerSemanticData = $this->newContainerSemanticData( $hash );

@@ -25,11 +25,11 @@ class SkinAfterContentTest extends \PHPUnit_Framework_TestCase {
 
 		$this->applicationFactory = ApplicationFactory::getInstance();
 
-		$settings = Settings::newFromArray( array(
-			'smwgFactboxUseCache'  => true,
-			'smwgCacheType'        => 'hash',
+		$settings = Settings::newFromArray( [
+			'smwgFactboxFeatures'  => SMW_FACTBOX_CACHE,
+			'smwgMainCacheType'        => 'hash',
 			'smwgSemanticsEnabled' => true
-		) );
+		] );
 
 		$this->applicationFactory->registerObject( 'Settings', $settings );
 	}
@@ -77,7 +77,7 @@ class SkinAfterContentTest extends \PHPUnit_Framework_TestCase {
 			$cachedFactbox = $this->applicationFactory->create( 'FactboxFactory' )->newCachedFactbox();
 
 			$cachedFactbox->addContentToCache(
-				$this->applicationFactory->newCacheFactory()->getFactboxCacheKey( $parameters['title']->getArticleID() ),
+				$cachedFactbox->makeCacheKey( $parameters['title'] ),
 				$parameters['text']
 			);
 
@@ -106,7 +106,7 @@ class SkinAfterContentTest extends \PHPUnit_Framework_TestCase {
 
 		$text = __METHOD__ . 'text-0';
 
-		#0 Retrive content from outputPage property
+		#0 Retrieve content from outputPage property
 		$title = MockTitle::buildMock( __METHOD__ . 'from-property' );
 
 		$title->expects( $this->atLeastOnce() )
@@ -143,12 +143,12 @@ class SkinAfterContentTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getContext' )
 			->will( $this->returnValue( new \RequestContext() ) );
 
-		$provider[] = array(
-			array( 'skin' => $skin ),
-			array( 'text' => $text )
-		);
+		$provider[] = [
+			[ 'skin' => $skin ],
+			[ 'text' => $text ]
+		];
 
-		#1 Retrive content from cache
+		#1 Retrieve content from cache
 		$title = MockTitle::buildMock( __METHOD__ . 'from-cache' );
 
 		$title->expects( $this->atLeastOnce() )
@@ -185,10 +185,10 @@ class SkinAfterContentTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getContext' )
 			->will( $this->returnValue( new \RequestContext() ) );
 
-		$provider[] = array(
-			array( 'skin' => $skin, 'text' => $text, 'title' => $outputPage->getTitle() ),
-			array( 'text' => $text )
-		);
+		$provider[] = [
+			[ 'skin' => $skin, 'text' => $text, 'title' => $outputPage->getTitle() ],
+			[ 'text' => $text ]
+		];
 
 		// #2 Special page
 		$text  = __METHOD__ . 'text-2';
@@ -225,10 +225,10 @@ class SkinAfterContentTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getContext' )
 			->will( $this->returnValue( new \RequestContext() ) );
 
-		$provider[] = array(
-			array( 'skin' => $skin, 'text' => $text ),
-			array( 'text' => '' )
-		);
+		$provider[] = [
+			[ 'skin' => $skin, 'text' => $text ],
+			[ 'text' => '' ]
+		];
 
 		// #3 "edit" request
 		$text   = __METHOD__ . 'text-3';
@@ -266,16 +266,16 @@ class SkinAfterContentTest extends \PHPUnit_Framework_TestCase {
 			->will( $this->returnValue( $outputPage ) );
 
 		$context = new \RequestContext( );
-		$context->setRequest( new \FauxRequest( array( 'action' => 'edit' ), true ) );
+		$context->setRequest( new \FauxRequest( [ 'action' => 'edit' ], true ) );
 
 		$skin->expects( $this->atLeastOnce() )
 			->method( 'getContext' )
 			->will( $this->returnValue( $context ) );
 
-		$provider[] = array(
-			array( 'skin' => $skin, 'text' => $text ),
-			array( 'text' => $text )
-		);
+		$provider[] = [
+			[ 'skin' => $skin, 'text' => $text ],
+			[ 'text' => $text ]
+		];
 
 		// #4 "delete" request
 		$text   = __METHOD__ . 'text-4';
@@ -303,16 +303,16 @@ class SkinAfterContentTest extends \PHPUnit_Framework_TestCase {
 			->will( $this->returnValue( $outputPage ) );
 
 		$context = new \RequestContext( );
-		$context->setRequest( new \FauxRequest( array( 'action' => 'delete' ), true ) );
+		$context->setRequest( new \FauxRequest( [ 'action' => 'delete' ], true ) );
 
 		$skin->expects( $this->atLeastOnce() )
 			->method( 'getContext' )
 			->will( $this->returnValue( $context ) );
 
-		$provider[] = array(
-			array( 'skin' => $skin, 'text' => $text ),
-			array( 'text' => '' )
-		);
+		$provider[] = [
+			[ 'skin' => $skin, 'text' => $text ],
+			[ 'text' => '' ]
+		];
 
 		// #5 "purge" request
 		$text   = __METHOD__ . 'text-purge';
@@ -340,16 +340,16 @@ class SkinAfterContentTest extends \PHPUnit_Framework_TestCase {
 			->will( $this->returnValue( $outputPage ) );
 
 		$context = new \RequestContext( );
-		$context->setRequest( new \FauxRequest( array( 'action' => 'purge' ), true ) );
+		$context->setRequest( new \FauxRequest( [ 'action' => 'purge' ], true ) );
 
 		$skin->expects( $this->atLeastOnce() )
 			->method( 'getContext' )
 			->will( $this->returnValue( $context ) );
 
-		$provider[] = array(
-			array( 'skin' => $skin, 'text' => $text ),
-			array( 'text' => '' )
-		);
+		$provider[] = [
+			[ 'skin' => $skin, 'text' => $text ],
+			[ 'text' => '' ]
+		];
 
 		return $provider;
 	}

@@ -3,9 +3,14 @@
 		"authors": [
 			"Jkjk",
 			"Matěj Grabovský",
-			"Mormegil"
+			"Mormegil",
+			"Dvorapa"
 		]
 	},
+	"nstab-page": "Stránka",
+	"nstab-index": "Index",
+	"tooltip-ca-nstab-page": "Zobrazit stránku knihy",
+	"tooltip-ca-nstab-index": "Zobrazit index knihy",
 	"indexpages": "Seznam indexových stránek",
 	"pageswithoutscans": "Stránky bez skenů",
 	"proofreadpage_desc": "Umožňuje jednoduché porovnání textu s předlohou",
@@ -14,13 +19,9 @@
 	"proofreadpage_index_expected": "Chyba: očekáván index",
 	"proofreadpage_nosuch_index": "Chyba: takový index neexistuje",
 	"proofreadpage_nosuch_file": "Chyba: takový soubor neexistuje",
-	"proofreadpage_badpage": "Nesprávný formát",
-	"proofreadpage_badpagetext": "Formát stránky, kterou jste se pokusili uložit, není správný.",
-	"proofreadpage_indexdupe": "Duplicitní odkaz",
 	"proofreadpage_indexdupetext": "Stránky mohou být v indexu uvedeny maximálně jednou.",
 	"proofreadpage_nologin": "Nejste přihlášeni",
 	"proofreadpage_nologintext": "Pokud chcete změnit stav zkontrolování stránky, musíte se [[Special:UserLogin|přihlásit]].",
-	"proofreadpage_notallowed": "Změna není povolena",
 	"proofreadpage_notallowedtext": "Nemáte povoleno měnit stav zkontrolování této stránky.",
 	"proofreadpage_dataconfig_badformatted": "Chyba v datové konfiguraci",
 	"proofreadpage_dataconfig_badformattedtext": "Stránka [[Mediawiki:Proofreadpage index data config]] není platně zformátovaný JSON.",
@@ -78,5 +79,6 @@
 	"proofreadpage-indexoai-error-schemanotfound-text": "Schéma $1 nenalezeno.",
 	"proofreadpage-disambiguationspage": "Template:rozcestník",
 	"proofreadpage-indexquality-alt": "$1 {{PLURAL:$1|ověřená stránka|ověřené stránky|ověřených stránek}}, $2 jen {{PLURAL:$2|zkontrolovaná stránka|zkontrolované stránky|zkontrolovaných stránek}} a $3 {{PLURAL:$3|nezkontrolovaná stránka|nezkontrolované stránky|nezkontrolovaných stránek}}",
-	"content-model-proofread-page": "Stránka: stránka"
+	"content-model-proofread-page": "Stránka knihy",
+	"content-model-proofread-index": "Index knihy"
 }

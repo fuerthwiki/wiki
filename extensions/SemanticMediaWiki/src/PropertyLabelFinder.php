@@ -20,19 +20,19 @@ class PropertyLabelFinder {
 	 *
 	 * @var string[]
 	 */
-	private $languageDependentPropertyLabels = array();
+	private $languageDependentPropertyLabels = [];
 
 	/**
 	 * Array with entries "property label" => "property id"
 	 *
 	 * @var string[]
 	 */
-	private $canonicalPropertyLabels = array();
+	private $canonicalPropertyLabels = [];
 
 	/**
 	 * @var string[]
 	 */
-	private $canonicalDatatypeLabels = array();
+	private $canonicalDatatypeLabels = [];
 
 	/**
 	 * @since 2.2
@@ -41,7 +41,7 @@ class PropertyLabelFinder {
 	 * @param array $languageDependentPropertyLabels
 	 * @param array $canonicalPropertyLabels
 	 */
-	public function __construct( Store $store, array $languageDependentPropertyLabels = array(), array $canonicalPropertyLabels = array(), array $canonicalDatatypeLabels = array() ) {
+	public function __construct( Store $store, array $languageDependentPropertyLabels = [], array $canonicalPropertyLabels = [], array $canonicalDatatypeLabels = [] ) {
 		$this->store = $store;
 		$this->languageDependentPropertyLabels = $languageDependentPropertyLabels;
 		$this->canonicalPropertyLabels = $canonicalPropertyLabels;
@@ -105,17 +105,17 @@ class PropertyLabelFinder {
 	 *
 	 * @return string
 	 */
-	public function findPropertyLabelByLanguageCode( $id, $languageCode = '' ) {
+	public function findPropertyLabelFromIdByLanguageCode( $id, $languageCode = '' ) {
 
 		if ( $languageCode === '' ) {
 			return $this->findPropertyLabelById( $id );
 		}
 
-		$extraneousLanguage = Localizer::getInstance()->getExtraneousLanguage(
+		$lang = Localizer::getInstance()->getLang(
 			mb_strtolower( trim( $languageCode ) )
 		);
 
-		$labels = $extraneousLanguage->getPropertyLabels() + $extraneousLanguage->getDatatypeLabels();
+		$labels = $lang->getPropertyLabels() + $lang->getDatatypeLabels();
 
 		if ( isset( $labels[$id] ) ) {
 			return $labels[$id];
@@ -160,7 +160,7 @@ class PropertyLabelFinder {
 	public function findPropertyListFromLabelByLanguageCode( $text, $languageCode = '' ) {
 
 		if ( $text === '' ) {
-			return array();
+			return [];
 		}
 
 		if ( $languageCode === '' ) {
@@ -178,15 +178,16 @@ class PropertyLabelFinder {
 		$queryFactory = ApplicationFactory::getInstance()->getQueryFactory();
 		$descriptionFactory = $queryFactory->newDescriptionFactory();
 
-		$description = $descriptionFactory->newConjunction( array(
+		$description = $descriptionFactory->newConjunction( [
 			$descriptionFactory->newNamespaceDescription( SMW_NS_PROPERTY ),
 			$descriptionFactory->newFromDataValue( $dataValue )
-		) );
+		] );
 
-		$propertyList = array();
+		$propertyList = [];
 
 		$query = $queryFactory->newQuery( $description );
 		$query->setOption( $query::PROC_CONTEXT, 'PropertyLabelFinder' );
+		$query->setLimit( 100 );
 
 		$queryResult = $this->store->getQueryResult(
 			$query

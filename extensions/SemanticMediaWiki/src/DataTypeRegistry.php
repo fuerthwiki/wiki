@@ -2,9 +2,9 @@
 
 namespace SMW;
 
-use SMWDataItem as DataItem;
-use SMW\ExtraneousLanguage\ExtraneousLanguage;
 use SMW\DataValues\TypeList;
+use SMW\Lang\Lang;
+use SMWDataItem as DataItem;
 
 /**
  * DataTypes registry class
@@ -27,28 +27,28 @@ class DataTypeRegistry {
 	protected static $instance = null;
 
 	/**
-	 * @var ExtraneousLanguage
+	 * @var Lang
 	 */
-	private $extraneousLanguage;
+	private $lang;
 
 	/**
 	 * Array of type labels indexed by type ids. Used for datatype resolution.
 	 *
 	 * @var string[]
 	 */
-	private $typeLabels = array();
+	private $typeLabels = [];
 
 	/**
 	 * Array of ids indexed by type aliases. Used for datatype resolution.
 	 *
 	 * @var string[]
 	 */
-	private $typeAliases = array();
+	private $typeAliases = [];
 
 	/**
 	 * @var string[]
 	 */
-	private $canonicalLabels = array();
+	private $canonicalLabels = [];
 
 	/**
 	 * Array of class names for creating new SMWDataValue, indexed by type
@@ -68,7 +68,12 @@ class DataTypeRegistry {
 	/**
 	 * @var string[]
 	 */
-	private $subDataTypes = array();
+	private $subDataTypes = [];
+
+	/**
+	 * @var []
+	 */
+	private $browsableTypes = [];
 
 	/**
 	 * Lookup map that allows finding a datatype id given a label or alias.
@@ -76,14 +81,14 @@ class DataTypeRegistry {
 	 *
 	 * @var string[]
 	 */
-	private $typeByLabelOrAliasLookup = array();
+	private $typeByLabelOrAliasLookup = [];
 
 	/**
 	 * Array of default types to use for making datavalues for dataitems.
 	 *
 	 * @var string[]
 	 */
-	private $defaultDataItemTypeMap = array(
+	private $defaultDataItemTypeMap = [
 		DataItem::TYPE_BLOB => '_txt', // Text type
 		DataItem::TYPE_URI => '_uri', // URL/URI type
 		DataItem::TYPE_WIKIPAGE => '_wpg', // Page type
@@ -98,13 +103,17 @@ class DataTypeRegistry {
 		// If either of the following two occurs, we want to see a PHP error:
 		//DataItem::TYPE_NOTYPE => '',
 		//DataItem::TYPE_ERROR => '',
-	);
-
+	];
 
 	/**
 	 * @var Closure[]
 	 */
-	private $extraneousFunctions = array();
+	private $extraneousFunctions = [];
+
+	/**
+	 * @var []
+	 */
+	private $extenstionData = [];
 
 	/**
 	 * @var Options
@@ -124,13 +133,15 @@ class DataTypeRegistry {
 			return self::$instance;
 		}
 
-		$extraneousLanguage = Localizer::getInstance()->getExtraneousLanguage();
+		$lang = Localizer::getInstance()->getLang();
 
 		self::$instance = new self(
-			$extraneousLanguage
+			$lang
 		);
 
-		self::$instance->initDatatypes( TypeList::getList() );
+		self::$instance->initDatatypes(
+			TypesRegistry::getDataTypeList()
+		);
 
 		self::$instance->setOption(
 			'smwgDVFeatures',
@@ -152,10 +163,10 @@ class DataTypeRegistry {
 	/**
 	 * @since 1.9.0.2
 	 *
-	 * @param ExtraneousLanguage $extraneousLanguage
+	 * @param Lang $lang
 	 */
-	public function __construct( ExtraneousLanguage $extraneousLanguage ) {
-		$this->extraneousLanguage = $extraneousLanguage;
+	public function __construct( Lang $lang ) {
+		$this->lang = $lang;
 		$this->registerLabels();
 	}
 
@@ -194,7 +205,7 @@ class DataTypeRegistry {
 	 *
 	 * @return boolean
 	 */
-	public function isKnownByType( $typeId ) {
+	public function isRegistered( $typeId ) {
 		return isset( $this->typeDataItemIds[$typeId] );
 	}
 
@@ -207,6 +218,17 @@ class DataTypeRegistry {
 	 */
 	public function isSubDataType( $typeId ) {
 		return isset( $this->subDataTypes[$typeId] ) && $this->subDataTypes[$typeId];
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $typeId
+	 *
+	 * @return boolean
+	 */
+	public function isBrowsableType( $typeId ) {
+		return isset( $this->browsableTypes[$typeId] ) && $this->browsableTypes[$typeId];
 	}
 
 	/**
@@ -230,11 +252,13 @@ class DataTypeRegistry {
 	 * @param $dataItemId integer ID of the data item class that this data value uses, see DataItem
 	 * @param $label mixed string label or false for types that cannot be accessed by users
 	 * @param boolean $isSubDataType
+	 * @param boolean $isBrowsableType
 	 */
-	public function registerDataType( $id, $className, $dataItemId, $label = false, $isSubDataType = false ) {
+	public function registerDataType( $id, $className, $dataItemId, $label = false, $isSubDataType = false, $isBrowsableType = false ) {
 		$this->typeClasses[$id] = $className;
 		$this->typeDataItemIds[$id] = $dataItemId;
 		$this->subDataTypes[$id] = $isSubDataType;
+		$this->browsableTypes[$id] = $isBrowsableType;
 
 		if ( $label !== false ) {
 			$this->registerTypeLabel( $id, $label );
@@ -265,17 +289,24 @@ class DataTypeRegistry {
 	}
 
 	/**
+	 * @deprecated since 3.0, use DataTypeRegistry::findTypeByLabel
+	 */
+	public function findTypeId( $label ) {
+		return $this->findTypeByLabel( $label );
+	}
+
+	/**
 	 * Look up the ID that identifies the datatype of the given label
 	 * internally. This id is used for all internal operations. If the
 	 * label does not belong to a known type, the empty string is returned.
 	 *
-	 * The lookup is case insensitive.
+	 * @since 3.0
 	 *
 	 * @param string $label
 	 *
 	 * @return string
 	 */
-	public function findTypeId( $label ) {
+	public function findTypeByLabel( $label ) {
 
 		$label = mb_strtolower( $label );
 
@@ -294,17 +325,33 @@ class DataTypeRegistry {
 	 *
 	 * @return string
 	 */
-	public function findTypeByLanguage( $label, $languageCode = false ) {
+	public function findTypeByLabelAndLanguage( $label, $languageCode = false ) {
 
 		if ( !$languageCode ) {
-			return $this->findTypeId( $label );
+			return $this->findTypeByLabel( $label );
 		}
 
-		$extraneousLanguage = $this->extraneousLanguage->fetchByLanguageCode(
+		$lang = $this->lang->fetch(
 			$languageCode
 		);
 
-		return $extraneousLanguage->findDatatypeByLabel( $label );
+		return $lang->findDatatypeByLabel( $label );
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $type
+	 *
+	 * @return string
+	 */
+	public function getFieldType( $type ) {
+
+		if ( isset( $this->typeDataItemIds[$type] ) ) {
+			return $this->defaultDataItemTypeMap[ $this->typeDataItemIds[$type]];
+		}
+
+		return '_wpg';
 	}
 
 	/**
@@ -448,16 +495,18 @@ class DataTypeRegistry {
 
 			$this->typeDataItemIds[$id] = $definition[1];
 			$this->subDataTypes[$id] = $definition[2];
+			$this->browsableTypes[$id] = $definition[3];
 		}
 
 		// Deprecated since 1.9
 		\Hooks::run( 'smwInitDatatypes' );
 
 		// Since 1.9
-		\Hooks::run( 'SMW::DataType::initTypes', array( $this ) );
+		\Hooks::run( 'SMW::DataType::initTypes', [ $this ] );
 	}
 
 	/**
+	 * @deprecated since 3.0, use DataTypeRegistry::setExtensionData
 	 * Inject services and objects that are planned to be used during the invocation of
 	 * a DataValue
 	 *
@@ -471,6 +520,7 @@ class DataTypeRegistry {
 	}
 
 	/**
+	 * @deprecated since 3.0, use DataTypeRegistry::getExtensionData
 	 * @since 2.3
 	 *
 	 * @return Closure[]
@@ -503,17 +553,62 @@ class DataTypeRegistry {
 		$this->getOptions()->set( $key, $value );
 	}
 
+	/**
+	 * This function allows for registered types to add additional data or functions
+	 * required by an individual DataValue of that type.
+	 *
+	 * Register the data:
+	 * $dataTypeRegistry = DataTypeRegistry::getInstance();
+	 *
+	 * $dataTypeRegistry->registerDataType( '__foo', ... );
+	 * $dataTypeRegistry->setExtensionData( '__foo', [ 'ext.function' => ... ] );
+	 * ...
+	 *
+	 * Access the data:
+	 * $dataValueFactory = DataValueFactory::getInstance();
+	 *
+	 * $dataValue = $dataValueFactory->newDataValueByType( '__foo' );
+	 * $dataValue->getExtensionData( 'ext.function' )
+	 * ...
+	 *
+	 * @since 3.0
+	 *
+	 * @param string $id
+	 * @param array $data
+	 */
+	public function setExtensionData( $id, array $data = [] ) {
+		if ( $this->isRegistered( $id ) ) {
+			$this->extenstionData[$id] = $data;
+		}
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $id
+	 *
+	 * @return []
+	 */
+	public function getExtensionData( $id ) {
+
+		if ( isset( $this->extenstionData[$id] ) ) {
+			return $this->extenstionData[$id];
+		}
+
+		return [];
+	}
+
 	private function registerLabels() {
 
-		foreach ( $this->extraneousLanguage->getDatatypeLabels() as $typeId => $typeLabel ) {
+		foreach ( $this->lang->getDatatypeLabels() as $typeId => $typeLabel ) {
 			$this->registerTypeLabel( $typeId, $typeLabel );
 		}
 
-		foreach ( $this->extraneousLanguage->getDatatypeAliases() as $typeAlias => $typeId ) {
+		foreach ( $this->lang->getDatatypeAliases() as $typeAlias => $typeId ) {
 			$this->registerDataTypeAlias( $typeId, $typeAlias );
 		}
 
-		foreach ( $this->extraneousLanguage->getCanonicalDatatypeLabels() as $label => $id ) {
+		foreach ( $this->lang->getCanonicalDatatypeLabels() as $label => $id ) {
 			$this->canonicalLabels[$id] = $label;
 		}
 	}

@@ -2,11 +2,10 @@
 
 namespace SMW\Tests\PropertyAnnotators;
 
-use SMW\DIWikiPage;
+use SMW\DataItemFactory;
 use SMW\PropertyAnnotators\EditProtectedPropertyAnnotator;
 use SMW\PropertyAnnotators\NullPropertyAnnotator;
 use SMW\Tests\TestEnvironment;
-use SMW\DataItemFactory;
 
 /**
  * @covers \SMW\PropertyAnnotators\EditProtectedPropertyAnnotator
@@ -106,7 +105,7 @@ class EditProtectedPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 
 		$title->expects( $this->once() )
 			->method( 'getRestrictions' )
-			->will( $this->returnValue( array( 'Foo' ) ) );
+			->will( $this->returnValue( [ 'Foo' ] ) );
 
 		$instance = new EditProtectedPropertyAnnotator(
 			new NullPropertyAnnotator( $semanticData ),
@@ -138,31 +137,31 @@ class EditProtectedPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 
 		$title->expects( $this->any() )
 			->method( 'getRestrictions' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
-		$provider = array();
+		$provider = [];
 
 		#0 no EditProtectionRight
-		$provider[] = array(
+		$provider[] = [
 			$title,
 			false,
-			array(
+			[
 				'propertyCount'  => 0,
-				'propertyKeys'   => array(),
-				'propertyValues' => array(),
-			)
-		);
+				'propertyKeys'   => [],
+				'propertyValues' => [],
+			]
+		];
 
 		#1
-		$provider[] = array(
+		$provider[] = [
 			$title,
 			'Foo',
-			array(
+			[
 				'propertyCount'  => 0,
-				'propertyKeys'   => array(),
-				'propertyValues' => array(),
-			)
-		);
+				'propertyKeys'   => [],
+				'propertyValues' => [],
+			]
+		];
 
 		$title = $this->getMockBuilder( '\Title' )
 			->disableOriginalConstructor()
@@ -183,18 +182,18 @@ class EditProtectedPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 
 		$title->expects( $this->any() )
 			->method( 'getRestrictions' )
-			->will( $this->returnValue( array( 'Foo' ) ) );
+			->will( $this->returnValue( [ 'Foo' ] ) );
 
 		#2
-		$provider[] = array(
+		$provider[] = [
 			$title,
 			'Foo',
-			array(
+			[
 				'propertyCount'  => 1,
-				'propertyKeys'   => array( '_EDIP' ),
-				'propertyValues' => array( true ),
-			)
-		);
+				'propertyKeys'   => [ '_EDIP' ],
+				'propertyValues' => [ true ],
+			]
+		];
 
 		$title = $this->getMockBuilder( '\Title' )
 			->disableOriginalConstructor()
@@ -217,15 +216,15 @@ class EditProtectedPropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getRestrictions' );
 
 		#3
-		$provider[] = array(
+		$provider[] = [
 			$title,
 			'Foo',
-			array(
+			[
 				'propertyCount'  => 0,
-				'propertyKeys'   => array(),
-				'propertyValues' => array(),
-			)
-		);
+				'propertyKeys'   => [],
+				'propertyValues' => [],
+			]
+		];
 
 		return $provider;
 	}

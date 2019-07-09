@@ -3,19 +3,19 @@
 namespace SMW;
 
 use Closure;
-use Onoi\CallbackContainer\ContainerBuilder;
 use Onoi\CallbackContainer\CallbackContainerFactory;
+use Onoi\CallbackContainer\ContainerBuilder;
 use Parser;
 use ParserOutput;
 use SMW\Maintenance\MaintenanceFactory;
 use SMW\MediaWiki\Jobs\JobFactory;
 use SMW\MediaWiki\MwCollaboratorFactory;
 use SMW\MediaWiki\PageCreator;
-use SMW\MediaWiki\TitleCreator;
+use SMW\MediaWiki\TitleFactory;
 use SMW\Query\ProfileAnnotator\QueryProfileAnnotatorFactory;
+use SMW\Services\SharedServicesContainer;
 use SMWQueryParser as QueryParser;
 use Title;
-use SMW\Services\SharedServicesContainer;
 
 /**
  * Application instances access for internal and external use
@@ -121,12 +121,12 @@ class ApplicationFactory {
 	 * not to be relied upon for external access.
 	 *
 	 *
-	 * @param string $serviceName
+	 * @param string $service
 	 *
 	 * @return mixed
 	 */
-	public function singleton( $serviceName ) {
-		return call_user_func_array( array( $this->containerBuilder, 'singleton' ), func_get_args() );
+	public function singleton( ...$service ) {
+		return $this->containerBuilder->singleton( ...$service );
 	}
 
 	/**
@@ -137,12 +137,12 @@ class ApplicationFactory {
 	 *
 	 * @since 2.5
 	 *
-	 * @param string $serviceName
+	 * @param string $service
 	 *
 	 * @return mixed
 	 */
-	public function create( $serviceName ) {
-		return call_user_func_array( array( $this->containerBuilder, 'create' ), func_get_args() );
+	public function create( ...$service ) {
+		return $this->containerBuilder->create( ...$service );
 	}
 
 	/**
@@ -166,12 +166,10 @@ class ApplicationFactory {
 	/**
 	 * @since 2.1
 	 *
-	 * @param Parser $parser
-	 *
 	 * @return ParserFunctionFactory
 	 */
-	public function newParserFunctionFactory( Parser $parser ) {
-		return new ParserFunctionFactory( $parser );
+	public function newParserFunctionFactory() {
+		return new ParserFunctionFactory();
 	}
 
 	/**
@@ -189,7 +187,7 @@ class ApplicationFactory {
 	 * @return CacheFactory
 	 */
 	public function newCacheFactory() {
-		return $this->containerBuilder->create( 'CacheFactory', $this->getSettings()->get( 'smwgCacheType' ) );
+		return $this->containerBuilder->create( 'CacheFactory', $this->getSettings()->get( 'smwgMainCacheType' ) );
 	}
 
 	/**
@@ -198,7 +196,7 @@ class ApplicationFactory {
 	 * @return CacheFactory
 	 */
 	public function getCacheFactory() {
-		return $this->containerBuilder->singleton( 'CacheFactory', $this->getSettings()->get( 'smwgCacheType' ) );
+		return $this->containerBuilder->singleton( 'CacheFactory', $this->getSettings()->get( 'smwgMainCacheType' ) );
 	}
 
 	/**
@@ -231,12 +229,21 @@ class ApplicationFactory {
 	}
 
 	/**
+	 * @since 3.0
+	 *
+	 * @return ConnectionManager
+	 */
+	public function getConnectionManager() {
+		return $this->containerBuilder->singleton( 'ConnectionManager' );
+	}
+
+	/**
 	 * @since 2.0
 	 *
-	 * @return TitleCreator
+	 * @return TitleFactory
 	 */
-	public function newTitleCreator() {
-		return $this->containerBuilder->create( 'TitleCreator', $this->newPageCreator() );
+	public function newTitleFactory() {
+		return $this->containerBuilder->create( 'TitleFactory', $this->newPageCreator() );
 	}
 
 	/**
@@ -258,7 +265,7 @@ class ApplicationFactory {
 		$pageUpdater = $this->containerBuilder->create(
 			'PageUpdater',
 			$this->getStore()->getConnection( 'mw.db' ),
-			$this->newTransactionalDeferredCallableUpdate()
+			$this->newDeferredTransactionalCallableUpdate()
 		);
 
 		$pageUpdater->setLogger(
@@ -314,9 +321,10 @@ class ApplicationFactory {
 		$mwCollaboratorFactory = $this->newMwCollaboratorFactory();
 
 		$linksProcessor = $this->containerBuilder->create( 'LinksProcessor' );
+		$settings = $this->getSettings();
 
 		$linksProcessor->isStrictMode(
-			$this->getSettings()->get( 'smwgEnabledInTextAnnotationParserStrictMode' )
+			$settings->isFlagSet( 'smwgParserFeatures', SMW_PARSER_STRICT )
 		);
 
 		$inTextAnnotationParser = new InTextAnnotationParser(
@@ -326,11 +334,12 @@ class ApplicationFactory {
 			$mwCollaboratorFactory->newRedirectTargetFinder()
 		);
 
-		// 2.5+ Changed modus operandi
-		$linksInValues = $this->getSettings()->get( 'smwgLinksInValues' );
+		$inTextAnnotationParser->isLinksInValues(
+			$settings->isFlagSet( 'smwgParserFeatures', SMW_PARSER_LINV )
+		);
 
-		$inTextAnnotationParser->enabledLinksInValues(
-			$linksInValues === true ? SMW_LINV_PCRE : $linksInValues
+		$inTextAnnotationParser->showErrors(
+			$settings->isFlagSet( 'smwgParserFeatures', SMW_PARSER_INL_ERROR )
 		);
 
 		return $inTextAnnotationParser;
@@ -359,10 +368,20 @@ class ApplicationFactory {
 	 *
 	 * @param SemanticData $semanticData
 	 *
-	 * @return StoreUpdater
+	 * @return DataUpdater
 	 */
-	public function newStoreUpdater( SemanticData $semanticData ) {
-		return new StoreUpdater( $this->getStore(), $semanticData );
+	public function newDataUpdater( SemanticData $semanticData ) {
+
+		$dataUpdater = new DataUpdater(
+			$this->getStore(),
+			$semanticData
+		);
+
+		$dataUpdater->isCommandLineMode(
+			$GLOBALS['wgCommandLineMode']
+		);
+
+		return $dataUpdater;
 	}
 
 	/**
@@ -395,10 +414,10 @@ class ApplicationFactory {
 	/**
 	 * @since 2.4
 	 *
-	 * @return PropertyHierarchyLookup
+	 * @return HierarchyLookup
 	 */
-	public function newPropertyHierarchyLookup() {
-		return $this->containerBuilder->create( 'PropertyHierarchyLookup' );
+	public function newHierarchyLookup() {
+		return $this->containerBuilder->create( 'HierarchyLookup' );
 	}
 
 	/**
@@ -449,11 +468,11 @@ class ApplicationFactory {
 	/**
 	 * @since 2.4
 	 *
-	 * @param Closure $callback
+	 * @param callable $callback
 	 *
 	 * @return DeferredCallableUpdate
 	 */
-	public function newDeferredCallableUpdate( Closure $callback = null ) {
+	public function newDeferredCallableUpdate( callable $callback = null ) {
 
 		$deferredCallableUpdate = $this->containerBuilder->create(
 			'DeferredCallableUpdate',
@@ -478,31 +497,31 @@ class ApplicationFactory {
 	/**
 	 * @since 3.0
 	 *
-	 * @param Closure $callback
+	 * @param callable $callback
 	 *
-	 * @return TransactionalDeferredCallableUpdate
+	 * @return DeferredTransactionalUpdate
 	 */
-	public function newTransactionalDeferredCallableUpdate( Closure $callback = null ) {
+	public function newDeferredTransactionalCallableUpdate( callable $callback = null ) {
 
-		$transactionalDeferredCallableUpdate = $this->containerBuilder->create(
-			'TransactionalDeferredCallableUpdate',
+		$deferredTransactionalUpdate = $this->containerBuilder->create(
+			'DeferredTransactionalCallableUpdate',
 			$callback,
 			$this->getStore()->getConnection( 'mw.db' )
 		);
 
-		$transactionalDeferredCallableUpdate->isDeferrableUpdate(
+		$deferredTransactionalUpdate->isDeferrableUpdate(
 			$this->getSettings()->get( 'smwgEnabledDeferredUpdate' )
 		);
 
-		$transactionalDeferredCallableUpdate->setLogger(
+		$deferredTransactionalUpdate->setLogger(
 			$this->getMediaWikiLogger()
 		);
 
-		$transactionalDeferredCallableUpdate->isCommandLineMode(
+		$deferredTransactionalUpdate->isCommandLineMode(
 			$GLOBALS['wgCommandLineMode']
 		);
 
-		return $transactionalDeferredCallableUpdate;
+		return $deferredTransactionalUpdate;
 	}
 
 	/**
@@ -511,8 +530,8 @@ class ApplicationFactory {
 	 *
 	 * @return QueryParser
 	 */
-	public function newQueryParser() {
-		return $this->getQueryFactory()->newQueryParser();
+	public function newQueryParser( $queryFeatures = false ) {
+		return $this->getQueryFactory()->newQueryParser( $queryFeatures );
 	}
 
 	/**
@@ -538,8 +557,17 @@ class ApplicationFactory {
 	 *
 	 * @return LoggerInterface
 	 */
-	public function getMediaWikiLogger() {
-		return $this->containerBuilder->singleton( 'MediaWikiLogger' );
+	public function getMediaWikiLogger( $channel = 'smw' ) {
+		return $this->containerBuilder->singleton( 'MediaWikiLogger', $channel, $GLOBALS['smwgDefaultLoggerRole'] );
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @return JobQueue
+	 */
+	public function getJobQueue() {
+		return $this->containerBuilder->singleton( 'JobQueue' );
 	}
 
 	private static function newContainerBuilder( CallbackContainerFactory $callbackContainerFactory, $servicesFileDir ) {

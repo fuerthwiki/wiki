@@ -12,7 +12,7 @@
 		]
 	},
 	"replacetext": "Text ersetzen",
-	"replacetext-desc": "Ergänzt eine [[Special:ReplaceText|Spezialseite]], die eine globale Text-suchen-und-ersetzen-Operation auf allen Inhaltsseiten ermöglicht",
+	"replacetext-desc": "Ergänzt eine [[Special:ReplaceText|Spezialseite]], die das Suchen und Ersetzen von Zeichenketten ermöglicht",
 	"replacetext_docu": "Um einen Text durch einen anderen Text auf allen Inhaltsseiten zu ersetzen, gib hier die beiden Textteile ein und klicke danach auf die Schaltfläche „{{int:replacetext_continue}}“. Auf der dann folgenden Seite erhält man eine Aufzählung der Seiten, die den zu ersetzenden Text enthalten. Dort kann man auch auswählen, auf welchen Seiten die Ersetzungen durchgeführt werden sollen. Dein Benutzername wird während der Ersetzungen in der Versionsgeschichte aufgenommen.",
 	"replacetext_originaltext": "Vorhandener Text:",
 	"replacetext_replacementtext": "Neuer Text:",
@@ -42,7 +42,9 @@
 	"replacetext_warning": "'''Warnung:''' $1 {{PLURAL:$1|Seite enthält|Seiten enthalten}} bereits den zu ersetzenden Textteil „$2“.\nSofern du nun die {{PLURAL:$1|Ersetzung|Ersetzungen}} durchführst, ist eine spätere Unterscheidung zwischen den nunmehr zu ersetzenden und den bereits vorhandenen Textteilen nicht mehr möglich.",
 	"replacetext_blankwarning": "'''Warnung:''' Da der zu ersetzende Textteil leer ist, kann die Operation nicht rückgängig gemacht werden. Möchtest du dennoch fortfahren?",
 	"replacetext_continue": "Fortfahren",
+	"replacetext_announce": "Diese Bearbeitungen über $1 und Beobachtungslisten ankündigen",
 	"replacetext_editsummary": "Textersetzung - „$1“ durch „$2“",
 	"right-replacetext": "Textersetzung für das gesamte Wiki durchführen",
-	"action-replacetext": "im gesamten Wiki Zeichenfolgeersetzungen durchzuführen"
+	"action-replacetext": "im gesamten Wiki Zeichenfolgeersetzungen durchzuführen",
+	"replacetext_reminder": "Um auch Links auf diese Seite in anderen Seiten zu verändern, gehe zu $1."
 }

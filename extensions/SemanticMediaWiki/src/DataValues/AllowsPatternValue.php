@@ -3,11 +3,10 @@
 namespace SMW\DataValues;
 
 use SMW\Localizer;
-use SMWStringValue as StringValue;
 use SMW\Message;
 
 /**
- * To suppport regular expressions in connection with the `Allows pattern`
+ * To support regular expressions in connection with the `Allows pattern`
  * property.
  *
  * @license GNU GPL v2+
@@ -46,7 +45,7 @@ class AllowsPatternValue extends StringValue {
 		}
 
 		if ( ( $this->getOption( 'smwgDVFeatures' ) & SMW_DV_PVAP ) == 0 && $value !== '' ) {
-			$this->addErrorMsg( array( 'smw-datavalue-feature-not-supported', 'Allows pattern (SMW_DV_PVAP)' ) );
+			$this->addErrorMsg( [ 'smw-datavalue-feature-not-supported', 'Allows pattern (SMW_DV_PVAP)' ] );
 		}
 
 		$allowsPatternValueParser = $this->dataValueServiceFactory->getValueParser( $this );
@@ -56,7 +55,7 @@ class AllowsPatternValue extends StringValue {
 		);
 
 		if ( !$content ) {
-			$this->addErrorMsg( array( 'smw-datavalue-allows-pattern-reference-unknown', $value ), Message::ESCAPED );
+			$this->addErrorMsg( [ 'smw-datavalue-allows-pattern-reference-unknown', $value ], Message::ESCAPED );
 		}
 
 		parent::parseUserValue( $value );
@@ -103,10 +102,10 @@ class AllowsPatternValue extends StringValue {
 
 		return \Html::rawElement(
 			'a',
-			array(
+			[
 				'href'   => $title->getLocalUrl(),
 				'target' => '_blank'
-			),
+			],
 			$id
 		);
 	}

@@ -2,8 +2,8 @@
 
 namespace SMW;
 
-use SMW\Query\Exception\ResultFormatNotFoundException;
 use InvalidArgumentException;
+use SMW\Query\Exception\ResultFormatNotFoundException;
 
 /**
  * Factory for "result formats", ie classes implementing QueryResultPrinter.
@@ -51,14 +51,14 @@ final class QueryPrinterFactory {
 	 *
 	 * @var string[]
 	 */
-	private $formats = array();
+	private $formats = [];
 
 	/**
 	 * Form alias registry. Aliases pointing to their canonical format name.
 	 *
 	 * @var string[]
 	 */
-	private $aliases = array();
+	private $aliases = [];
 
 	/**
 	 * Registers a format.

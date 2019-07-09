@@ -5,7 +5,6 @@
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/onoi/event-dispatcher/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/onoi/event-dispatcher/?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/onoi/event-dispatcher/version.png)](https://packagist.org/packages/onoi/event-dispatcher)
 [![Packagist download count](https://poser.pugx.org/onoi/event-dispatcher/d/total.png)](https://packagist.org/packages/onoi/event-dispatcher)
-[![Dependency Status](https://www.versioneye.com/php/onoi:event-dispatcher/badge.png)](https://www.versioneye.com/php/onoi:event-dispatcher)
 
 A minimalistic event dispatcher (observer) interface that was part of the [Semantic MediaWiki][smw] code base and
 is now being deployed as independent library.
@@ -17,7 +16,7 @@ PHP 5.3/HHVM 3.3 or later
 ## Installation
 
 The recommended installation method for this library is by either adding
-the dependency to your [composer.json][composer]
+the dependency to your [composer.json][composer].
 
 ```json
 {
@@ -26,7 +25,6 @@ the dependency to your [composer.json][composer]
 	}
 }
 ```
-or to execute `composer require onoi/event-dispatcher:~1.0`.
 
 ## Usage
 
@@ -43,7 +41,7 @@ class BarListener implements EventListener {
 }
 ```
 ```php
-class ListenerCollectionRegistery implements EventListenerCollection {
+class ListenerCollectionRegistry implements EventListenerCollection {
 
 	private $eventListenerCollection;
 
@@ -70,30 +68,36 @@ class ListenerCollectionRegistery implements EventListenerCollection {
 ```php
 $eventDispatcherFactory = new EventDispatcherFactory();
 
-$listenerCollectionRegistery = new ListenerCollectionRegistery(
+$listenerCollectionRegistry = new ListenerCollectionRegistry(
 	$eventDispatcherFactory->newGenericEventListenerCollection()
 );
 
 $eventDispatcher = $eventDispatcherFactory->newGenericEventDispatcher();
-$eventDispatcher->addListenerCollection( $listenerCollectionRegistery );
+$eventDispatcher->addListenerCollection( $listenerCollectionRegistry );
 
 class Foo {
 
-	public function __construct( EventDispatcher $eventDispatcher ) {
-		$this->eventDispatcher = $eventDispatcher;
-	}
+	use EventDispatcherAwareTrait;
 
 	public function doSomething() {
+
+		// No context
 		$this->eventDispatcher->dispatch( 'do.something' );
 
 		$dispatchContext = new DispatchContext();
 		$dispatchContext->set( 'dosomethingelse', new \stdClass );
 
+		// Using `DispatchContext`
 		$this->eventDispatcher->dispatch( 'notify.bar', $dispatchContext );
+
+		// Using an array as context which is later converted into
+		// a `DispatchContext`
+		$this->eventDispatcher->dispatch( 'notify.foo', [ 'Bar' => 123 ] );
 	}
 }
 
-$instance = new Foo( $eventDispatcher );
+$instance = new Foo();
+$instance->setEventDispatcher( $eventDispatcher );
 $instance->doSomething();
 ```
 
@@ -110,6 +114,11 @@ developers mailing list and have a look at the [contribution guidelinee](/CONTRI
 The library provides unit tests that covers the core-functionality normally run by the [continues integration platform][travis]. Tests can also be executed manually using the PHPUnit configuration file found in the root directory.
 
 ### Release notes
+
+- 1.1.0 (2019-01-27)
+  - Allowed `EventDispatcher::dispatch` to take an array as context object
+  - Added the `EventNotDispatchableException` and `Subscriber` interface
+  - Added the `EventDispatcherAwareTrait` class
 
 * 1.0.0 initial release (2015-03-25)
 

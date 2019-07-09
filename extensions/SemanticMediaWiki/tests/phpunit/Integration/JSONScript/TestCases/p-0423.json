@@ -40,6 +40,9 @@
 			"contents": "{{#show: Example/P0423/2 |?Has date }}"
 		},
 		{
+			"skip-on": {
+				"virtuoso": "Virtuoso 6.1 does not support `-4715-11-24T12:00:00Z\"^^xsd:dateTime` and goes '...Error: Malformed query...'"
+			},
 			"page": "Example/P0423/3",
 			"contents": "[[Has date::Jan 10000000000]]"
 		},
@@ -82,8 +85,8 @@
 			"subject": "Example/P0423/Q1.1",
 			"assert-output": {
 				"to-contain": [
-					"<td data-sort-value=\"2435851.0034722\" class=\"Has-date smwtype_dat\">12 January 1957 12:05:00</td>",
-					"<td data-sort-value=\"2435851.0034722\" class=\"Has-date smwtype_dat\">1957年1月12日 (土) 12:05</td>"
+					"<td class=\"Has-date smwtype_dat\" data-sort-value=\"2435851.0034722\">12 January 1957 12:05:00</td>",
+					"<td class=\"Has-date smwtype_dat\" data-sort-value=\"2435851.0034722\">1957年1月12日 (土) 12:05</td>"
 				]
 			}
 		},
@@ -93,8 +96,8 @@
 			"subject": "Example/P0423/Q1.2",
 			"assert-output": {
 				"to-contain": [
-					"<td data-sort-value=\"2435851.0034722\" class=\"smwtype_dat\">12 January 1957 12:05:00</td>",
-					"<td data-sort-value=\"2435851.0034722\" class=\"smwtype_dat\">1957年1月12日 (土) 12:05</td>"
+					"<td class=\"smwtype_dat\" data-sort-value=\"2435851.0034722\">12 January 1957 12:05:00</td>",
+					"<td class=\"smwtype_dat\" data-sort-value=\"2435851.0034722\">1957年1月12日 (土) 12:05</td>"
 				]
 			}
 		},
@@ -104,7 +107,7 @@
 			"subject": "Example/P0423/Q1.3",
 			"assert-output": {
 				"to-contain": [
-					"<td data-sort-value=\"2435851.0034722\" class=\"Has-date smwtype_dat\">1957年1月12日 (土) 12:05:00</td>"
+					"<td class=\"Has-date smwtype_dat\" data-sort-value=\"2435851.0034722\">1957年1月12日 (土) 12:05:00</td>"
 				]
 			}
 		},
@@ -114,7 +117,7 @@
 			"subject": "Example/P0423/Q1.4",
 			"assert-output": {
 				"to-contain": [
-					"<p>1957年1月12日 (土) 12:05:00"
+					"1957年1月12日 (土) 12:05:00"
 				]
 			}
 		},
@@ -124,7 +127,7 @@
 			"subject": "Example/P0423/Q1.5",
 			"assert-output": {
 				"to-contain": [
-					"<p>12:05:00, 12 janvier 1957"
+					"12:05:00, 12 janvier 1957"
 				]
 			}
 		},
@@ -134,20 +137,23 @@
 			"subject": "Example/P0423/Q2.1",
 			"assert-output": {
 				"to-contain": [
-					"<p>12 April 1957 12:05:00"
+					"12 April 1957 12:05:00"
 				],
 				"not-contain": [
-					"<p>12 avril 1957 12:05:00"
+					"12 avril 1957 12:05:00"
 				]
 			}
 		},
 		{
+			"skip-on": {
+				"virtuoso": "Virtuoso 6.1, see Example/P0423/3 comment!"
+			},
 			"type": "parser",
 			"about": "#7 avoid a possible `DateTime ... Failed to parse time ...` on large dates, only checking some minor output since WINOS reports 784354016999.5, yet Linux returns 3652426721059.5 (float precision issue)",
 			"subject": "Example/P0423/Q3.1",
 			"assert-output": {
 				"to-contain": [
-					"class=\"Has-date smwtype_dat\">"
+					"class=\"Has-date smwtype_dat\" "
 				]
 			}
 		}

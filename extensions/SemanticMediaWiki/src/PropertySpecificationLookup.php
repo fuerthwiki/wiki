@@ -2,10 +2,11 @@
 
 namespace SMW;
 
-use SMW\Query\DescriptionFactory;
 use Onoi\Cache\Cache;
-use SMW\Message;
+use RuntimeException;
+use SMW\Query\DescriptionFactory;
 use SMWDIBlob as DIBlob;
+use SMWDIBoolean as DIBoolean;
 use SMWQuery as Query;
 
 /**
@@ -61,35 +62,51 @@ class PropertySpecificationLookup {
 	 */
 	public function resetCacheBy( DIWikiPage $subject ) {
 		$this->cachedPropertyValuesPrefetcher->resetCacheBy( $subject );
+		$this->intermediaryMemoryCache->delete( $subject->getHash() );
 	}
 
 	/**
 	 * @since 2.5
 	 *
-	 * @param DIProperty $source
+	 * @param DIProperty|DIWikiPage $source
 	 * @param DIProperty $target
 	 *
 	 * @return []|DataItem[]
 	 */
-	public function getSpecification( DIProperty $source, DIProperty $target ) {
+	public function getSpecification( $source, DIProperty $target ) {
 
-		$definition = false;
-		$key = '-spec:'. $source->getKey() . $target->getKey();
+		if ( $source instanceof DIProperty ) {
+			$dataItem = $source->getCanonicalDiWikiPage();
+		} elseif( $source instanceof DIWikiPage ) {
+			$dataItem = $source;
+		} else {
+			throw new RuntimeException( "Invalid request instance type" );
+		}
 
-		if ( ( $definition = $this->intermediaryMemoryCache->fetch( $key ) ) !== false ) {
-			return $definition;
+		$hash = $dataItem->getHash();
+		$key = $target->getKey();
+
+		$definition = $this->intermediaryMemoryCache->fetch( $hash );
+
+		if ( $definition === false ) {
+			$definition = [];
+		}
+
+		if ( isset( $definition[$key] ) ) {
+			return $definition[$key];
 		}
 
 		$dataItems = $this->cachedPropertyValuesPrefetcher->getPropertyValues(
-			$source->getCanonicalDiWikiPage(),
+			$dataItem,
 			$target
 		);
 
 		if ( !is_array( $dataItems ) ) {
-			$dataItems = array();
+			$dataItems = [];
 		}
 
-		$this->intermediaryMemoryCache->save( $key, $dataItems );
+		$definition[$key] = $dataItems;
+		$this->intermediaryMemoryCache->save( $hash, $definition );
 
 		return $dataItems;
 	}
@@ -106,7 +123,7 @@ class PropertySpecificationLookup {
 		$fieldList = false;
 		$dataItems = $this->getSpecification( $property, new DIProperty( '_LIST' ) );
 
-		if ( is_array( $dataItems ) && $dataItems !== array() ) {
+		if ( is_array( $dataItems ) && $dataItems !== [] ) {
 			$fieldList = end( $dataItems );
 		}
 
@@ -165,7 +182,7 @@ class PropertySpecificationLookup {
 			$query
 		);
 
-		if ( is_array( $dataItems ) && $dataItems !== array() ) {
+		if ( is_array( $dataItems ) && $dataItems !== [] ) {
 			$dataItem = end( $dataItems );
 
 			// Cache results as a linked list attached to
@@ -184,16 +201,47 @@ class PropertySpecificationLookup {
 	 *
 	 * @return boolean
 	 */
-	public function hasUniquenessConstraintBy( DIProperty $property ) {
+	public function hasUniquenessConstraint( DIProperty $property ) {
 
 		$hasUniquenessConstraint = false;
 		$dataItems = $this->getSpecification( $property, new DIProperty( '_PVUC' ) );
 
-		if ( is_array( $dataItems ) && $dataItems !== array() ) {
+		if ( is_array( $dataItems ) && $dataItems !== [] ) {
 			$hasUniquenessConstraint = end( $dataItems )->getBoolean();
 		}
 
 		return $hasUniquenessConstraint;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param DIProperty $property
+	 *
+	 * @return DataItem|null
+	 */
+	public function getPropertyGroup( DIProperty $property ) {
+
+		$dataItem = null;
+		$dataItems = $this->getSpecification( $property, new DIProperty( '_INST' ) );
+
+		if ( is_array( $dataItems ) && $dataItems !== [] ) {
+
+			foreach ( $dataItems as $dataItem ) {
+				$pv = $this->cachedPropertyValuesPrefetcher->getPropertyValues(
+					$dataItem,
+					new DIProperty( '_PPGR' )
+				);
+
+				$di = end( $pv );
+
+				if ( $di instanceof DIBoolean && $di->getBoolean() ) {
+					return $dataItem;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -203,12 +251,12 @@ class PropertySpecificationLookup {
 	 *
 	 * @return DataItem|null
 	 */
-	public function getExternalFormatterUriBy( DIProperty $property ) {
+	public function getExternalFormatterUri( DIProperty $property ) {
 
 		$dataItem = null;
 		$dataItems = $this->getSpecification( $property, new DIProperty( '_PEFU' ) );
 
-		if ( is_array( $dataItems ) && $dataItems !== array() ) {
+		if ( is_array( $dataItems ) && $dataItems !== [] ) {
 			$dataItem = end( $dataItems );
 		}
 
@@ -227,7 +275,7 @@ class PropertySpecificationLookup {
 		$allowsPattern = '';
 		$dataItems = $this->getSpecification( $property, new DIProperty( '_PVAP' ) );
 
-		if ( is_array( $dataItems ) && $dataItems !== array() ) {
+		if ( is_array( $dataItems ) && $dataItems !== [] ) {
 			$allowsPattern = end( $dataItems )->getString();
 		}
 
@@ -241,12 +289,12 @@ class PropertySpecificationLookup {
 	 *
 	 * @return array
 	 */
-	public function getAllowedValuesBy( DIProperty $property ) {
+	public function getAllowedValues( DIProperty $property ) {
 
-		$allowsValues = array();
+		$allowsValues = [];
 		$dataItems = $this->getSpecification( $property, new DIProperty( '_PVAL' ) );
 
-		if ( is_array( $dataItems ) && $dataItems !== array() ) {
+		if ( is_array( $dataItems ) && $dataItems !== [] ) {
 			$allowsValues = $dataItems;
 		}
 
@@ -260,12 +308,12 @@ class PropertySpecificationLookup {
 	 *
 	 * @return array
 	 */
-	public function getAllowedListValueBy( DIProperty $property ) {
+	public function getAllowedListValues( DIProperty $property ) {
 
-		$allowsListValue = array();
+		$allowsListValue = [];
 		$dataItems = $this->getSpecification( $property, new DIProperty( '_PVALI' ) );
 
-		if ( is_array( $dataItems ) && $dataItems !== array() ) {
+		if ( is_array( $dataItems ) && $dataItems !== [] ) {
 			$allowsListValue = $dataItems;
 		}
 
@@ -279,12 +327,12 @@ class PropertySpecificationLookup {
 	 *
 	 * @return integer|false
 	 */
-	public function getDisplayPrecisionBy( DIProperty $property ) {
+	public function getDisplayPrecision( DIProperty $property ) {
 
 		$displayPrecision = false;
 		$dataItems = $this->getSpecification( $property, new DIProperty( '_PREC' ) );
 
-		if ( $dataItems !== false && $dataItems !== array() ) {
+		if ( $dataItems !== false && $dataItems !== [] ) {
 			$dataItem = end( $dataItems );
 			$displayPrecision = abs( (int)$dataItem->getNumber() );
 		}
@@ -299,16 +347,16 @@ class PropertySpecificationLookup {
 	 *
 	 * @return array
 	 */
-	public function getDisplayUnitsBy( DIProperty $property ) {
+	public function getDisplayUnits( DIProperty $property ) {
 
-		$units = array();
+		$units = [];
 
 		$dataItems = $this->cachedPropertyValuesPrefetcher->getPropertyValues(
 			$property->getCanonicalDiWikiPage(),
 			new DIProperty( '_UNIT' )
 		);
 
-		if ( $dataItems !== false && $dataItems !== array() ) {
+		if ( $dataItems !== false && $dataItems !== [] ) {
 			foreach ( $dataItems as $dataItem ) {
 				$units = array_merge( $units, preg_split( '/\s*,\s*/u', $dataItem->getString() ) );
 			}
@@ -332,7 +380,7 @@ class PropertySpecificationLookup {
 	 *
 	 * @return string
 	 */
-	public function getPropertyDescriptionBy( DIProperty $property, $languageCode = '', $linker = null ) {
+	public function getPropertyDescriptionByLanguageCode( DIProperty $property, $languageCode = '', $linker = null ) {
 
 		// Take the linker into account (Special vs. in page rendering etc.)
 		$languageCode = $languageCode === '' ? $this->languageCode : $languageCode;
@@ -375,7 +423,7 @@ class PropertySpecificationLookup {
 		$key = $property->getKey();
 
 		if ( ( $msgKey = PropertyRegistry::getInstance()->findPropertyDescriptionMsgKeyById( $key ) ) === '' ) {
-			$msgKey = 'smw-pa-property-predefined' . strtolower( $key );
+			$msgKey = 'smw-property-predefined' . str_replace( '_', '-', strtolower( $key ) );
 		}
 
 		if ( !Message::exists( $msgKey ) ) {
@@ -389,7 +437,7 @@ class PropertySpecificationLookup {
 		$label = $dataValue->getFormattedLabel();
 
 		$message = Message::get(
-			array( $msgKey, $label ),
+			[ $msgKey, $label ],
 			$linker === null ? Message::ESCAPED : Message::PARSE,
 			$languageCode
 		);
@@ -433,7 +481,7 @@ class PropertySpecificationLookup {
 
 	private function findTextValueByLanguage( $dataItems, $property, $languageCode ) {
 
-		if ( $dataItems === null || $dataItems === array() ) {
+		if ( $dataItems === null || $dataItems === [] ) {
 			return null;
 		}
 

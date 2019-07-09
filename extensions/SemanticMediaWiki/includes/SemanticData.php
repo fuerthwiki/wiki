@@ -3,13 +3,12 @@
 namespace SMW;
 
 use MWException;
+use SMW\DataModel\SubSemanticData;
+use SMW\Exception\SemanticDataImportException;
 use SMWContainerSemanticData;
 use SMWDataItem;
 use SMWDataValue;
 use SMWDIContainer;
-use SMWPropertyValue;
-use SMW\Exception\SemanticDataImportException;
-use SMW\DataModel\SubSemanticData;
 
 /**
  * Class for representing chunks of semantic data for one given
@@ -38,6 +37,16 @@ class SemanticData {
 	const OPT_LAST_MODIFIED = 'opt.last.modified';
 
 	/**
+	 * Identifies that a data block was created by a user.
+	 */
+	const PROC_USER = 'proc.user';
+
+	/**
+	 * Identifies that a data block was initiated by a delete request.
+	 */
+	const PROC_DELETE = 'proc.delete';
+
+	/**
 	 * Cache for the localized version of the namespace prefix "Property:".
 	 *
 	 * @var string
@@ -60,14 +69,14 @@ class SemanticData {
 	 *
 	 * @var SMWDataItem[]
 	 */
-	protected $mPropVals = array();
+	protected $mPropVals = [];
 
 	/**
 	 * Array mapping property keys (string) to DIProperty objects.
 	 *
 	 * @var DIProperty[]
 	 */
-	protected $mProperties = array();
+	protected $mProperties = [];
 
 	/**
 	 * States whether the container holds any normal properties.
@@ -131,7 +140,7 @@ class SemanticData {
 	/**
 	 * @var array
 	 */
-	protected $errors = array();
+	protected $errors = [];
 
 	/**
 	 * Cache the hash to ensure a minimal impact in case of repeated usage. Any
@@ -145,7 +154,12 @@ class SemanticData {
 	/**
 	 * @var Options
 	 */
-	private $options = null;
+	protected $options;
+
+	/**
+	 * @var array
+	 */
+	protected $extensionData = [];
 
 	/**
 	 * This is kept public to keep track of the depth during a recursive processing
@@ -182,7 +196,7 @@ class SemanticData {
 	 * @return array
 	 */
 	public function __sleep() {
-		return array( 'mSubject', 'mPropVals', 'mProperties', 'subSemanticData', 'mHasVisibleProps', 'mHasVisibleSpecs', 'options' );
+		return [ 'mSubject', 'mPropVals', 'mProperties', 'subSemanticData', 'mHasVisibleProps', 'mHasVisibleSpecs', 'options', 'extensionData' ];
 	}
 
 	/**
@@ -223,30 +237,61 @@ class SemanticData {
 	 */
 	public function getPropertyValues( DIProperty $property ) {
 		if ( $property->isInverse() ) { // we never have any data for inverses
-			return array();
+			return [];
 		}
 
 		if ( array_key_exists( $property->getKey(), $this->mPropVals ) ) {
 			return array_values( $this->mPropVals[$property->getKey()] );
 		}
 
-		return array();
+		return [];
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $key
+	 * @param mixed $value
+	 */
+	public function setExtensionData( $key, $value ) {
+		$this->extensionData[$key] = $value;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $key
+	 *
+	 * @return mixed|null
+	 */
+	public function getExtensionData( $key ) {
+
+		if ( !isset( $this->extensionData[$key] ) ) {
+			return null;
+		}
+
+		return $this->extensionData[$key];
 	}
 
 	/**
 	 * @since 2.5
 	 *
 	 * @param string $key
+	 * @param mixed $default
 	 *
 	 * @return mixed
 	 */
-	public function getOption( $key ) {
+	public function getOption( $key, $default = null ) {
 
 		if ( !$this->options instanceof Options ) {
 			$this->options = new Options();
 		}
 
-		return $this->options->has( $key ) ? $this->options->get( $key ) : null;
+		if ( $this->options->has( $key ) ) {
+			return $this->options->get( $key );
+		}
+
+		return $default;
 	}
 
 	/**
@@ -261,7 +306,7 @@ class SemanticData {
 			$this->options = new Options();
 		}
 
-		return $this->options->set( $key, $value );
+		$this->options->set( $key, $value );
 	}
 
 	/**
@@ -339,7 +384,9 @@ class SemanticData {
 			$this->subContainerDepthCounter--;
 		}
 
-		$this->subSemanticData !== null ? $this->subSemanticData->clear() : '';
+		if ( $this->subSemanticData !== null ) {
+			$this->subSemanticData->clear();
+		}
 	}
 
 	/**
@@ -398,7 +445,7 @@ class SemanticData {
 		}
 
 		if ( !array_key_exists( $property->getKey(), $this->mPropVals ) ) {
-			$this->mPropVals[$property->getKey()] = array();
+			$this->mPropVals[$property->getKey()] = [];
 			$this->mProperties[$property->getKey()] = $property;
 		}
 
@@ -417,12 +464,12 @@ class SemanticData {
 			$this->mHasVisibleProps = true;
 		}
 
-		// Inherit the sortkey from the root if not explicitly given
+		// Account for things like DISPLAYTITLE or DEFAULTSORT which are only set
+		// after #subobject has been processed therefore keep them in-memory
+		// for a post process
 		if ( $this->mSubject->getSubobjectName() === '' && $property->getKey() === DIProperty::TYPE_SORTKEY ) {
 			foreach ( $this->getSubSemanticData() as $subSemanticData ) {
-				if ( !$subSemanticData->hasProperty( $property ) ) {
-					$subSemanticData->addPropertyObjectValue( $property, $dataItem );
-				}
+				$subSemanticData->setExtensionData( 'sort.extension', $dataItem->getString() );
 			}
 		}
 	}
@@ -445,7 +492,7 @@ class SemanticData {
 				self::$mPropertyPrefix = $wgContLang->getNsText( SMW_NS_PROPERTY ) . ':';
 			} // explicitly use prefix to cope with things like [[Property:User:Stupid::somevalue]]
 
-			$propertyDV = SMWPropertyValue::makeUserProperty( self::$mPropertyPrefix . $propertyName );
+			$propertyDV = DataValueFactory::getInstance()->newPropertyValueByLabel( self::$mPropertyPrefix . $propertyName );
 
 			if ( !$propertyDV->isValid() ) { // error, maybe illegal title text
 				return;
@@ -542,7 +589,7 @@ class SemanticData {
 			$this->mPropVals[$property->getKey()] = array_values( $this->mPropVals[$property->getKey()] );
 		}
 
-		if ( $this->mPropVals[$property->getKey()] === array() ) {
+		if ( $this->mPropVals[$property->getKey()] === [] ) {
 			unset( $this->mProperties[$property->getKey()] );
 			unset( $this->mPropVals[$property->getKey()] );
 		}
@@ -561,7 +608,11 @@ class SemanticData {
 		$key = $property->getKey();
 
 		 // Inverse properties cannot be used for an annotation
-		if ( $property->isInverse() || !isset( $this->mProperties[$key] ) ) {
+		if ( $property->isInverse() ) {
+			return;
+		}
+
+		if ( !isset( $this->mProperties[$key] ) || !isset( $this->mPropVals[$key] ) ) {
 			return;
 		}
 
@@ -586,8 +637,8 @@ class SemanticData {
 	 * Delete all data other than the subject.
 	 */
 	public function clear() {
-		$this->mPropVals = array();
-		$this->mProperties = array();
+		$this->mPropVals = [];
+		$this->mProperties = [];
 		$this->mHasVisibleProps = false;
 		$this->mHasVisibleSpecs = false;
 		$this->stubObject = false;
@@ -606,7 +657,7 @@ class SemanticData {
 	 * @return boolean
 	 */
 	public function isEmpty() {
-		return $this->getProperties() === array() && $this->getSubSemanticData() === array();
+		return $this->getProperties() === [] && $this->getSubSemanticData() === [];
 	}
 
 	/**
@@ -633,7 +684,7 @@ class SemanticData {
 		if ( count( $this->mProperties ) == 0 &&
 		     ( $semanticData->mNoDuplicates >= $this->mNoDuplicates ) ) {
 			$this->mProperties = $semanticData->getProperties();
-			$this->mPropVals = array();
+			$this->mPropVals = [];
 
 			foreach ( $this->mProperties as $property ) {
 				$this->mPropVals[$property->getKey()] = $semanticData->getPropertyValues( $property );
@@ -673,10 +724,7 @@ class SemanticData {
 		}
 
 		foreach ( $semanticData->getProperties() as $property ) {
-			$values = $semanticData->getPropertyValues( $property );
-			foreach ( $values as $dataItem ) {
-				$this->removePropertyObjectValue( $property, $dataItem );
-			}
+			$this->removeProperty( $property );
 		}
 
 		foreach( $semanticData->getSubSemanticData() as $semData ) {

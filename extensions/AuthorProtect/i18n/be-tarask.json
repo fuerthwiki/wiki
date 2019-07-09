@@ -3,18 +3,20 @@
 		"authors": [
 			"EugeneZelenko",
 			"Jim-by",
-			"Wizardist"
+			"Wizardist",
+			"Red Winged Duck",
+			"Renessaince"
 		]
 	},
+	"action-authorprotect": "абарона ад ня-аўтараў",
 	"authorprotect": "Абарона старонак ад не-аўтараў",
 	"authorprotect-desc": "Дазваляе аўтару старонкі абараняць яе ад іншых удзельнікаў",
-	"authorprotect-notauthor": "Вы не зьяўляецеся аўтарам гэтай старонкі",
+	"authorprotect-notauthor": "Вы не зьяўляецеся {{GENDER:$1|аўтарам|аўтаркай}} гэтай старонкі.",
 	"authorprotect-confirm": "Зьмяніць узроўні абароны",
 	"authorprotect-edit": "Дазволіць рэдагаваньне толькі аўтарам",
 	"authorprotect-move": "Дазволіць перанос толькі аўтарам",
 	"authorprotect-intro": "Выкарыстоўвайце гэтую формы для абароны гэтай старонкі ад не-аўтараў",
-	"authorprotect-success": "Старонка абароненая!",
-	"authorprotect-failure": "Старонка не абароненая",
+	"authorprotect-success": "Абарона ўсталяваная!",
 	"protect-level-author": "Абарона ад не-аўтараў",
 	"restriction-level-author": "Аўтарская абарона",
 	"right-authorprotect": "абарона аўтарскіх старонак",

@@ -2,10 +2,10 @@
 
 namespace SMW;
 
-use SMWDataItem;
-use Title;
 use SMW\Exception\DataItemDeserializationException;
 use SMW\Exception\DataItemException;
+use SMWDataItem;
+use Title;
 
 /**
  * This class implements wiki page data items.
@@ -63,7 +63,7 @@ class DIWikiPage extends SMWDataItem {
 	private $id = 0;
 
 	/**
-	 * Contructor. We do not bother with too much detailed validation here,
+	 * Constructor. We do not bother with too much detailed validation here,
 	 * regarding the known namespaces, canonicity of the dbkey (namespace
 	 * exrtacted?), validity of interwiki prefix (known?), and general use
 	 * of allowed characters (may depend on MW configuration). All of this
@@ -231,15 +231,13 @@ class DIWikiPage extends SMWDataItem {
 	 * @return string
 	 */
 	public function getSerialization() {
-		$segments = array(
+		$segments = [
 			$this->m_dbkey,
 			$this->m_namespace,
 			$this->m_interwiki
-		);
+		];
 
-		if ( $this->m_subobjectname !== '' ) {
-			$segments[] = $this->m_subobjectname;
-		}
+		$segments[] = $this->m_subobjectname;
 
 		return implode( '#', $segments );
 	}
@@ -267,7 +265,7 @@ class DIWikiPage extends SMWDataItem {
 	/**
 	 * Create a data item from a MediaWiki Title.
 	 *
-	 * @param $title Title
+	 * @param Title $title
 	 * @return DIWikiPage
 	 */
 	public static function newFromTitle( Title $title ) {
@@ -299,4 +297,3 @@ class DIWikiPage extends SMWDataItem {
 		return $di->getSerialization() === $this->getSerialization();
 	}
 }
-

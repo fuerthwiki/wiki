@@ -3,15 +3,15 @@
 namespace SMW\SPARQLStore;
 
 use SMW\ApplicationFactory;
-use SMW\Utils\CircularReferenceGuard;
-use SMW\ConnectionManager;
-use SMW\SPARQLStore\QueryEngine\CompoundConditionBuilder;
+use SMW\Connection\ConnectionManager;
+use SMW\SPARQLStore\QueryEngine\ConditionBuilder;
 use SMW\SPARQLStore\QueryEngine\DescriptionInterpreterFactory;
 use SMW\SPARQLStore\QueryEngine\EngineOptions;
 use SMW\SPARQLStore\QueryEngine\QueryEngine;
 use SMW\SPARQLStore\QueryEngine\QueryResultFactory;
 use SMW\Store;
 use SMW\StoreFactory;
+use SMW\Utils\CircularReferenceGuard;
 
 /**
  * @license GNU GPL v2+
@@ -58,22 +58,22 @@ class SPARQLStoreFactory {
 		$circularReferenceGuard = new CircularReferenceGuard( 'sparql-queryengine' );
 		$circularReferenceGuard->setMaxRecursionDepth( 2 );
 
-		$compoundConditionBuilder = new CompoundConditionBuilder(
+		$conditionBuilder = new ConditionBuilder(
 			new DescriptionInterpreterFactory(),
 			$engineOptions
 		);
 
-		$compoundConditionBuilder->setCircularReferenceGuard(
+		$conditionBuilder->setCircularReferenceGuard(
 			$circularReferenceGuard
 		);
 
-		$compoundConditionBuilder->setPropertyHierarchyLookup(
-			ApplicationFactory::getInstance()->newPropertyHierarchyLookup()
+		$conditionBuilder->setHierarchyLookup(
+			ApplicationFactory::getInstance()->newHierarchyLookup()
 		);
 
 		$queryEngine = new QueryEngine(
 			$this->store->getConnection( 'sparql' ),
-			$compoundConditionBuilder,
+			$conditionBuilder,
 			new QueryResultFactory( $this->store ),
 			$engineOptions
 		);
@@ -127,15 +127,26 @@ class SPARQLStoreFactory {
 	 *
 	 * @return ConnectionManager
 	 */
-	public function newConnectionManager() {
+	public function getConnectionManager() {
 
-		$connectionManager = new ConnectionManager();
+		$applicationFactory = ApplicationFactory::getInstance();
+		$settings = $applicationFactory->getSettings();
 
-		$repositoryConnectionProvider = new RepositoryConnectionProvider();
-		$repositoryConnectionProvider->setHttpVersionTo(
-			ApplicationFactory::getInstance()->getSettings()->get( 'smwgSparqlRepositoryConnectorForcedHttpVersion' )
+		$repositoryConnectionProvider = new RepositoryConnectionProvider(
+			$settings->get( 'smwgSparqlRepositoryConnector' ),
+			$settings->get( 'smwgSparqlDefaultGraph' ),
+			$settings->dotGet( 'smwgSparqlEndpoint.query' ),
+			$settings->dotGet( 'smwgSparqlEndpoint.update', '' ),
+			$settings->dotGet( 'smwgSparqlEndpoint.data', '' )
 		);
 
+		$repositoryConnectionProvider->setHttpVersionTo(
+			$settings->get( 'smwgSparqlRepositoryConnectorForcedHttpVersion' )
+		);
+
+		$repositoryConnectionProvider = new RepositoryConnectionProvider();
+
+		$connectionManager = $applicationFactory->getConnectionManager();
 		$connectionManager->registerConnectionProvider(
 			'sparql',
 			$repositoryConnectionProvider

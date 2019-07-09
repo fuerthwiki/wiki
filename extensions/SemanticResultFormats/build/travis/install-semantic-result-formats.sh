@@ -8,8 +8,13 @@ function installPHPUnitWithComposer {
 	if [ "$PHPUNIT" != "" ]
 	then
 		composer require 'phpunit/phpunit='$PHPUNIT --update-with-dependencies
-	else
-		composer require 'phpunit/phpunit=3.7.*' --update-with-dependencies
+	fi
+}
+
+function installSMWWithComposer {
+	if [ "$SMW" != "" ]
+	then
+		composer require 'mediawiki/semantic-media-wiki='$SMW --update-with-dependencies
 	fi
 }
 
@@ -20,13 +25,8 @@ function installToMediaWikiRoot {
 	cd $MW_INSTALL_PATH
 
 	installPHPUnitWithComposer
-	composer require mediawiki/semantic-result-formats "2.5.x-dev"
-
-	# FIXME: Remove when "symfony/css-selector" has reached packagist
-	composer require "symfony/css-selector" "^3.3"
-
-	# Add optional packages
-	composer require "data-values/geo" "^1.1"
+	installSMWWithComposer
+	composer require mediawiki/semantic-result-formats "dev-master"
 
 	cd extensions
 	cd SemanticResultFormats
@@ -54,7 +54,10 @@ function updateConfiguration {
 
 	cd $MW_INSTALL_PATH
 
-	echo 'require_once( __DIR__ . "/extensions/SemanticResultFormats/SemanticResultFormats.php" );' >> LocalSettings.php
+	# SMW#1732
+	echo 'wfLoadExtension( "SemanticMediaWiki" );' >> LocalSettings.php
+
+	echo 'wfLoadExtension( "SemanticResultFormats" );' >> LocalSettings.php
 
 	echo 'error_reporting(E_ALL| E_STRICT);' >> LocalSettings.php
 	echo 'ini_set("display_errors", 1);' >> LocalSettings.php

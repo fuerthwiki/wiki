@@ -51,6 +51,20 @@ class DispatchContextTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
+	public function testNewFromArray() {
+
+		$instance = DispatchContext::newFromArray( [ 'FOO' => 123 ] );
+
+		$this->assertTrue(
+			$instance->has( 'FOO' )
+		);
+
+		$this->assertEquals(
+			123,
+			$instance->get( 'foo' )
+		);
+	}
+
 	public function testChangePropagationState() {
 
 		$instance = new DispatchContext();

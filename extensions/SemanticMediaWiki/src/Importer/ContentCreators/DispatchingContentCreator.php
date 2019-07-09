@@ -3,9 +3,9 @@
 namespace SMW\Importer\ContentCreators;
 
 use Onoi\MessageReporter\MessageReporter;
-use SMW\Importer\ImportContents;
-use SMW\Importer\ContentCreator;
 use RuntimeException;
+use SMW\Importer\ContentCreator;
+use SMW\Importer\ImportContents;
 
 /**
  * @license GNU GPL v2+
@@ -23,7 +23,7 @@ class DispatchingContentCreator implements ContentCreator {
 	/**
 	 * @var ContentCreator[]
 	 */
-	private $contentCreators = array();
+	private $contentCreators = [];
 
 	/**
 	 * @since 3.0
@@ -67,12 +67,12 @@ class DispatchingContentCreator implements ContentCreator {
 	 * @param ImportContents $importContents
 	 * @throws RuntimeException
 	 */
-	public function doCreateFrom( ImportContents $importContents ) {
+	public function create( ImportContents $importContents ) {
 
 		foreach ( $this->contentCreators as $contentCreator ) {
 			if ( $contentCreator->canCreateContentsFor( $importContents ) ) {
 				$contentCreator->setMessageReporter( $this->messageReporter );
-				return $contentCreator->doCreateFrom( $importContents );
+				return $contentCreator->create( $importContents );
 			}
 		}
 

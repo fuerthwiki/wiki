@@ -3,8 +3,8 @@
 namespace SMW\Tests\Query\ProfileAnnotators;
 
 use SMW\DIWikiPage;
-use SMW\Query\ProfileAnnotators\SourceProfileAnnotator;
 use SMW\Query\ProfileAnnotators\NullProfileAnnotator;
+use SMW\Query\ProfileAnnotators\SourceProfileAnnotator;
 use SMW\Tests\TestEnvironment;
 use SMWContainerSemanticData as ContainerSemanticData;
 use SMWDIContainer as DIContainer;
@@ -67,17 +67,17 @@ class SourceProfileAnnotatorTest extends \PHPUnit_Framework_TestCase {
 
 	public function sourceDataProvider() {
 
-		$provider = array();
+		$provider = [];
 
-		$provider[] = array( '', array(
+		$provider[] = [ '', [
 			'propertyCount' => 0
-		) );
+		] ];
 
-		$provider[] = array( 'foo', array(
+		$provider[] = [ 'foo', [
 			'propertyCount'  => 1,
-			'propertyKeys'   => array( '_ASKSC' ),
-			'propertyValues' => array( 'foo' )
-		) );
+			'propertyKeys'   => [ '_ASKSC' ],
+			'propertyValues' => [ 'foo' ]
+		] ];
 
 		return $provider;
 	}

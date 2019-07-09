@@ -12,6 +12,10 @@
 	"codeeditor-lineWrapping-toggle": "Вкл/искл. прелом",
 	"codeeditor-searchReplace-toggle": "Вкл./искл. дијалог за пребарување и замена",
 	"codeeditor-gotoline": "Оди на ред број...",
-	"codeeditor-indent": "Вовлекување",
-	"codeeditor-outdent": "Отстап"
+	"codeeditor-gotoline-placeholder": "ред[:столб]",
+	"codeeditor-gotoline-prompt": "Внесете број на ред",
+	"codeeditor-indent": "Отстап",
+	"codeeditor-outdent": "Истап",
+	"codeeditor-error-title": "Зависноста не успеа",
+	"codeeditor-error-message": "На Уредникот на код му треба Викиуредник за да се вчита."
 }

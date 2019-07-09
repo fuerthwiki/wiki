@@ -69,7 +69,9 @@ class PFFormPrinter {
 		}
 
 		// All-purpose setup hook.
-		Hooks::run( 'PageForms::FormPrinterSetup', array( $this ) );
+		// Avoid PHP 7.1 warning from passing $this by reference.
+		$formPrinterRef = $this;
+		Hooks::run( 'PageForms::FormPrinterSetup', array( &$formPrinterRef ) );
 	}
 
 	public function setSemanticTypeHook( $type, $is_list, $class_name, $default_args ) {
@@ -87,7 +89,7 @@ class PFFormPrinter {
 	/**
 	 * Register all information about the passed-in form input class.
 	 *
-	 * @param Class $inputTypeClass The class representing the new input.
+	 * @param string $inputTypeClass The full qualified class name representing the new input.
 	 * Must be derived from PFFormInput.
 	 */
 	public function registerInputType( $inputTypeClass ) {
@@ -286,23 +288,25 @@ class PFFormPrinter {
 	}
 
 	static function makePlaceholderInFormHTML( $str ) {
-		return '@insertHTML_' . $str . '@';
+		return '@insert"HTML_' . $str . '@';
 	}
 
 	function multipleTemplateStartHTML( $tif ) {
-		$text = '';
 		// If placeholder is set, it means we want to insert a
 		// multiple template form's HTML into the main form's HTML.
 		// So, the HTML will be stored in $text.
-		$text .= "\t" . '<div class="multipleTemplateWrapper">' . "\n";
-		$text .= "\t" . '<div class="multipleTemplateList"';
+		$text = "\t" . '<div class="multipleTemplateWrapper">' . "\n";
+		$attrs = array( 'class' => 'multipleTemplateList' );
 		if ( !is_null( $tif->getMinInstancesAllowed() ) ) {
-			$text .= " minimumInstances=\"{$tif->getMinInstancesAllowed()}\"";
+			$attrs['minimumInstances'] = $tif->getMinInstancesAllowed();
 		}
 		if ( !is_null( $tif->getMaxInstancesAllowed() ) ) {
-			$text .= " maximumInstances=\"{$tif->getMaxInstancesAllowed()}\"";
+			$attrs['maximumInstances'] = $tif->getMaxInstancesAllowed();
 		}
-		$text .= ">\n";
+		if ( $tif->getDisplayedFieldsWhenMinimized() != null ) {
+			$attrs['data-displayed-fields-when-minimized'] = $tif->getDisplayedFieldsWhenMinimized();
+		}
+		$text .= "\t" . Html::openElement( 'div', $attrs ) . "\n";
 		return $text;
 	}
 
@@ -322,7 +326,7 @@ class PFFormPrinter {
 		}
 
 		$text = <<<END
-			<table class="multipleTemplateInstance">
+			<table class="multipleTemplateInstanceTable">
 			<tr>
 			<td class="instanceRearranger"></td>
 			<td class="instanceMain">$mainText</td>
@@ -430,6 +434,11 @@ END;
 				$curValue = $gridValues[$fieldName];
 			}
 
+			if ( $formField->isHidden() ) {
+				$html .= Html::hidden( $formField->getInputName(), $curValue );
+				continue;
+			}
+
 			$wgPageFormsFieldNum++;
 			if ( $formField->getLabel() !== null ) {
 				$labelText = $formField->getLabel();
@@ -456,7 +465,9 @@ END;
 			}
 
 			$labelCell = Html::rawElement( 'th', null, $label );
-			$inputCell = Html::rawElement( 'td', null, $this->formFieldHTML( $formField, $curValue ) );
+			$inputHTML = $this->formFieldHTML( $formField, $curValue );
+			$inputHTML .= $formField->additionalHTMLForInput( $curValue, $fieldName, $tif->getTemplateName() );
+			$inputCell = Html::rawElement( 'td', null, $inputHTML );
 			$html .= Html::rawElement( 'tr', null, $labelCell . $inputCell ) . "\n";
 		}
 
@@ -518,6 +529,8 @@ END;
 
 		$wgPageFormsGridParams[$templateName] = $gridParams;
 		$wgPageFormsGridValues[$templateName] = $tif->getGridValues();
+
+		PFFormUtils::setGlobalVarsForSpreadsheet();
 
 		return $text;
 	}
@@ -642,7 +655,16 @@ END;
 				if ( $month == '' ) {
 					return $year;
 				} elseif ( $day == '' ) {
-						return "$year/$month";
+					if ( ! $wgAmericanDates ) {
+						// The month is a number - we
+						// need it to be a string, so
+						// that the date will be parsed
+						// correctly if strtotime() is
+						// used.
+						$monthNames = PFFormUtils::getMonthNames();
+						$month = $monthNames[$month - 1];
+					}
+					return "$month $year";
 				} else {
 					if ( $wgAmericanDates == true ) {
 						$new_value = "$month $day, $year";
@@ -668,6 +690,17 @@ END;
 			}
 		}
 		return '';
+	}
+
+	static function displayLoadingImage() {
+		global $wgPageFormsScriptPath;
+
+		$loadingBGImage = Html::element( 'img', array( 'src' => "$wgPageFormsScriptPath/skins/loadingbg.png" ) );
+		$text = '<div style="position: fixed; left: 50%; top: 50%;">' . $loadingBGImage . '</div>';
+		$loadingImage = Html::element( 'img', array( 'src' => "$wgPageFormsScriptPath/skins/loading.gif" ) );
+		$text .= '<div style="position: fixed; left: 50%; top: 50%; padding: 48px;">' . $loadingImage . '</div>';
+
+		return Html::rawElement( 'span', array( 'class' => 'loadingImage' ), $text );
 	}
 
 	/**
@@ -788,7 +821,10 @@ END;
 			$userCanEditPage = count( $permissionErrors ) == 0;
 			Hooks::run( 'PageForms::UserCanEditPage', array( $this->mPageTitle, &$userCanEditPage ) );
 		}
-		$form_text = "";
+
+		// Start off with a loading spinner - this will be removed by
+		// the JavaScript once everything has finished loading.
+		$form_text = self::displayLoadingImage();
 		if ( $is_query || $userCanEditPage ) {
 			$form_is_disabled = false;
 			// Show "Your IP address will be recorded" warning if
@@ -817,7 +853,9 @@ END;
 		if ( !$wgParser->Options() ) {
 			$wgParser->Options( ParserOptions::newFromUser( $wgUser ) );
 		}
-		$wgParser->Title( $this->mPageTitle );
+		if ( !$is_embedded ) {
+			$wgParser->Title( $this->mPageTitle );
+		}
 		// This is needed in order to make sure $parser->mLinkHolders
 		// is set.
 		$wgParser->clearState();
@@ -879,7 +917,7 @@ END;
 					} else {
 						$previous_template_name = '';
 					}
-					$template_name = str_replace( '_', ' ', $tag_components[1] );
+					$template_name = str_replace( '_', ' ', $wgParser->recursiveTagParse( $tag_components[1] ) );
 					$is_new_template = ( $template_name != $previous_template_name );
 					if ( $is_new_template ) {
 						$template = PFTemplate::newFromName( $template_name );
@@ -922,10 +960,10 @@ END;
 					}
 
 					// We get values from the request,
-					// regardless of whether the the source
-					// is the page or a form submit, because
-					// even if the source is a page, values
-					// can still come from a query string.
+					// regardless of whether the source is the
+					// page or a form submit, because even if
+					// the source is a page, values can still
+					// come from a query string.
 					$tif->setFieldValuesFromSubmit();
 
 					$tif->checkIfAllInstancesPrinted( $form_submitted, $source_is_page );
@@ -980,7 +1018,7 @@ END;
 					// If the user is editing a page, and that page contains a call to
 					// the template being processed, get the current field's value
 					// from the template call
-					if ( $source_is_page && ( $tif->getFullTextInPage() != '' && !$form_submitted ) ) {
+					if ( $source_is_page && ( $tif->getFullTextInPage() != '' ) && ( !$form_is_partial || !$form_submitted ) ) {
 						if ( $tif->hasValueFromPageForField( $field_name ) ) {
 							// Get value, and remove it,
 							// so that at the end we
@@ -1088,29 +1126,32 @@ END;
 							$generated_page_name = str_replace( '_', ' ', $generated_page_name );
 						}
 
+						if ( !empty( $cur_value ) &&
+							( $form_field->hasFieldArg( 'mapping template' ) ||
+							$form_field->hasFieldArg( 'mapping property' ) ||
+							( $form_field->hasFieldArg( 'mapping cargo table' ) &&
+							$form_field->hasFieldArg( 'mapping cargo field' ) ) ||
+							$form_field->getUseDisplayTitle() ) ) {
+							// If the input type is "tokens', the value is not
+							// an array, but the delimiter still needs to be set.
+							if ( !is_array( $cur_value ) ) {
+								if ( $form_field->isList() ) {
+									$delimiter = $form_field->getFieldArg( 'delimiter' );
+								} else {
+									$delimiter = null;
+								}
+							}
+							$cur_value = $form_field->valueStringToLabels( $cur_value, $delimiter );
+						}
+
 						// Call hooks - unfortunately this has to be split into two
 						// separate calls, because of the different variable names in
 						// each case.
+						// @TODO - should it be $cur_value for both cases? Or should the
+						// hook perhaps modify both variables?
 						if ( $form_submitted ) {
 							Hooks::run( 'PageForms::CreateFormField', array( &$form_field, &$cur_value_in_template, true ) );
 						} else {
-							if ( !empty( $cur_value ) &&
-								( $form_field->hasFieldArg( 'mapping template' ) ||
-								$form_field->hasFieldArg( 'mapping property' ) ||
-								( $form_field->hasFieldArg( 'mapping cargo table' ) &&
-								$form_field->hasFieldArg( 'mapping cargo field' ) ) ) ||
-								$form_field->getUseDisplayTitle() ) {
-								// If the input type is "tokens', the value is not
-								// an array, but the delimiter still needs to be set.
-								if ( !is_array( $cur_value ) ) {
-									if ( $form_field->hasFieldArg( 'delimiter' ) ) {
-										$delimiter = $form_field->getFieldArg( 'delimiter' );
-									} else {
-										$delimiter = ',';
-									}
-								}
-								$cur_value = $form_field->valueStringToLabels( $cur_value, $delimiter );
-							}
 							Hooks::run( 'PageForms::CreateFormField', array( &$form_field, &$cur_value, false ) );
 						}
 						// if this is not part of a 'multiple' template, increment the
@@ -1128,6 +1169,9 @@ END;
 								// to the default value
 								( $cur_value == '' || $cur_value == 'now' ) ) {
 							$input_type = $form_field->getInputType();
+							// We don't handle the 'datepicker' and 'datetimepicker'
+							// input types here, because they have their own
+							// formatting; instead, they handle 'now' themselves.
 							if ( $input_type == 'date' || $input_type == 'datetime' ||
 									$input_type == 'year' ||
 									( $input_type == '' && $form_field->getTemplateField()->getPropertyType() == '_dat' ) ) {
@@ -1165,6 +1209,7 @@ END;
 						if ( $new_text ) {
 							$wiki_page->addTemplateParam( $template_name, $tif->getInstanceNum(), $field_name, $cur_value_in_template );
 							$section = substr_replace( $section, $new_text, $brackets_loc, $brackets_end_loc + 3 - $brackets_loc );
+							$start_position = $brackets_loc + strlen( $new_text );
 						} else {
 							$start_position = $brackets_end_loc;
 						}
@@ -1665,6 +1710,13 @@ END;
 
 		if ( $class_name !== null ) {
 			$form_input = new $class_name( $wgPageFormsFieldNum, $cur_value, $form_field->getInputName(), $form_field->isDisabled(), $other_args );
+
+			// If a regex was defined, make this a "regexp" input that wraps
+			// around the real one.
+			if ( $template_field->getRegex() !== null ) {
+				$other_args['regexp'] = $template_field->getRegex();
+				$form_input = PFRegExpInput::newFromInput( $form_input );
+			}
 			$form_input->addJavaScript();
 			$text = $form_input->getHtmlText();
 		}

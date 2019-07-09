@@ -11,7 +11,7 @@ use SMWDITime;
  *
  * This class determines recurring events based on invoked parameters
  *
- * @see http://semantic-mediawiki.org/wiki/Help:Recurring_events
+ * @see https://www.semantic-mediawiki.org/wiki/Help:Recurring_events
  *
  * @license GNU GPL v2+
  * @since 1.9
@@ -30,17 +30,17 @@ class RecurringEvents {
 	/**
 	 * Defines the dates
 	 */
-	private $dates = array();
+	private $dates = [];
 
 	/**
 	 * Defines remaining / unused parameters
 	 */
-	private $parameters = array();
+	private $parameters = [];
 
 	/**
 	 * Defines errors
 	 */
-	private $errors = array();
+	private $errors = [];
 
 	/**
 	 * @var integer
@@ -51,15 +51,6 @@ class RecurringEvents {
 	 * @var integer
 	 */
 	private $maxNumRecurringEvents = 25;
-
-	/**
-	 * @since 1.9
-	 *
-	 * @param array $parameters
-	 */
-	public function __construct( array $parameters ) {
-		$this->parse( $parameters );
-	}
 
 	/**
 	 * @since 2.5
@@ -157,13 +148,13 @@ class RecurringEvents {
 	 *
 	 * @param array $parameters
 	 */
-	private function parse( array $parameters ) {
+	public function parse( array $parameters ) {
 		// Initialize variables.
-		$all_date_strings = array();
+		$all_date_strings = [];
 		$start_date = $end_date = $unit = $period = $week_num = null;
-		$included_dates = array();
-		$excluded_dates = array();
-		$excluded_dates_jd = array();
+		$included_dates = [];
+		$excluded_dates = [];
+		$excluded_dates_jd = [];
 
 		// Parse parameters and assign values
 		foreach ( $parameters as $name => $values ) {
@@ -292,18 +283,22 @@ class RecurringEvents {
 					$display_month = ( $cur_month == 0 ) ? 12 : $cur_month;
 				}
 
-				// If the date is February 29, and this isn't
-				// a leap year, change it to February 28.
-				if ( $cur_month == 2 && $cur_day == 29 ) {
-					if ( !date( 'L', strtotime( "$cur_year-1-1" ) ) ) {
-						$cur_day = 28;
-					}
-				}
+				// If the date is greater than 28 for February, and it is not
+				// a leap year, change it to be a fixed 28 otherwise set it to
+				// 29 (for a leap year date)
+				if ( $cur_month == 2 && $cur_day > 28 ) {
+					$cur_day = !date( 'L', strtotime( "$cur_year-1-1" ) ) ? 28 : 29;
+				} elseif ( $cur_day > 30 ) {
+					// Check whether 31 is a valid day of a month
+					$cur_day = ( $display_month - 1 ) % 7 % 2 ? 30 : 31;
+ 				}
 
 				$date_str = "$cur_year-$display_month-$cur_day $cur_time";
 				$cur_date = DataValueFactory::getInstance()->newTypeIDValue( '_dat', $date_str );
 				$all_date_strings = array_merge( $all_date_strings, $included_dates);
-				$cur_date_jd = $cur_date->getDataItem()->getJD();
+				if ( $cur_date->isValid() ) {
+					$cur_date_jd = $cur_date->getDataItem()->getJD();
+				}
 			} elseif ( $unit == 'dayofweekinmonth' ) {
 				// e.g., "3rd Monday of every month"
 				$prev_month = $cur_date->getMonth();
@@ -313,7 +308,7 @@ class RecurringEvents {
 				if ( $new_month == 0 ) {
 					$new_month = 12;
 				}
-
+				
 				$new_year = $prev_year + floor( ( $prev_month + $period - 1 ) / 12 );
 				$cur_date_jd += ( 28 * $period ) - 7;
 

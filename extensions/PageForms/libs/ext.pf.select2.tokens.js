@@ -23,9 +23,6 @@
 	pf.select2 = pf.select2 || {};
 
 	/**
-	 * Class constructor
-	 *
-	 *
 	 * @class
 	 * @constructor
 	 */
@@ -42,11 +39,15 @@
 	 *
 	 */
 	tokens_proto.apply = function( element ) {
-		this.id = element.attr( "id" );
-		var opts = this.setOptions();
 		var cur_val = element.val();
+		this.id = element.attr( "id" );
 
-		element.select2(opts);
+		try {
+			var opts = this.setOptions();
+			element.select2(opts);
+		} catch (e) {
+			window.console.log(e);
+		}
 		this.sortable(element);
 		element.on( "change", this.onChange );
 		element.val(cur_val);
@@ -80,9 +81,11 @@
 		var wgPageFormsAutocompleteOnAllChars = mw.config.get( 'wgPageFormsAutocompleteOnAllChars' );
 		if ( !wgPageFormsAutocompleteOnAllChars ) {
 			opts.matcher = function( term, text ) {
-				var no_diac_text = pf.select2.base.prototype.removeDiacritics( text );
-				var position = no_diac_text.toUpperCase().indexOf(term.toUpperCase());
-				var position_with_space = no_diac_text.toUpperCase().indexOf(" " + term.toUpperCase());
+				var folded_term = pf.select2.base.prototype.removeDiacritics( term ).toUpperCase();
+				var folded_text = pf.select2.base.prototype.removeDiacritics( text ).toUpperCase();
+
+				var position = folded_text.indexOf(folded_term);
+				var position_with_space = folded_text.indexOf(" " + folded_term);
 				if ( (position !== -1 && position === 0 ) || position_with_space !== -1 ) {
 					return true;
 				} else {
@@ -248,7 +251,7 @@
 		var autocomplete_type = autocomplete_opts.autocompletedatatype;
 		if ( autocomplete_type === 'cargo field' ) {
 			var table_and_field = data_source.split('|');
-			my_server += "?action=pfautocomplete&format=json&cargo_table=" + table_and_field[0] + "&cargo_field=" + table_and_field[1] + "&field_is_array=true";
+			my_server += "?action=pfautocomplete&format=json&cargo_table=" + table_and_field[0] + "&cargo_field=" + table_and_field[1];
 		} else {
 			my_server += "?action=pfautocomplete&format=json&" + autocomplete_opts.autocompletedatatype + "=" + data_source;
 		}
@@ -316,8 +319,8 @@
 	tokens_proto.sortable = function( element ) {
 		element.select2("container").find("ul.select2-choices").sortable({
 			containment: 'parent',
-			start: function() { $(".pfTokens").select2("onSortStart"); },
-			update: function() { $(".pfTokens").select2("onSortEnd"); }
+			start: function() { element.select2("onSortStart"); },
+			update: function() { element.select2("onSortEnd"); }
 		});
 	};
 

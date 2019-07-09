@@ -32,10 +32,15 @@
 
 	"globals": {
 		"mediaWiki": false,
+		"mw": false,
 		"pageforms": false,
 		"pf": false,
 		"ext": false,
 		"google": true,
 		"OpenLayers": true
-	}
+	},
+
+	"predef": [
+		"OO"
+	]
 }

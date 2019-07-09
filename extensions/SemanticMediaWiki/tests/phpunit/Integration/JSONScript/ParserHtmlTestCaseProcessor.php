@@ -23,11 +23,17 @@ class ParserHtmlTestCaseProcessor extends \PHPUnit_Framework_TestCase {
 	private $htmlValidator;
 
 	/**
+	 * @var PageReader
+	 */
+	private $pageReader;
+
+	/**
 	 * @param HtmlValidator $htmlValidator
 	 */
 	public function __construct( HtmlValidator $htmlValidator ) {
 		parent::__construct();
 		$this->htmlValidator = $htmlValidator;
+		$this->pageReader = UtilityFactory::getInstance()->newPageReader();
 	}
 
 	/**
@@ -78,6 +84,14 @@ class ParserHtmlTestCaseProcessor extends \PHPUnit_Framework_TestCase {
 				$case[ 'about' ]
 			);
 		}
+
+		if ( $this->isSetAndTrueish( $case[ 'assert-output' ], 'not-contain' ) ) {
+			$this->htmlValidator->assertThatHtmlNotContains(
+				$case[ 'assert-output' ][ 'not-contain' ],
+				$outputText,
+				$case[ 'about' ]
+			);
+		}
 	}
 
 	/**
@@ -91,7 +105,9 @@ class ParserHtmlTestCaseProcessor extends \PHPUnit_Framework_TestCase {
 			isset( $case[ 'namespace' ] ) ? constant( $case[ 'namespace' ] ) : NS_MAIN
 		);
 
-		$parserOutput = UtilityFactory::getInstance()->newPageReader()->getEditInfo( $subject->getTitle() )->output;
+		$parserOutput = $this->pageReader->getParserOutputFromEdit(
+			$subject->getTitle()
+		);
 
 		if ( !$this->isSetAndTrueish( $case[ 'assert-output' ], [ 'withOutputPageContext', 'onPageView' ] ) ) {
 			return $parserOutput->getText();

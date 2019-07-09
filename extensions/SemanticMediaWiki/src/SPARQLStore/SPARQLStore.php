@@ -132,7 +132,7 @@ class SPARQLStore extends Store {
 		$newWikiPage = DIWikiPage::newFromTitle( $newtitle );
 		$oldExpResource = Exporter::getInstance()->getDataItemExpElement( $oldWikiPage );
 		$newExpResource = Exporter::getInstance()->getDataItemExpElement( $newWikiPage );
-		$namespaces = array( $oldExpResource->getNamespaceId() => $oldExpResource->getNamespace() );
+		$namespaces = [ $oldExpResource->getNamespaceId() => $oldExpResource->getNamespace() ];
 		$namespaces[$newExpResource->getNamespaceId()] = $newExpResource->getNamespace();
 		$oldUri = TurtleSerializer::getTurtleNameForExpElement( $oldExpResource );
 		$newUri = TurtleSerializer::getTurtleNameForExpElement( $newExpResource );
@@ -242,13 +242,13 @@ class SPARQLStore extends Store {
 	 */
 	public function doSparqlDataDelete( DataItem $dataItem ) {
 
-		$extraNamespaces = array();
+		$extraNamespaces = [];
 
 		$expResource = Exporter::getInstance()->getDataItemExpElement( $dataItem );
 		$resourceUri = TurtleSerializer::getTurtleNameForExpElement( $expResource );
 
 		if ( $expResource instanceof ExpNsResource ) {
-			$extraNamespaces = array( $expResource->getNamespaceId() => $expResource->getNamespace() );
+			$extraNamespaces = [ $expResource->getNamespaceId() => $expResource->getNamespace() ];
 		}
 
 		$masterPageProperty = Exporter::getInstance()->getSpecialNsResource( 'swivt', 'masterPage' );
@@ -272,18 +272,18 @@ class SPARQLStore extends Store {
 	public function getQueryResult( Query $query ) {
 
 		// Use a fallback QueryEngine in case the QueryEndpoint is inaccessible
-		if ( !$this->isEnabledQueryEndpoint() ) {
+		if ( !$this->hasQueryEndpoint() ) {
 			return $this->baseStore->getQueryResult( $query );
 		}
 
 		$result = null;
 		$start = microtime( true );
 
-		if ( \Hooks::run( 'SMW::Store::BeforeQueryResultLookupComplete', array( $this, $query, &$result, $this->factory->newMasterQueryEngine() ) ) ) {
+		if ( \Hooks::run( 'SMW::Store::BeforeQueryResultLookupComplete', [ $this, $query, &$result, $this->factory->newMasterQueryEngine() ] ) ) {
 			$result = $this->fetchQueryResult( $query );
 		}
 
-		\Hooks::run( 'SMW::Store::AfterQueryResultLookupComplete', array( $this, &$result ) );
+		\Hooks::run( 'SMW::Store::AfterQueryResultLookupComplete', [ $this, &$result ] );
 
 		$query->setOption( Query::PROC_QUERY_TIME, microtime( true ) - $start );
 
@@ -351,10 +351,35 @@ class SPARQLStore extends Store {
 	}
 
 	/**
+	 * @see Store::service
+	 *
+	 * {@inheritDoc}
+	 */
+	public function service( $service, ...$args ) {
+		return $this->baseStore->service( $service, ...$args );
+	}
+
+	/**
 	 * @see Store::setup()
 	 * @since 1.8
 	 */
 	public function setup( $verbose = true ) {
+
+		// Only copy required options to the base store
+		$options = $this->getOptions()->filter(
+			[
+				\SMW\SQLStore\Installer::OPT_TABLE_OPTIMIZE,
+				\SMW\SQLStore\Installer::OPT_IMPORT,
+				\SMW\SQLStore\Installer::OPT_SCHEMA_UPDATE,
+				\SMW\SQLStore\Installer::OPT_SUPPLEMENT_JOBS
+			]
+		);
+
+		foreach ( $options as $key => $value ) {
+			$this->baseStore->setOption( $key, $value );
+		}
+
+		$this->baseStore->setMessageReporter( $this->messageReporter );
 		$this->baseStore->setup( $verbose );
 	}
 
@@ -413,31 +438,48 @@ class SPARQLStore extends Store {
 	}
 
 	/**
-	 * @since 2.1
+	 * @since 3.0
 	 *
-	 * @param boolean $status
+	 * @param string|null $type
+	 *
+	 * @return array
 	 */
-	public function setUpdateJobsEnabledState( $status ) {
-		$this->baseStore->setUpdateJobsEnabledState( $status );
+	public function getInfo( $type = null ) {
+
+		$client = $this->getConnection( 'sparql' )->getRepositoryClient();
+
+		if ( $type === 'store' ) {
+			return [ 'SMWSPARQLStore', $client->getName() ];
+		}
+
+		$connection = $this->getConnection( 'mw.db' );
+
+		if ( $type === 'db' ) {
+			return $connection->getInfo();
+		}
+
+		return [
+			'SMWSPARQLStore' => $connection->getInfo() + [ $client->getName() => 'n/a' ]
+		];
 	}
 
 	/**
 	 * @since 2.1
 	 *
-	 * @param string $connectionTypeId
+	 * @param string $type
 	 *
 	 * @return mixed
 	 */
-	public function getConnection( $connectionTypeId = 'sparql' ) {
+	public function getConnection( $type = 'sparql' ) {
 
 		if ( $this->connectionManager === null ) {
-			$this->setConnectionManager( $this->factory->newConnectionManager() );
+			$this->setConnectionManager( $this->factory->getConnectionManager() );
 		}
 
-		return parent::getConnection( $connectionTypeId );
+		return parent::getConnection( $type );
 	}
 
-	private function isEnabledQueryEndpoint() {
+	private function hasQueryEndpoint() {
 		return $this->getConnection( 'sparql' )->getRepositoryClient()->getQueryEndpoint() !== false;
 	}
 

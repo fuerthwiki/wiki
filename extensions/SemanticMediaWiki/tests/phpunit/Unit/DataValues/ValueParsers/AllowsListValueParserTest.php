@@ -42,10 +42,33 @@ class AllowsListValueParserTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$this->assertEquals(
-			array(
+			[
 				'Foo' => 'Foo',
 				'Foobar' => 'bar'
-			),
+			],
+			$instance->parse( 'Bar' )
+		);
+	}
+
+	public function testParseAndMatchFromJSON() {
+
+		$contents = json_encode( [ 'Foo' => 'Foo', 'Foobar' => 'fooooo bar' ] );
+
+		$this->mediaWikiNsContentReader->expects( $this->once() )
+			->method( 'read' )
+			->will( $this->returnValue( $contents ) );
+
+		$instance = new AllowsListValueParser(
+			$this->mediaWikiNsContentReader
+		);
+
+		$instance->clear();
+
+		$this->assertEquals(
+			[
+				'Foo' => 'Foo',
+				'Foobar' => 'fooooo bar'
+			],
 			$instance->parse( 'Bar' )
 		);
 	}

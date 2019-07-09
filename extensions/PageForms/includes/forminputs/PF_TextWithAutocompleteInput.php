@@ -131,9 +131,9 @@ class PFTextWithAutocompleteInput extends PFTextInput {
 			// Autocompletion from URL is always done remotely.
 			$remoteDataType = $autocompleteFieldType;
 		} elseif ( $autocompletionSource !== '' ) {
-			// @TODO - that count() check shouldn't be necessary
+			// @TODO - that empty() check shouldn't be necessary
 			if ( array_key_exists( 'possible_values', $field_args ) &&
-				count( $field_args['possible_values'] ) > 0
+				!empty( $field_args['possible_values'] )
 			) {
 				$autocompleteValues = $field_args['possible_values'];
 			} elseif ( $autocompleteFieldType == 'values' ) {
@@ -152,7 +152,7 @@ class PFTextWithAutocompleteInput extends PFTextInput {
 		return array( $autocompleteSettings, $remoteDataType, $delimiter );
 	}
 
-	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, $other_args ) {
+	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, array $other_args ) {
 		global $wgPageFormsTabIndex, $wgPageFormsFieldNum;
 
 		list( $autocompleteSettings, $remoteDataType, $delimiter ) = self::setAutocompleteValues( $other_args );
@@ -196,7 +196,14 @@ class PFTextWithAutocompleteInput extends PFTextInput {
 		if ( array_key_exists( 'placeholder', $other_args ) ) {
 			$inputAttrs['placeholder'] = $other_args['placeholder'];
 		}
-		$text = "\n\t" . Html::input( $input_name, $cur_value, 'text', $inputAttrs ) . "\n";
+
+		// The input value passed in to Html::input() cannot be an array.
+		if ( is_array( $cur_value ) ) {
+			$curValueStr = implode( $delimiter . ' ', $cur_value );
+		} else {
+			$curValueStr = $cur_value;
+		}
+		$text = "\n\t" . Html::input( $input_name, $curValueStr, 'text', $inputAttrs ) . "\n";
 
 		if ( array_key_exists( 'uploadable', $other_args ) && $other_args['uploadable'] == true ) {
 			if ( array_key_exists( 'default filename', $other_args ) ) {

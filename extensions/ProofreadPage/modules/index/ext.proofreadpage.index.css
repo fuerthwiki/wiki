@@ -1,15 +1,7 @@
-table#prp-formTable th {
-	text-align: left;
-	font-weight: normal;
+.prp-index-fieldLayout {
+	max-width: 60em;
 }
 
-.prp-help-field {
-	margin-left: 0.5em;
-	padding: 0 0 0 15px;
-
-	/* @embed */
-	background-image: url('images/help-question.gif');
-	background-position: left center;
-	background-repeat: no-repeat;
-	cursor: pointer;
+.prp-index-fieldLayout textarea {
+	resize: both;
 }

@@ -2,13 +2,12 @@
 
 namespace SMW\Query\PrintRequest;
 
-use SMW\Query\PrintRequest;
-use SMWPropertyValue as PropertyValue;
+use InvalidArgumentException;
 use SMW\DataValueFactory;
 use SMW\DataValues\PropertyChainValue;
 use SMW\Localizer;
+use SMW\Query\PrintRequest;
 use Title;
-use InvalidArgumentException;
 
 /**
  * @license GNU GPL v2+
@@ -44,7 +43,15 @@ class Deserializer {
 
 		if ( $printRequestLabel === '' ) { // print "this"
 			$printmode = PrintRequest::PRINT_THIS;
-			$label = ''; // default
+
+			// default
+			$label = '';
+
+			// Distinguish the case of an empty format
+			if ( $outputFormat === '' ) {
+				$outputFormat = null;
+			}
+
 		} elseif ( self::isCategory( $printRequestLabel ) ) { // print categories
 			$printmode = PrintRequest::PRINT_CATS;
 			$label = $showMode ? '' : Localizer::getInstance()->getNamespaceTextById( NS_CATEGORY ); // default
@@ -70,7 +77,7 @@ class Deserializer {
 				$label = $showMode ? '' : $title->getText();  // default
 			} else { // enforce interpretation as property (even if it starts with something that looks like another namespace)
 				$printmode = PrintRequest::PRINT_PROP;
-				$data = PropertyValue::makeUserProperty( $printRequestLabel );
+				$data = DataValueFactory::getInstance()->newPropertyValueByLabel( $printRequestLabel );
 				if ( !$data->isValid() ) { // not a property; give up
 					return null;
 				}
@@ -78,7 +85,9 @@ class Deserializer {
 			}
 		}
 
-		// "plain printout", avoid empty string to avoid confusions with "false"
+		// "plain printout"
+		// @docu mentions that `?foo#` is equal to `?foo#-` and avoid an
+		// empty string to distinguish it from "false"
 		if ( $outputFormat === '' ) {
 			$outputFormat = '-';
 		}
@@ -88,9 +97,24 @@ class Deserializer {
 			$label = trim( $parts[1] );
 		}
 
+		if ( $printmode === PrintRequest::PRINT_THIS ) {
+
+			// Cover the case of `?#Test=#-`
+			if ( strrpos( $label, '#' ) !== false ) {
+				list( $label, $outputFormat ) = explode( '#', $label );
+
+				// `?#=foo#` is equal to `?#=foo#-`
+				if ( $outputFormat === '' ) {
+					$outputFormat = '-';
+				}
+			}
+		}
+
 		try {
 			$printRequest = new PrintRequest( $printmode, $label, $data, trim( $outputFormat ) );
-		} catch ( InvalidArgumentException $e ) { // something still went wrong; give up
+			$printRequest->markThisLabel( $text );
+		} catch ( InvalidArgumentException $e ) {
+			// something still went wrong; give up
 			$printRequest = null;
 		}
 
@@ -98,8 +122,13 @@ class Deserializer {
 	}
 
 	private static function isCategory( $text ) {
-		return Localizer::getInstance()->getNamespaceTextById( NS_CATEGORY ) == mb_convert_case( $text, MB_CASE_TITLE ) ||
-		$text == 'Category';
+
+		// Check for the canonical form (singular, plural)
+		if ( $text == 'Category' || $text == 'Categories' ) {
+			return true;
+		}
+
+		return Localizer::getInstance()->getNamespaceTextById( NS_CATEGORY ) == mb_convert_case( $text, MB_CASE_TITLE );
 	}
 
 	private static function getPartsFromText( $text ) {
@@ -108,24 +137,24 @@ class Deserializer {
 		// Temporary encode "=" within a <> entity (<span>...</span>)
 		$text = preg_replace_callback( "/(<(.*?)>(.*?)>)/u", function( $matches ) {
 			foreach ( $matches as $match ) {
-				return str_replace( array( '=' ), array( '-3D' ), $match );
+				return str_replace( [ '=' ], [ '-3D' ], $match );
 			}
 		}, $text );
 
 		$parts = explode( '=', $text, 2 );
 
 		// Restore temporary encoding
-		$parts[0] = str_replace( array( '-3D' ), array( '=' ), $parts[0] );
+		$parts[0] = str_replace( [ '-3D' ], [ '=' ], $parts[0] );
 
 		if ( isset( $parts[1] ) ) {
-			$parts[1] = str_replace( array( '-3D' ), array( '=' ), $parts[1] );
+			$parts[1] = str_replace( [ '-3D' ], [ '=' ], $parts[1] );
 		}
 
 		$propparts = explode( '#', $parts[0], 2 );
 		$printRequestLabel = trim( $propparts[0] );
 		$outputFormat = isset( $propparts[1] ) ? trim( $propparts[1] ) : false;
 
-		return array( $parts, $outputFormat, $printRequestLabel );
+		return [ $parts, $outputFormat, $printRequestLabel ];
 	}
 
 }

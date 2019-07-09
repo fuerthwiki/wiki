@@ -1,6 +1,6 @@
 <?php
 
-namespace SMW\TestsImporter;
+namespace SMW\Tests\Importer;
 
 use SMW\Importer\JsonContentIterator;
 use SMW\Importer\JsonImportContentsFileDirReader;
@@ -47,7 +47,7 @@ class JsonContentIteratorTest extends \PHPUnit_Framework_TestCase {
 
 		$this->jsonImportContentsFileDirReader->expects( $this->atLeastOnce() )
 			->method( 'getContentList' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
 		$instance = new JsonContentIterator(
 			$this->jsonImportContentsFileDirReader

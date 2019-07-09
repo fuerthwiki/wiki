@@ -24,7 +24,7 @@ class PFComboBoxInput extends PFFormInput {
 		return array( 'String' );
 	}
 
-	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, $other_args ) {
+	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, array $other_args ) {
 		global $wgPageFormsTabIndex, $wgPageFormsFieldNum, $wgPageFormsEDSettings;
 
 		$className = 'pfComboBox';
@@ -130,7 +130,7 @@ class PFComboBoxInput extends PFFormInput {
 		return $text;
 	}
 
-	public static function setAutocompleteValues( $field_args ) {
+	public static function setAutocompleteValues( array $field_args ) {
 		global $wgPageFormsAutocompleteValues, $wgPageFormsMaxLocalAutocompleteValues;
 
 		list( $autocompleteFieldType, $autocompletionSource ) =
@@ -143,7 +143,7 @@ class PFComboBoxInput extends PFFormInput {
 		} elseif ( $autocompletionSource !== '' ) {
 			// @TODO - that count() check shouldn't be necessary
 			if ( array_key_exists( 'possible_values', $field_args ) &&
-			count( $field_args['possible_values'] ) > 0 ) {
+			! empty( $field_args['possible_values'] ) ) {
 				$autocompleteValues = $field_args['possible_values'];
 			} elseif ( $autocompleteFieldType == 'values' ) {
 				$autocompleteValues = explode( ',', $field_args['values'] );
@@ -151,7 +151,10 @@ class PFComboBoxInput extends PFFormInput {
 				$autocompleteValues = PFValuesUtils::getAutocompleteValues( $autocompletionSource, $autocompleteFieldType );
 			}
 			if ( count( $autocompleteValues ) > $wgPageFormsMaxLocalAutocompleteValues &&
-			$autocompleteFieldType != 'values' && !array_key_exists( 'values dependent on', $field_args ) && !array_key_exists( 'mapping template', $field_args ) ) {
+				$autocompleteFieldType != 'values' &&
+				!array_key_exists( 'values dependent on', $field_args ) &&
+				!array_key_exists( 'mapping template', $field_args )
+			) {
 				$remoteDataType = $autocompleteFieldType;
 			} else {
 				$wgPageFormsAutocompleteValues[$autocompletionSource] = $autocompleteValues;

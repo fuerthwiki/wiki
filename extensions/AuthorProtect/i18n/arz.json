@@ -12,7 +12,6 @@
 	"authorprotect-move": "احصر النقل للمؤلفين",
 	"authorprotect-intro": "استخدم هذه الاستمارة لتقفل هذه الصفحة عن غير المؤلفين",
 	"authorprotect-success": "نجحت الحماية!",
-	"authorprotect-failure": "فشلت الحماية",
 	"protect-level-author": "احمى من غير المؤلفين",
 	"restriction-level-author": "حماية المؤلف"
 }

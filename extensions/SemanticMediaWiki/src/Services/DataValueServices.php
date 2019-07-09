@@ -2,33 +2,35 @@
 
 namespace SMW\Services;
 
-use SMW\DataValues\ImportValue;
-use SMW\DataValues\ReferenceValue;
-use SMW\DataValues\MonolingualTextValue;
-use SMW\DataValues\ValueParsers\ImportValueParser;
-use SMW\DataValues\ValueParsers\PropertyValueParser;
-use SMW\DataValues\ValueParsers\MonolingualTextValueParser;
-use SMW\DataValues\ValueFormatters\PropertyValueFormatter;
-use SMW\DataValues\ValueFormatters\StringValueFormatter;
-use SMW\DataValues\ValueFormatters\CodeStringValueFormatter;
-use SMW\DataValues\ValueFormatters\ReferenceValueFormatter;
-use SMW\DataValues\ValueFormatters\MonolingualTextValueFormatter;
-use SMW\DataValues\ValueParsers\AllowsPatternValueParser;
-use SMW\DataValues\ValueParsers\AllowsListValueParser;
 use SMW\DataValues\AllowsListValue;
 use SMW\DataValues\AllowsPatternValue;
-use SMWPropertyValue as PropertyValue;
-use SMWStringValue as StringValue;
-use SMW\DataValues\ValueValidators\CompoundConstraintValueValidator;
-use SMW\DataValues\ValueValidators\UniquenessConstraintValueValidator;
-use SMW\DataValues\ValueValidators\PatternConstraintValueValidator;
-use SMW\DataValues\ValueValidators\AllowsListConstraintValueValidator;
-use SMW\DataValues\ValueValidators\PropertySpecificationConstraintValueValidator;
-use SMWNumberValue as NumberValue;
-use SMWQuantityValue as QuantityValue;
+use SMW\DataValues\ImportValue;
+use SMW\DataValues\MonolingualTextValue;
+use SMW\DataValues\ReferenceValue;
+use SMW\DataValues\StringValue;
+use SMW\DataValues\ValueFormatters\CodeStringValueFormatter;
+use SMW\DataValues\ValueFormatters\MonolingualTextValueFormatter;
 use SMW\DataValues\ValueFormatters\NumberValueFormatter;
-use SMWTimeValue as TimeValue;
+use SMW\DataValues\ValueFormatters\PropertyValueFormatter;
+use SMW\DataValues\ValueFormatters\ReferenceValueFormatter;
+use SMW\DataValues\ValueFormatters\StringValueFormatter;
 use SMW\DataValues\ValueFormatters\TimeValueFormatter;
+use SMW\DataValues\ValueParsers\AllowsListValueParser;
+use SMW\DataValues\ValueParsers\AllowsPatternValueParser;
+use SMW\DataValues\ValueParsers\ImportValueParser;
+use SMW\DataValues\ValueParsers\MonolingualTextValueParser;
+use SMW\DataValues\ValueParsers\PropertyValueParser;
+use SMW\DataValues\ValueParsers\TimeValueParser;
+use SMW\DataValues\ValueValidators\AllowsListConstraintValueValidator;
+use SMW\DataValues\ValueValidators\CompoundConstraintValueValidator;
+use SMW\DataValues\ValueValidators\PatternConstraintValueValidator;
+use SMW\DataValues\ValueValidators\PropertySpecificationConstraintValueValidator;
+use SMW\DataValues\ValueValidators\UniquenessConstraintValueValidator;
+use SMWNumberValue as NumberValue;
+use SMWPropertyValue as PropertyValue;
+use SMWQuantityValue as QuantityValue;
+use SMWTimeValue as TimeValue;
+use SMW\Site;
 
 /**
  * @codeCoverageIgnore
@@ -42,7 +44,7 @@ use SMW\DataValues\ValueFormatters\TimeValueFormatter;
  *
  * @author mwjames
  */
-return array(
+return [
 
 	/**
 	 * PropertyValueParser
@@ -63,7 +65,7 @@ return array(
 		);
 
 		$propertyValueParser->isCapitalLinks(
-			$GLOBALS['wgCapitalLinks']
+			Site::isCapitalLinks()
 		);
 
 		return $propertyValueParser;
@@ -81,7 +83,7 @@ return array(
 			PropertyValueFormatter::class
 		);
 
-		return new PropertyValueFormatter();
+		return new PropertyValueFormatter( $containerBuilder->singleton( 'PropertySpecificationLookup' ) );
 	},
 
 	/**
@@ -131,7 +133,10 @@ return array(
 		// Any registered ConstraintValueValidator becomes weaker(diminished) in the context
 		// of a preceding validator
 		$compoundConstraintValueValidator->registerConstraintValueValidator(
-			new UniquenessConstraintValueValidator()
+			new UniquenessConstraintValueValidator(
+				$containerBuilder->singleton( 'Store' ),
+				$containerBuilder->singleton( 'PropertySpecificationLookup' )
+			)
 		);
 
 		$patternConstraintValueValidator = new PatternConstraintValueValidator(
@@ -143,7 +148,8 @@ return array(
 		);
 
 		$allowsListConstraintValueValidator = new AllowsListConstraintValueValidator(
-			$containerBuilder->create( DataValueServiceFactory::TYPE_PARSER . AllowsListValue::TYPE_ID )
+			$containerBuilder->create( DataValueServiceFactory::TYPE_PARSER . AllowsListValue::TYPE_ID ),
+			$containerBuilder->singleton( 'PropertySpecificationLookup' )
 		);
 
 		$compoundConstraintValueValidator->registerConstraintValueValidator(
@@ -286,4 +292,19 @@ return array(
 		return new TimeValueFormatter();
 	},
 
-);
+	/**
+	 * TimeValueParser
+	 *
+	 * @return callable
+	 */
+	DataValueServiceFactory::TYPE_PARSER . TimeValue::TYPE_ID => function( $containerBuilder ) {
+
+		$containerBuilder->registerExpectedReturnType(
+			DataValueServiceFactory::TYPE_PARSER . TimeValue::TYPE_ID,
+			TimeValueParser::class
+		);
+
+		return new TimeValueParser();
+	},
+
+];

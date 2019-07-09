@@ -5,18 +5,20 @@
 			"Grondin",
 			"Peter17",
 			"Sherbrooke",
-			"Gomoko"
+			"Gomoko",
+			"Wladek92",
+			"Urhixidur"
 		]
 	},
+	"action-authorprotect": "protection contre les non-auteurs",
 	"authorprotect": "Protéger la page des non-auteurs",
 	"authorprotect-desc": "Permet à l’auteur d’une page de la protéger des autres utilisateurs",
-	"authorprotect-notauthor": "Vous n‘êtes pas l’auteur de cette page",
+	"authorprotect-notauthor": "Vous n’êtes pas l’auteur{{GENDER:$1||e}} de cette page.",
 	"authorprotect-confirm": "Modifier le niveau de protection",
 	"authorprotect-edit": "Restreindre l’édition aux auteurs",
 	"authorprotect-move": "Restreindre le renommage aux auteurs",
 	"authorprotect-intro": "Utilisez ce formulaire pour verrouiller cette pages des non-auteurs",
 	"authorprotect-success": "Protection mise en place !",
-	"authorprotect-failure": "Échec de la protection.",
 	"protect-level-author": "Protéger des non-auteurs",
 	"restriction-level-author": "Auteur-protégé",
 	"right-authorprotect": "Protéger la page des auteurs",

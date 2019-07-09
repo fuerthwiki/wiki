@@ -4,12 +4,15 @@ use ParamProcessor\Options;
 use ParamProcessor\Param;
 use ParamProcessor\ParamDefinition;
 use ParamProcessor\Processor;
-use SMW\Query\PrintRequest;
-use SMW\Query\PrintRequestFactory;
 use SMW\ApplicationFactory;
 use SMW\Message;
+use SMW\Parser\RecursiveTextProcessor;
+use SMW\Query\Deferred;
+use SMW\Query\PrintRequest;
+use SMW\Query\Processor\ParamListProcessor;
+use SMW\Query\Processor\DefaultParamDefinition;
 use SMW\Query\QueryContext;
-use SMW\Query\ResultFormatNotFoundException;
+use SMW\Query\Exception\ResultFormatNotFoundException;
 
 /**
  * This file contains a static class for accessing functions to generate and execute
@@ -25,6 +28,20 @@ use SMW\Query\ResultFormatNotFoundException;
  * @ingroup SMWQuery
  */
 class SMWQueryProcessor implements QueryContext {
+
+	/**
+	 * @var RecursiveTextProcessor
+	 */
+	private static $recursiveTextProcessor;
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param RecursiveTextProcessor|null $recursiveTextProcessor
+	 */
+	public static function setRecursiveTextProcessor( RecursiveTextProcessor $recursiveTextProcessor = null ) {
+		self::$recursiveTextProcessor = $recursiveTextProcessor;
+	}
 
 	/**
 	 * Takes an array of unprocessed parameters, processes them using
@@ -43,8 +60,8 @@ class SMWQueryProcessor implements QueryContext {
 	 *
 	 * @return Param[]
 	 */
-	public static function getProcessedParams( array $params, array $printRequests = array(), $unknownInvalid = true ) {
-		$validator = self::getValidatorForParams( $params, $printRequests, $unknownInvalid );
+	public static function getProcessedParams( array $params, array $printRequests = [], $unknownInvalid = true, $context = null, $showMode = false ) {
+		$validator = self::getValidatorForParams( $params, $printRequests, $unknownInvalid, $context, $showMode );
 		$validator->processParameters();
 		$parameters =  $validator->getParameters();
 
@@ -57,34 +74,6 @@ class SMWQueryProcessor implements QueryContext {
 		}
 
 		return $parameters;
-	}
-
-	/**
-	 * Takes an array of unprocessed parameters,
-	 * and sets them on a new Validator object,
-	 * which is returned and ready to process the parameters.
-	 *
-	 * @since 1.8
-	 *
-	 * @param array $params
-	 * @param array $printRequests
-	 * @param boolean $unknownInvalid
-	 *
-	 * @return Processor
-	 */
-	public static function getValidatorForParams( array $params, array $printRequests = array(), $unknownInvalid = true ) {
-		$paramDefinitions = self::getParameters();
-
-		$paramDefinitions['format']->setPrintRequests( $printRequests );
-
-		$processorOptions = new Options();
-		$processorOptions->setUnknownInvalid( $unknownInvalid );
-
-		$validator = Processor::newFromOptions( $processorOptions );
-
-		$validator->setParameters( $params, $paramDefinitions, false );
-
-		return $validator;
 	}
 
 	/**
@@ -106,7 +95,7 @@ class SMWQueryProcessor implements QueryContext {
 	 *
 	 * @return SMWQuery
 	 */
-	static public function createQuery( $queryString, array $params, $context = self::INLINE_QUERY, $format = '', array $extraPrintouts = array(), $contextPage = null ) {
+	static public function createQuery( $queryString, array $params, $context = self::INLINE_QUERY, $format = '', array $extraPrintouts = [], $contextPage = null ) {
 
 		if ( $format === '' || is_null( $format ) ) {
 			$format = $params['format']->getValue();
@@ -147,42 +136,23 @@ class SMWQueryProcessor implements QueryContext {
 			$limit = $GLOBALS['smwgQMaxLimit'];
 		}
 
-		$queryCreator = ApplicationFactory::getInstance()->getQueryFactory()->newQueryCreator();
+		$queryCreator = ApplicationFactory::getInstance()->singleton( 'QueryCreator' );
 
-		$queryCreator->setConfiguration(  array(
+		$params = [
 			'extraPrintouts' => $extraPrintouts,
 			'queryMode'   => $queryMode,
 			'context'     => $context,
 			'contextPage' => $contextPage,
 			'offset'      => $offset,
 			'limit'       => $limit,
-			'querySource' => $params['source']->getValue(),
+			'source'      => $params['source']->getValue(),
 			'mainLabel'   => $params['mainlabel']->getValue(),
 			'sort'        => $params['sort']->getValue(),
 			'order'       => $params['order']->getValue(),
 			'defaultSort' => $defaultSort
-		) );
+		];
 
-		return $queryCreator->create( $queryString );
-	}
-
-	/**
-	 * @deprecated since 2.5, This method should no longer be used but since it
-	 * was made protected (and therefore can be derived from) it will remain until
-	 * 3.0 to avoid a breaking BC.
-	 *
-	 * Takes the sort and order parameters and returns a list of sort keys and a list of errors.
-	 *
-	 * @since 1.7
-	 *
-	 * @param array $sortParam
-	 * @param array $orders
-	 * @param string $defaultSort
-	 *
-	 * @return array ( keys => array(), errors => array() )
-	 */
-	protected static function getSortKeys( array $sortParam, array $orderParam, $defaultSort ) {
-		return ApplicationFactory::getInstance()->getQueryFactory()->newConfigurableQueryCreator()->getSortKeys( $sortParam, $orderParam, $defaultSort );
+		return $queryCreator->create( $queryString, $params );
 	}
 
 	/**
@@ -194,15 +164,31 @@ class SMWQueryProcessor implements QueryContext {
 	 * @param array $rawParams
 	 */
 	public static function addThisPrintout( array &$printRequests, array $rawParams ) {
-		if ( !is_null( $printRequests ) ) {
-			$hasMainlabel = array_key_exists( 'mainlabel', $rawParams );
 
-			if  ( !$hasMainlabel || trim( $rawParams['mainlabel'] ) !== '-' ) {
-				array_unshift( $printRequests, new PrintRequest(
-					PrintRequest::PRINT_THIS,
-					$hasMainlabel ? $rawParams['mainlabel'] : ''
-				) );
+		if ( $printRequests === null ) {
+			return;
+		}
+
+		// If THIS is already registered, bail-out!
+		foreach ( $printRequests as $printRequest ) {
+			if ( $printRequest->isMode( PrintRequest::PRINT_THIS ) ) {
+				return;
 			}
+		}
+
+		$hasMainlabel = array_key_exists( 'mainlabel', $rawParams );
+
+		if  ( !$hasMainlabel || trim( $rawParams['mainlabel'] ) !== '-' ) {
+			$printRequest = new PrintRequest(
+				PrintRequest::PRINT_THIS,
+				$hasMainlabel ? $rawParams['mainlabel'] : ''
+			);
+
+			// Signal to any post-processing that THIS was added outside of
+			// the normal processing chain
+			$printRequest->isDisconnected( true );
+
+			array_unshift( $printRequests, $printRequest );
 		}
 	}
 
@@ -241,74 +227,13 @@ class SMWQueryProcessor implements QueryContext {
 	 * @return array( string, array( string => string ), array( SMWPrintRequest ) )
 	 */
 	static public function getComponentsFromFunctionParams( array $rawParams, $showMode ) {
-		$queryString = '';
-		$parameters = array();
-		$printouts = array();
 
-		$lastprintout = null;
-		$printRequestFactory = new PrintRequestFactory();
+		$paramListProcessor = ApplicationFactory::getInstance()->singleton( 'ParamListProcessor' );
 
-		foreach ( $rawParams as $name => $rawParam ) {
-			// special handling for arrays - this can happen if the
-			// parameter came from a checkboxes input in Special:Ask:
-			if ( is_array( $rawParam ) ) {
-				$rawParam = implode( ',', array_keys( $rawParam ) );
-			}
-
-			// Bug 32955 / #640
-			// Modify (e.g. replace `=`) a condition string only if enclosed by [[ ... ]]
-			$rawParam = preg_replace_callback(
-				'/\[\[([^\[\]]*)\]\]/xu',
-				function( array $matches ) {
-					return str_replace( array( '=' ), array( '-3D' ), $matches[0] );
-				},
-				$rawParam
-			);
-
-			// #1258 (named_args -> named args)
-			// accept 'name' => 'value' just as '' => 'name=value':
-			if ( is_string( $name ) && ( $name !== '' ) ) {
-				$rawParam = str_replace( "_", " ", $name ) . '=' . $rawParam;
-			}
-
-			if ( $rawParam === '' ) {
-			} elseif ( $rawParam { 0 } == '?' ) { // print statement
-				$rawParam = substr( $rawParam, 1 );
-				$lastprintout = $printRequestFactory->newPrintRequestFromText( $rawParam, $showMode );
-				if ( !is_null( $lastprintout ) ) {
-					$printouts[] = $lastprintout;
-				}
-			} elseif ( $rawParam[0] == '+' ) { // print request parameter
-				if ( !is_null( $lastprintout ) ) {
-					$rawParam = substr( $rawParam, 1 );
-					$parts = explode( '=', $rawParam, 2 );
-					if ( count( $parts ) == 2 ) {
-						$lastprintout->setParameter( trim( $parts[0] ), $parts[1] );
-					} else {
-						$lastprintout->setParameter( trim( $parts[0] ), null );
-					}
-				}
-			} else { // parameter or query
-
-				// #1645
-				$parts = $showMode && $name == 0 ? $rawParam : explode( '=', $rawParam, 2 );
-
-				if ( count( $parts ) >= 2 ) {
-					// don't trim here, some parameters care for " "
-					$parameters[strtolower( trim( $parts[0] ) )] = $parts[1];
-				} else {
-					$queryString .= $rawParam;
-				}
-			}
-		}
-
-		$queryString = str_replace( array( '&lt;', '&gt;', '-3D' ), array( '<', '>', '=' ), $queryString );
-
-		if ( $showMode ) {
-			$queryString = "[[:$queryString]]";
-		}
-
-		return array( $queryString, $parameters, $printouts);
+		return $paramListProcessor->format(
+			$paramListProcessor->preprocess( $rawParams, $showMode ),
+			ParamListProcessor::FORMAT_LEGACY
+		);
 	}
 
 	/**
@@ -335,10 +260,19 @@ class SMWQueryProcessor implements QueryContext {
 			self::addThisPrintout( $printouts, $params );
 		}
 
-		$params = self::getProcessedParams( $params, $printouts );
+		$params = self::getProcessedParams( $params, $printouts, true, $context, $showMode );
 
 		$query  = self::createQuery( $queryString, $params, $context, '', $printouts, $contextPage );
-		return array( $query, $params );
+
+		// For convenience keep parameters and options to be available for immediate
+		// processing
+		if ( $context === self::DEFERRED_QUERY ) {
+			$query->setOption( Deferred::QUERY_PARAMETERS, implode( '|', $rawParams ) );
+			$query->setOption( Deferred::SHOW_MODE, $showMode );
+			$query->setOption( Deferred::CONTROL_ELEMENT, isset( $params['@control'] ) ? $params['@control']->getValue() : '' );
+		}
+
+		return [ $query, $params ];
 	}
 
 	/**
@@ -413,13 +347,44 @@ class SMWQueryProcessor implements QueryContext {
 	 */
 	public static function getResultFromQuery( SMWQuery $query, array $params, $outputMode, $context ) {
 
+		$printer = self::getResultPrinter(
+			$params['format']->getValue(),
+			$context
+		);
+
+		if ( $printer->isDeferrable() && $context === self::DEFERRED_QUERY && $query->getLimit() > 0 ) {
+
+			// Halt processing that is not `DEFERRED_DATA` as it is expected the
+			// process is picked-up by the `deferred.js` loader that will
+			// initiate an API request to finalize the query after MW has build
+			// the page.
+			if ( $printer->isDeferrable() !== $printer::DEFERRED_DATA ) {
+				return Deferred::buildHTML( $query );
+			}
+
+			// `DEFERRED_DATA` is interpret as "execute the query with limit=0" (i.e.
+			// no query execution) but allow the printer to setup the HTML so that
+			// the data can be loaded after MW has finished the page build including
+			// the pre-rendered query HTML representation. This mode deferrers the
+			// actual query execution and data load to after the page build.
+			//
+			// Each printer that uses this mode has to handle the required parameters
+			// and data load accordingly.
+			$query->querymode = SMWQuery::MODE_INSTANCES;
+			$query->setOption( 'deferred.limit', $query->getLimit() );
+			$query->setLimit( 0 );
+		}
+
 		$res = self::getStoreFromParams( $params )->getQueryResult( $query );
 		$start = microtime( true );
+
+		if ( $res instanceof SMWQueryResult && $query->getOption( 'calc.result_hash' ) ) {
+			$query->setOption( 'result_hash', $res->getHash( 'quick' ) );
+		}
 
 		if ( ( $query->querymode == SMWQuery::MODE_INSTANCES ) ||
 			( $query->querymode == SMWQuery::MODE_NONE ) ) {
 
-			$printer = self::getResultPrinter( $params['format']->getValue(), $context );
 			$result = $printer->getResult( $res, $params, $outputMode );
 
 			$query->setOption( SMWQuery::PROC_PRINT_TIME, microtime( true ) - $start );
@@ -470,120 +435,40 @@ class SMWQueryProcessor implements QueryContext {
 	static public function getResultPrinter( $format, $context = self::SPECIAL_PAGE ) {
 		global $smwgResultFormats;
 
+		SMWParamFormat::resolveFormatAliases( $format );
+
 		if ( !array_key_exists( $format, $smwgResultFormats ) ) {
 			throw new ResultFormatNotFoundException( "There is no result format for '$format'." );
 		}
 
 		$formatClass = $smwgResultFormats[$format];
 
-		return new $formatClass( $format, ( $context != self::SPECIAL_PAGE ) );
+		$printer = new $formatClass( $format, ( $context != self::SPECIAL_PAGE ) );
+
+		if ( self::$recursiveTextProcessor === null ) {
+			self::$recursiveTextProcessor = new RecursiveTextProcessor();
+		}
+
+		$printer->setRecursiveTextProcessor(
+			self::$recursiveTextProcessor
+		);
+
+		return $printer;
 	}
 
 	/**
-	 * A function to describe the allowed parameters of a query using
-	 * any specific format - most query printers should override this
-	 * function.
+	 * Produces a list of default allowed parameters for a result printer. Most
+	 * query printers should override this function.
 	 *
 	 * @since 1.6.2, return element type changed in 1.8
 	 *
+	 * @param integer|null $context
+	 * @param ResultPrinter|null $resultPrinter
+	 *
 	 * @return IParamDefinition[]
 	 */
-	public static function getParameters() {
-		$params = array();
-
-		$allowedFormats = $GLOBALS['smwgResultFormats'];
-
-		foreach ( $GLOBALS['smwgResultAliases'] as $aliases ) {
-			$allowedFormats += $aliases;
-		}
-
-		$allowedFormats[] = 'auto';
-
-		$params['format'] = array(
-			'type' => 'smwformat',
-			'default' => 'auto',
-		);
-
-		// TODO $params['format']->setToLower( true );
-		// TODO $allowedFormats
-
-		$params['source'] = self::getSourceParam();
-
-		$params['limit'] = array(
-			'type' => 'integer',
-			'default' => $GLOBALS['smwgQDefaultLimit'],
-			'negatives' => false,
-		);
-
-		$params['offset'] = array(
-			'type' => 'integer',
-			'default' => 0,
-			'negatives' => false,
-			'upperbound' => $GLOBALS['smwgQUpperbound'],
-		);
-
-		$params['link'] = array(
-			'default' => 'all',
-			'values' => array( 'all', 'subject', 'none' ),
-		);
-
-		$params['sort'] = array(
-			'islist' => true,
-			'default' => array( '' ), // The empty string represents the page itself, which should be sorted by default.
-		);
-
-		$params['order'] = array(
-			'islist' => true,
-			'default' => array(),
-			'values' => array( 'descending', 'desc', 'asc', 'ascending', 'rand', 'random' ),
-		);
-
-		$params['headers'] = array(
-			'default' => 'show',
-			'values' => array( 'show', 'hide', 'plain' ),
-		);
-
-		$params['mainlabel'] = array(
-			'default' => false,
-		);
-
-		$params['intro'] = array(
-			'default' => '',
-		);
-
-		$params['outro'] = array(
-			'default' => '',
-		);
-
-		$params['searchlabel'] = array(
-			'default' => Message::get( 'smw_iq_moreresults', Message::TEXT, Message::USER_LANGUAGE )
-		);
-
-		$params['default'] = array(
-			'default' => '',
-		);
-
-		// Give grep a chance to find the usages:
-		// smw-paramdesc-format, smw-paramdesc-source, smw-paramdesc-limit, smw-paramdesc-offset,
-		// smw-paramdesc-link, smw-paramdesc-sort, smw-paramdesc-order, smw-paramdesc-headers,
-		// smw-paramdesc-mainlabel, smw-paramdesc-intro, smw-paramdesc-outro, smw-paramdesc-searchlabel,
-		// smw-paramdesc-default
-		foreach ( $params as $name => &$param ) {
-			if ( is_array( $param ) ) {
-				$param['message'] = 'smw-paramdesc-' . $name;
-			}
-		}
-
-		return ParamDefinition::getCleanDefinitions( $params );
-	}
-
-	private static function getSourceParam() {
-		$sourceValues = is_array( $GLOBALS['smwgQuerySources'] ) ? array_keys( $GLOBALS['smwgQuerySources'] ) : array();
-
-		return array(
-			'default' => array_key_exists( 'default', $sourceValues ) ? 'default' : '',
-			'values' => $sourceValues,
-		);
+	public static function getParameters( $context = null, $resultPrinter = null ) {
+		return DefaultParamDefinition::getParamDefinitions( $context, $resultPrinter );
 	}
 
 	/**
@@ -598,13 +483,48 @@ class SMWQueryProcessor implements QueryContext {
 	public static function getFormatParameters( $format ) {
 		SMWParamFormat::resolveFormatAliases( $format );
 
-		if ( array_key_exists( $format, $GLOBALS['smwgResultFormats'] ) ) {
-			return ParamDefinition::getCleanDefinitions(
-				self::getResultPrinter( $format )->getParamDefinitions( self::getParameters() )
-			);
-		} else {
-			return array();
+		if ( !array_key_exists( $format, $GLOBALS['smwgResultFormats'] ) ) {
+			return [];
 		}
+
+		$resultPrinter = self::getResultPrinter( $format );
+
+		if ( $resultPrinter instanceof \SMW\Query\ResultPrinters\NullResultPrinter ) {
+			return [];
+		}
+
+		return ParamDefinition::getCleanDefinitions(
+			$resultPrinter->getParamDefinitions( self::getParameters( null, $resultPrinter ) )
+		);
+	}
+
+	/**
+	 * Takes an array of unprocessed parameters,
+	 * and sets them on a new Validator object,
+	 * which is returned and ready to process the parameters.
+	 *
+	 * @since 1.8
+	 *
+	 * @param array $params
+	 * @param array $printRequests
+	 * @param boolean $unknownInvalid
+	 *
+	 * @return Processor
+	 */
+	private static function getValidatorForParams( array $params, array $printRequests = [], $unknownInvalid = true, $context = null, $showMode = false ) {
+		$paramDefinitions = self::getParameters( $context );
+
+		$paramDefinitions['format']->setPrintRequests( $printRequests );
+		$paramDefinitions['format']->setShowMode( $showMode );
+
+		$processorOptions = new Options();
+		$processorOptions->setUnknownInvalid( $unknownInvalid );
+
+		$validator = Processor::newFromOptions( $processorOptions );
+
+		$validator->setParameters( $params, $paramDefinitions, false );
+
+		return $validator;
 	}
 
 }

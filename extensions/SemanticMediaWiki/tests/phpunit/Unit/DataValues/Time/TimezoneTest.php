@@ -2,7 +2,7 @@
 
 namespace SMW\Tests\DataValues\Time;
 
-use SMW\DataItemFactory;
+use DateTime;
 use SMW\DataValues\Time\Timezone;
 
 /**
@@ -70,74 +70,87 @@ class TimezoneTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
+	public function testGetModifiedTime() {
+
+		$dti = new DateTime( '2017-08-01 10:00:00+00:00' );
+		$tz = 'Asia/Tokyo';
+
+		$dateTime = Timezone::getModifiedTime( $dti, $tz );
+
+		$this->assertEquals(
+			'2017-08-01 19:00:00',
+			$dateTime->format( 'Y-m-d H:i:s' )
+		);
+	}
+
 	public function timezoneProvider() {
 
-		$provider[] = array(
+		$provider[] = [
 			'UTC',
 			true,
 			false,
 			0
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Z',
 			true,
 			true,
 			1
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Unknown',
 			false,
 			false,
 			false
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Asia/Tokyo',
 			true,
 			false,
 			'Asia/Tokyo'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'America/Los Angeles',
 			true,
 			false,
 			'America/Los_Angeles'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'America/Los_Angeles',
 			true,
 			false,
 			'America/Los_Angeles'
-		);
+		];
 
 		return $provider;
 	}
 
 	public function offsetProvider() {
 
-		$provider[] = array(
+		$provider[] = [
 			'UTC',
 			0
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Z',
 			0
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Unknown',
 			false
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'Asia/Tokyo',
 			32400
-		);
+		];
 
 		// Maybe return PST or PDT during Daylight Savings Time
 		/*

@@ -4,10 +4,9 @@ namespace SMW\SQLStore\QueryEngine\Fulltext;
 
 use Onoi\MessageReporter\MessageReporter;
 use Onoi\MessageReporter\MessageReporterFactory;
-use SMW\MediaWiki\Database;
 use SMW\DIProperty;
+use SMW\MediaWiki\Database;
 use SMWDataItem as DataItem;
-use SMWDIBlob as DIBlob;
 
 /**
  * @license GNU GPL v2+
@@ -45,7 +44,7 @@ class SearchTableRebuilder {
 	/**
 	 * @var array
 	 */
-	private $skippedTables = array();
+	private $skippedTables = [];
 
 	/**
 	 * @since 2.5
@@ -118,13 +117,22 @@ class SearchTableRebuilder {
 	}
 
 	/**
+	 * @since 3.0
+	 */
+	public function flushTable() {
+		if ( $this->searchTableUpdater->isEnabled() ) {
+			$this->searchTableUpdater->flushTable();
+		}
+	}
+
+	/**
 	 * @since 2.5
 	 *
 	 * @return array
 	 */
 	public function getQualifiedTableList() {
 
-		$tableList = array();
+		$tableList = [];
 
 		if ( !$this->searchTableUpdater->isEnabled() ) {
 			return $tableList;
@@ -157,9 +165,7 @@ class SearchTableRebuilder {
 
 	private function doOptimize() {
 
-		$this->reportMessage(
-			"\n## Optimization\n"
-		);
+		$this->reportMessage( "\nOptimization ...\n" );
 
 		$this->reportMessage(
 			"\nRunning table optimization (Depending on the SQL back-end " .
@@ -168,7 +174,7 @@ class SearchTableRebuilder {
 		);
 
 		if ( $this->searchTableUpdater->optimize() ) {
-			$this->reportMessage( "\nOptimization has finished.\n" );
+			$this->reportMessage( "\n   ... optimization has finished.\n" );
 		} else {
 			$this->reportMessage( "\nThe SQL back-end does not support this operation.\n" );
 		}
@@ -179,44 +185,36 @@ class SearchTableRebuilder {
 	private function doRebuild() {
 
 		$this->reportMessage(
-			"\n## Indexing\n"
+			"\nThe entire index table is going to be purged first and it may\n" .
+			"take a moment before the rebuild is completed due to varying\n" .
+			"table contents.\n"
 		);
 
-		$this->reportMessage(
-			"\nThe entire index table is going to be purged first and \n" .
-			"it may take a moment before the rebuild is completed due to\n" .
-			"dependencies on table content including varying options.\n"
-		);
+		$this->reportMessage( "\nIndex process ..." );
+		$this->reportMessage( "\n" . "   ... purging the index table ..." );
 
 		$this->searchTableUpdater->flushTable();
-
-		$this->reportMessage( "\n" . "The index table was purged." ."\n" );
-		$this->reportMessage( "\n" . "Rebuilding the content from (rows finished/expected):" ."\n\n" );
+		$this->reportMessage( "\n" . "   ... rebuilding (finished/expected) ..." );
 
 		foreach ( $this->searchTableUpdater->getPropertyTables() as $proptable ) {
 
 			// Only care for Blob/Uri tables
 			if ( !$this->getSearchTable()->isValidByType( $proptable->getDiType() ) ) {
-				$this->skippedTables[$proptable->getName()] = 'Not a valid DI type.';
+				$this->skippedTables[$proptable->getName()] = 'Not a valid DI type';
 				continue;
 			}
 
 			$this->doRebuildByPropertyTable( $proptable );
 		}
 
-		$this->reportMessage(
-			"\n## Notes\n",
-			$this->reportVerbose
-		);
-
-		$this->reportMessage(
-			"\n" . "Table(s) not used for indexing:" ."\n\n",
-			$this->reportVerbose
-		);
+		$this->reportMessage( "\n   ... done." );
+		$this->reportMessage( "\n   ... report unindexed table(s) ...", $this->reportVerbose );
 
 		foreach ( $this->skippedTables as $tableName => $reason ) {
-			$this->reportMessage( "\r". sprintf( "%-36s%s", "- {$tableName}", $reason . "\n" ), $this->reportVerbose );
+			$this->reportMessage( "\n". sprintf( "%-38s%s", "      ... {$tableName}", $reason ), $this->reportVerbose );
 		}
+
+		$this->reportMessage( "\n" );
 	}
 
 	private function doRebuildByPropertyTable( $proptable ) {
@@ -224,11 +222,11 @@ class SearchTableRebuilder {
 		$searchTable = $this->getSearchTable();
 
 		if ( $proptable->getDiType() === DataItem::TYPE_URI ) {
-			$fetchFields = array( 's_id', 'p_id', 'o_blob', 'o_serialized' );
+			$fetchFields = [ 's_id', 'p_id', 'o_blob', 'o_serialized' ];
 		} elseif ( $proptable->getDiType() === DataItem::TYPE_WIKIPAGE ) {
-			$fetchFields = array( 's_id', 'p_id', 'o_id' );
+			$fetchFields = [ 's_id', 'p_id', 'o_id' ];
 		} else {
-			$fetchFields = array( 's_id', 'p_id', 'o_blob', 'o_hash' );
+			$fetchFields = [ 's_id', 'p_id', 'o_blob', 'o_hash' ];
 		}
 
 		$table = $proptable->getName();
@@ -242,27 +240,27 @@ class SearchTableRebuilder {
 			$property = new DIProperty( $proptable->getFixedProperty() );
 
 			if ( $property->getLabel() === '' ) {
-				return $this->skippedTables[$table] = 'Fixed property is ' . $property->getKey() . ' invalid.';
+				return $this->skippedTables[$table] = 'Fixed property, ' . $property->getKey() . ' is invalid';
 			}
 
-			$pid = $searchTable->getPropertyIdBy(
+			$pid = $searchTable->getIdByProperty(
 				$property
 			);
 
 			if ( $searchTable->isExemptedPropertyById( $pid ) ) {
-				return $this->skippedTables[$table] = 'Fixed property table that belongs to the ' . $proptable->getFixedProperty() . ' exempted property.';
+				return $this->skippedTables[$table] = 'Fixed property table, belongs to exempted ' . $proptable->getFixedProperty() . ' property';
 			}
 		}
 
 		$rows = $this->connection->select(
 			$table,
 			$fetchFields,
-			array(),
+			[],
 			__METHOD__
 		);
 
 		if ( $rows === false || $rows === null ) {
-			return $this->skippedTables[$table] = 'Empty table.';
+			return $this->skippedTables[$table] = 'Empty table';
 		}
 
 		$this->doRebuildFromRows( $searchTable, $table, $pid, $rows );
@@ -274,8 +272,10 @@ class SearchTableRebuilder {
 		$expected = $rows->numRows();
 
 		if ( $expected == 0 ) {
-			return $this->skippedTables[$table] = 'Empty table.';
+			return $this->skippedTables[$table] = 'Empty table';
 		}
+
+		$this->reportMessage( "\n" );
 
 		foreach ( $rows as $row ) {
 			$i++;
@@ -293,20 +293,18 @@ class SearchTableRebuilder {
 			}
 
 			$this->reportMessage(
-				"\r". sprintf( "%-35s%s", "- {$table}", sprintf( "%4.0f%% (%s/%s)", ( $i / $expected ) * 100, $i, $expected ) )
+				"\r". sprintf( "%-38s%s", "      ... {$table}", sprintf( "%4.0f%% (%s/%s)", ( $i / $expected ) * 100, $i, $expected ) )
 			);
 
 			$text = $this->searchTableUpdater->read( $sid, $pid );
 
-			// Unkown, so let's create the row
+			// Unknown, so let's create the row
 			if ( $text === false ) {
 				$this->searchTableUpdater->insert( $sid, $pid );
 			}
 
 			$this->searchTableUpdater->update( $sid, $pid, trim( $text ) . ' ' . $indexableText );
 		}
-
-		$this->reportMessage( "\n" );
 	}
 
 	private function reportMessage( $message, $verbose = true ) {
@@ -322,12 +320,14 @@ class SearchTableRebuilder {
 		// Page, Uri, or blob?
 		if ( isset( $row->o_id ) ) {
 			$dataItem = $searchTable->getDataItemById( $row->o_id );
-			$indexableText = $dataItem !== false ? $dataItem->getSortKey() : '';
+			$indexableText = $dataItem instanceof DataItem ? $dataItem->getSortKey() : '';
 		} elseif ( isset( $row->o_serialized ) ) {
 			$indexableText = $row->o_blob === null ? $row->o_serialized : $row->o_blob;
-		} else {
-			$indexableText = $row->o_blob === null ? $row->o_hash : $row->o_blob;
-		}
+		} elseif ( isset( $row->o_blob ) ) {
+			$indexableText = $row->o_blob;
+		} elseif ( isset( $row->o_hash ) ) {
+			$indexableText = $row->o_hash;
+ 		}
 
 		return trim( $indexableText );
 	}

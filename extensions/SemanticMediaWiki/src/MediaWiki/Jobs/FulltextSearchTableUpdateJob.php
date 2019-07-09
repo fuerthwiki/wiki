@@ -2,6 +2,7 @@
 
 namespace SMW\MediaWiki\Jobs;
 
+use SMW\MediaWiki\Job;
 use Hooks;
 use SMW\ApplicationFactory;
 use SMW\SQLStore\QueryEngine\FulltextSearchTableFactory;
@@ -13,7 +14,7 @@ use Title;
  *
  * @author mwjames
  */
-class FulltextSearchTableUpdateJob extends JobBase {
+class FulltextSearchTableUpdateJob extends Job {
 
 	/**
 	 * @since 2.5
@@ -21,8 +22,9 @@ class FulltextSearchTableUpdateJob extends JobBase {
 	 * @param Title $title
 	 * @param array $params job parameters
 	 */
-	public function __construct( Title $title, $params = array() ) {
-		parent::__construct( 'SMW\FulltextSearchTableUpdateJob', $title, $params );
+	public function __construct( Title $title, $params = [] ) {
+		parent::__construct( 'smw.fulltextSearchTableUpdate', $title, $params );
+		$this->removeDuplicates = true;
 	}
 
 	/**
@@ -34,15 +36,15 @@ class FulltextSearchTableUpdateJob extends JobBase {
 
 		$fulltextSearchTableFactory = new FulltextSearchTableFactory();
 
-		$textByChangeUpdater = $fulltextSearchTableFactory->newTextByChangeUpdater(
+		$textChangeUpdater = $fulltextSearchTableFactory->newTextChangeUpdater(
 			ApplicationFactory::getInstance()->getStore( '\SMW\SQLStore\SQLStore' )
 		);
 
-		$textByChangeUpdater->pushUpdatesFromJobParameters(
+		$textChangeUpdater->pushUpdatesFromJobParameters(
 			$this->params
 		);
 
-		Hooks::run( 'SMW::Job::AfterFulltextSearchTableUpdateComplete', array( $this ) );
+		Hooks::run( 'SMW::Job::AfterFulltextSearchTableUpdateComplete', [ $this ] );
 
 		return true;
 	}

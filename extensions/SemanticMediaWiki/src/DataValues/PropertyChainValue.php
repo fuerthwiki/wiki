@@ -2,10 +2,9 @@
 
 namespace SMW\DataValues;
 
-use SMWStringValue as StringValue;
-use SMWPropertyValue as PropertyValue;
-use SMWDIBlob as DIBlob;
+use SMW\DataValueFactory;
 use SMWDataItem as DataItem;
+use SMWDIBlob as DIBlob;
 
 /**
  * @private
@@ -25,7 +24,7 @@ class PropertyChainValue extends StringValue {
 	/**
 	 * @var PropertyValue[]
 	 */
-	private $propertyValues = array();
+	private $propertyValues = [];
 
 	/**
 	 * @var PropertyValue
@@ -191,31 +190,31 @@ class PropertyChainValue extends StringValue {
 		// Foo.Bar.Foobar.Baz
 		$last = array_pop( $chain );
 
-		$this->lastPropertyChainValue = PropertyValue::makeUserProperty( $last );
+		$this->lastPropertyChainValue = DataValueFactory::getInstance()->newPropertyValueByLabel( $last );
 
 		if ( !$this->lastPropertyChainValue->isValid() ) {
 			return $this->addError( $this->lastPropertyChainValue->getErrors() );
 		}
 
-		$this->lastPropertyChainValue->setOptions( $this->getOptions() );
+		$this->lastPropertyChainValue->copyOptions( $this->getOptions() );
 
 		// Generate a forward list from the remaining property labels
 		// Foo.Bar.Foobar
 		foreach ( $chain as $value ) {
-			$propertyValue = PropertyValue::makeUserProperty( $value );
+			$propertyValue = DataValueFactory::getInstance()->newPropertyValueByLabel( $value );
 
 			if ( !$propertyValue->isValid() ) {
 				continue;
 			}
 
-			$propertyValue->setOptions( $this->getOptions() );
+			$propertyValue->copyOptions( $this->getOptions() );
 
 			$this->propertyValues[] = $propertyValue;
 		}
 	}
 
 	private function doHintPropertyChainMembers() {
-		return '&nbsp;' . \Html::rawElement( 'span', array( 'title' => $this->m_dataitem ), '⠉' );
+		return '&nbsp;' . \Html::rawElement( 'span', [ 'title' => $this->m_dataitem ], '⠉' );
 	}
 
 }

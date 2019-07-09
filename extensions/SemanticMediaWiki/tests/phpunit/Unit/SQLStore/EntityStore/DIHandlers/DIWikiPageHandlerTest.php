@@ -2,8 +2,9 @@
 
 namespace SMW\Tests\SQLStore\EntityStore\DIHandlers;
 
-use SMW\SQLStore\EntityStore\DIHandlers\DIWikiPageHandler;
 use SMW\DIWikiPage;
+use SMW\SQLStore\EntityStore\DIHandlers\DIWikiPageHandler;
+use SMW\Tests\PHPUnitCompat;
 
 /**
  * @covers \SMW\SQLStore\EntityStore\DIHandlers\DIWikiPageHandler
@@ -15,6 +16,8 @@ use SMW\DIWikiPage;
  * @author mwjames
  */
 class DIWikiPageHandlerTest extends \PHPUnit_Framework_TestCase {
+
+	use PHPUnitCompat;
 
 	public function testCanConstruct() {
 
@@ -66,7 +69,7 @@ class DIWikiPageHandlerTest extends \PHPUnit_Framework_TestCase {
 
 		// EntityIdTable
 		$idTable = $this->getMockBuilder( '\stdClass' )
-			->setMethods( array( 'getSMWPageID', 'makeSMWPageID' ) )
+			->setMethods( [ 'getSMWPageID', 'makeSMWPageID' ] )
 			->getMock();
 
 		$idTable->expects( $this->any() )
@@ -126,31 +129,35 @@ class DIWikiPageHandlerTest extends \PHPUnit_Framework_TestCase {
 
 		$instance = new DIWikiPageHandler( $store );
 
-		$this->setExpectedException( '\SMWDataItemException' );
+		$this->setExpectedException( '\SMW\SQLStore\EntityStore\Exception\DataItemHandlerException' );
 		$instance->dataItemFromDBKeys( $dbKeys );
 	}
 
 	public function dbKeysProvider() {
 
 		#0 SMW_NS_PROPERTY, user defined property
-		$provider[] = array(
-			array( 'Foo', SMW_NS_PROPERTY, 'bar', '', '' )
-		);
+		$provider[] = [
+			[ 'Foo', SMW_NS_PROPERTY, 'bar', '', '' ]
+		];
 
 		#1 SMW_NS_PROPERTY, pre-defined property
-		$provider[] = array(
-			array( '_Foo', SMW_NS_PROPERTY, 'bar', '', '' )
-		);
+		$provider[] = [
+			[ '_Foo', SMW_NS_PROPERTY, 'bar', '', '' ]
+		];
+
+		#0 SMW_NS_PROPERTY, pre-defined property (see bug 48711)
+		$provider[] = [
+			[ '_Foo', SMW_NS_PROPERTY, '', '', '' ]
+		];
 
 		return $provider;
 	}
 
 	public function dbKeysExceptionProvider() {
 
-		#0 SMW_NS_PROPERTY, pre-defined property (see bug 48711)
-		$provider[] = array(
-			array( '_Foo', SMW_NS_PROPERTY, '', '', '' )
-		);
+		$provider[] = [
+			[ 'Foo' ]
+		];
 
 		return $provider;
 	}

@@ -10,8 +10,8 @@ namespace SRF\Filtered\Filter;
  * @ingroup SemanticResultFormats
  */
 
-use DataValues\Geo\Parsers\GeoCoordinateParser;
-use \Exception;
+use DataValues\Geo\Parsers\LatLongParser;
+use Exception;
 use SMWPropertyValue;
 use SRF\Filtered\ResultItem;
 
@@ -51,16 +51,17 @@ class DistanceFilter extends Filter {
 
 		try {
 
-			$geoCoordinateParser = new GeoCoordinateParser();
+			$geoCoordinateParser = new LatLongParser();
 
-			$callback = function ( $value ) use ($geoCoordinateParser) {
+			$callback = function ( $value ) use ( $geoCoordinateParser ) {
 				$latlng = $geoCoordinateParser->parse( $value );
 				return [ 'lat' => $latlng->getLatitude(), 'lng' => $latlng->getLongitude() ];
 			};
 
 			$this->addValueToJsConfig( 'distance filter origin', 'origin', null, $callback );
 
-		} catch ( Exception $exception ) {
+		}
+		catch ( Exception $exception ) {
 			$label = $this->getPrintRequest()->getLabel();
 			$this->getQueryPrinter()->addError( "Distance filter on $label: " . $exception->getMessage() );
 			return [];
@@ -70,11 +71,13 @@ class DistanceFilter extends Filter {
 		$this->addValueToJsConfig( 'distance filter initial value', 'initial value' );
 		$this->addValueToJsConfig( 'distance filter max distance', 'max' );
 		$this->addValueToJsConfig( 'distance filter unit', 'unit' );
+		$this->addValueListToJsConfig( 'distance filter switches', 'switches' );
 
 	}
 
 	/**
 	 * @param ResultItem $row
+	 *
 	 * @return array|null
 	 */
 	public function getJsDataForRow( ResultItem $row ) {
@@ -102,12 +105,13 @@ class DistanceFilter extends Filter {
 
 				} else {
 
-					$coordParser = new GeoCoordinateParser();
+					$coordParser = new LatLongParser();
 					while ( $value instanceof \SMWDataItem ) {
 						try {
 							$latlng = $coordParser->parse( $value->getSerialization() );
 							$values[] = [ 'lat' => $latlng->getLatitude(), 'lng' => $latlng->getLongitude() ];
-						} catch ( \Exception $exception ) {
+						}
+						catch ( \Exception $exception ) {
 							$this->getQueryPrinter()->addError( "Error on '$value': " . $exception->getMessage() );
 						}
 						$value = $field->getNextDataItem();
@@ -121,7 +125,6 @@ class DistanceFilter extends Filter {
 
 		return null;
 	}
-
 
 	/**
 	 * @return bool

@@ -1,8 +1,9 @@
 <?php
 
-namespace SMW\Iterators\Tests;
+namespace SMW\Tests\Iterators;
 
 use SMW\Iterators\ChunkedIterator;
+use SMW\Tests\PHPUnitCompat;
 
 /**
  * @covers \SMW\Iterators\ChunkedIterator
@@ -15,19 +16,21 @@ use SMW\Iterators\ChunkedIterator;
  */
 class ChunkedIteratorTest extends \PHPUnit_Framework_TestCase {
 
+	use PHPUnitCompat;
+
 	public function testCanConstruct() {
 
 		$this->assertInstanceOf(
 			ChunkedIterator::class,
-			new ChunkedIterator( array() )
+			new ChunkedIterator( [] )
 		);
 	}
 
 	public function testChunkedOnArray() {
 
-		$result = array(
+		$result = [
 			1, 42, 1001, 9999
-		);
+		];
 
 		$instance = new ChunkedIterator( $result, 2 );
 
@@ -60,7 +63,7 @@ class ChunkedIteratorTest extends \PHPUnit_Framework_TestCase {
 	public function testInvalidChunkSizeArgumentThrowsException() {
 
 		$this->setExpectedException( 'InvalidArgumentException' );
-		$instance = new ChunkedIterator( array(), -1 );
+		$instance = new ChunkedIterator( [], -1 );
 	}
 
 }

@@ -29,6 +29,9 @@ class PFTemplateField {
 	private $mDelimiter;
 	private $mDisplay;
 	private $mNamespace;
+	private $mIsMandatory = false;
+	private $mIsUnique = false;
+	private $mRegex = null;
 
 	static function create( $name, $label, $semanticProperty = null, $isList = null, $delimiter = null, $display = null ) {
 		$f = new PFTemplateField();
@@ -151,6 +154,12 @@ class PFTemplateField {
 			$this->mDelimiter = $fieldDescription->mDelimiter;
 		}
 		$this->mPossibleValues = $fieldDescription->mAllowedValues;
+		if ( property_exists( $fieldDescription, 'mIsMandatory' ) ) {
+			// Cargo 1.7+
+			$this->mIsMandatory = $fieldDescription->mIsMandatory;
+			$this->mIsUnique = $fieldDescription->mIsUnique;
+			$this->mRegex = $fieldDescription->mRegex;
+		}
 	}
 
 	function getFieldName() {
@@ -208,6 +217,18 @@ class PFTemplateField {
 		return $this->mNamespace;
 	}
 
+	function isMandatory() {
+		return $this->mIsMandatory;
+	}
+
+	function isUnique() {
+		return $this->mIsUnique;
+	}
+
+	function getRegex() {
+		return $this->mRegex;
+	}
+
 	function setTemplateField( $templateField ) {
 		$this->mTemplateField = $templateField;
 	}
@@ -222,6 +243,10 @@ class PFTemplateField {
 
 	function setFieldType( $fieldType ) {
 		$this->mFieldType = $fieldType;
+
+		if ( $fieldType == 'File' ) {
+			$this->mNamespace = MWNamespace::getCanonicalName( NS_FILE );
+		}
 	}
 
 	function setPossibleValues( $possibleValues ) {
@@ -231,4 +256,66 @@ class PFTemplateField {
 	function setHierarchyStructure( $hierarchyStructure ) {
 		$this->mHierarchyStructure = $hierarchyStructure;
 	}
+
+	function createText( $cargoInUse ) {
+		$fieldProperty = $this->mSemanticProperty;
+		if ( $this->mIsList ) {
+			// If this field is meant to contain a list,
+			// add on an 'arraymap' function, that will
+			// call this semantic markup tag on every
+			// element in the list.
+			// Find a string that's not in the semantic
+			// field call, to be used as the variable.
+			$var = "x"; // default - use this if all the attempts fail
+			if ( strstr( $fieldProperty, $var ) ) {
+				$var_options = array( 'y', 'z', 'xx', 'yy', 'zz', 'aa', 'bb', 'cc' );
+				foreach ( $var_options as $option ) {
+					if ( ! strstr( $fieldProperty, $option ) ) {
+						$var = $option;
+						break;
+					}
+				}
+			}
+			$text = "{{#arraymap:{{{" . $this->mFieldName . '|}}}|' . $this->mDelimiter . "|$var|[[";
+			if ( $fieldProperty == '' ) {
+				$text .= "$var]]";
+			} elseif ( $this->mNamespace == '' ) {
+				$text .= "$fieldProperty::$var]]";
+			} else {
+				$text .= $this->mNamespace . ":$var]] {{#set:" . $fieldProperty . "=$var}} ";
+			}
+			$text .= "}}\n"; // close #arraymap call.
+			return $text;
+		}
+
+		// Not a list.
+		$fieldParam = '{{{' . $this->mFieldName . '|}}}';
+		if ( is_null( $this->mNamespace ) ) {
+			$fieldString = $fieldParam;
+		} else {
+			$fieldString = $this->mNamespace . ':' . $fieldParam;
+		}
+
+		if ( $fieldProperty == '' ) {
+			if ( $cargoInUse && ( $this->mFieldType == 'Page' || $this->mFieldType == 'File' ) ) {
+				$fieldString = "[[$fieldString]]";
+				// Add an #if around the link, to prevent
+				// anything from getting displayed on the
+				// screen for blank values, if the
+				// ParserFunctions extension is installed.
+				if ( ExtensionRegistry::getInstance()->isLoaded( 'ParserFunctions' ) ) {
+					$fieldString = "{{#if:$fieldParam|$fieldString}}";
+				}
+				return $fieldString;
+			}
+			return $fieldString;
+		} elseif ( is_null( $this->mNamespace ) ) {
+			return "[[$fieldProperty::$fieldString]]";
+		} else {
+			// Special handling is needed, for at
+			// least the File and Category namespaces.
+			return "[[$fieldString]] {{#set:$fieldProperty=$fieldString}}";
+		}
+	}
+
 }

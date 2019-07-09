@@ -2,8 +2,8 @@
 
 namespace SMW\Query\Language;
 
-use SMW\Query\PrintRequest;
 use SMW\Query\Exception\FingerprintNotFoundException;
+use SMW\Query\PrintRequest;
 
 /**
  * Abstract base class for all descriptions
@@ -18,7 +18,7 @@ abstract class Description {
 	/**
 	 * @var PrintRequest[]
 	 */
-	protected $m_printreqs = array();
+	protected $m_printreqs = [];
 
 	/**
 	 * @var string|null
@@ -192,6 +192,16 @@ abstract class Description {
 		$maxDepth = $maxDepth - $this->getDepth();
 
 		return $this;
+	}
+
+
+	/**
+	 * @since 3.0
+	 *
+	 * @return string
+	 */
+	public function __toString() {
+		return $this->getQueryString();
 	}
 
 }

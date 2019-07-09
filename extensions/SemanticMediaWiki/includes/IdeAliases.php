@@ -44,7 +44,7 @@ class SMWRefreshJob extends SMW\RefreshJob {
 abstract class SMWResultPrinter extends SMW\ResultPrinter {
 }
 
-class SMWCategoryResultPrinter extends SMW\CategoryResultPrinter {
+class SMWCategoryResultPrinter extends SMW\Query\ResultPrinters\CategoryResultPrinter {
 }
 
 class SMWDSVResultPrinter extends SMW\DsvResultPrinter {
@@ -56,7 +56,7 @@ class SMWEmbeddedResultPrinter extends SMW\EmbeddedResultPrinter {
 class SMWRDFResultPrinter extends SMW\RdfResultPrinter {
 }
 
-class SMWListResultPrinter extends SMW\ListResultPrinter {
+class SMWListResultPrinter extends SMW\Query\ResultPrinters\ListResultPrinter {
 }
 
 interface SMWIResultPrinter extends SMW\QueryResultPrinter {

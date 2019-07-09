@@ -2,9 +2,8 @@
 
 namespace SMW\Tests\Utils\Validators;
 
-use RuntimeException;
-use SMW\Store;
 use SMW\DIWikiPage;
+use SMW\Store;
 
 /**
  * @group semantic-mediawiki
@@ -61,7 +60,7 @@ class IncomingSemanticDataValidator extends \PHPUnit_Framework_Assert {
 
 	private function doAssertPropertiesAndValues( $incomingSemanticData, $incomingProperties, $subject, $message ) {
 
-		$incomingPropertyValues = array();
+		$incomingPropertyValues = [];
 
 		foreach ( $incomingProperties as $property ) {
 

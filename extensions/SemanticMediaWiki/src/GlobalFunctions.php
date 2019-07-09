@@ -1,11 +1,10 @@
 <?php
 
 use SMW\CompatibilityMode;
-use SMW\NamespaceManager;
-use SMW\IntlNumberFormatter;
-use SMW\SPARQLStore\SparqlDBConnectionProvider;
-use SMW\ProcessingErrorMsgHandler;
+use SMW\DataValues\Number\IntlNumberFormatter;
 use SMW\Highlighter;
+use SMW\NamespaceManager;
+use SMW\ProcessingErrorMsgHandler;
 
 /**
  * Global functions specified and used by Semantic MediaWiki. In general, it is
@@ -15,16 +14,6 @@ use SMW\Highlighter;
  * yet.
  * @ingroup SMW
  */
-
-/**
- * @see NamespaceExaminer
- *
- * @return boolean
- * @deprecated since 1.9 and will be removed in 1.11
- */
-function smwfIsSemanticsProcessed( $namespace ) {
-	return \SMW\NamespaceExaminer::getInstance()->isSemanticEnabled( $namespace );
-}
 
 /**
  * Takes a title text and turns it safely into its DBKey. This function
@@ -73,7 +62,7 @@ function smwfNormalTitleText( $text ) {
  * @param string $text
  */
 function smwfXMLContentEncode( $text ) {
-	return str_replace( array( '&', '<', '>' ), array( '&amp;', '&lt;', '&gt;' ), Sanitizer::decodeCharReferences( $text ) );
+	return str_replace( [ '&', '<', '>' ], [ '&amp;', '&lt;', '&gt;' ], Sanitizer::decodeCharReferences( $text ) );
 }
 
 /**
@@ -94,6 +83,26 @@ function smwfNumberFormat( $value, $decplaces = 3 ) {
 }
 
 /**
+ * @since 3.0
+ *
+ * @param string $text
+ */
+function smwfAbort( $text ) {
+
+	if ( PHP_SAPI === 'cli' && PHP_SAPI === 'phpdbg' ) {
+		die( $text );
+	}
+
+	$html = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
+	$html .= "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\" dir=\"ltr\">\n";
+	$html .= "<head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />";
+	$html .= "<title>Error</title></head><body><h2>Error</h2><hr style='border: 0; height: 0; border-top: 1px solid rgba(0, 0, 0, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.3);'>";
+	$html .= "<p>{$text}</p></body></html>";
+
+	die( $html );
+}
+
+/**
  * Formats an array of message strings so that it appears as a tooltip.
  * $icon should be one of: 'warning' (default), 'info'.
  *
@@ -108,34 +117,38 @@ function smwfEncodeMessages( array $messages, $type = 'warning', $seperator = ' 
 
 	$messages = ProcessingErrorMsgHandler::normalizeAndDecodeMessages( $messages );
 
-	if (  $messages !== array() ) {
-
-		if ( $escape ) {
-			$messages = array_map( 'htmlspecialchars', $messages );
-		}
-
-		if ( count( $messages ) == 1 )  {
-			$errorList = $messages[0];
-		}
-		else {
-			foreach ( $messages as &$message ) {
-				$message = '<li>' . $message . '</li>';
-			}
-
-			$errorList = '<ul>' . implode( $seperator, $messages ) . '</ul>';
-		}
-
-		// Type will be converted internally
-		$highlighter = Highlighter::factory( $type );
-		$highlighter->setContent( array (
-			'caption'   => null,
-			'content'   => Highlighter::decode( $errorList )
-		) );
-
-		return $highlighter->getHtml();
-	} else {
+	if ( $messages === [] ) {
 		return '';
 	}
+
+	if ( $escape ) {
+		$messages = array_map( 'htmlspecialchars', $messages );
+	}
+
+	if ( count( $messages ) == 1 )  {
+		$content = $messages[0];
+	} else {
+		foreach ( $messages as &$message ) {
+			$message = '<li>' . $message . '</li>';
+		}
+
+		$content = '<ul>' . implode( $seperator, $messages ) . '</ul>';
+	}
+
+	// Stop when a previous processing produced an error and it is expected to be
+	// added to a new tooltip (e.g {{#info {{#show ...}} }} ) instance
+	if ( Highlighter::hasHighlighterClass( $content, 'warning' ) ) {
+		return $content;
+	}
+
+	$highlighter = Highlighter::factory( $type );
+
+	$highlighter->setContent( [
+		'caption'   => null,
+		'content'   => Highlighter::decode( $content )
+	] );
+
+	return $highlighter->getHtml();
 }
 
 /**
@@ -172,31 +185,6 @@ function smwfCacheKey( $namespace, $key ) {
 }
 
 /**
- * @codeCoverageIgnore
- *
- * Get the SMWSparqlDatabase object to use for connecting to a SPARQL store,
- * or null if no SPARQL backend has been set up.
- *
- * Currently, it just returns one globally defined object, but the
- * infrastructure allows to set up load balancing and task-dependent use of
- * stores (e.g. using other stores for fast querying than for storing new
- * facts), somewhat similar to MediaWiki's DB implementation.
- *
- * @since 1.6
- *
- * @return SMWSparqlDatabase or null
- */
-function &smwfGetSparqlDatabase() {
-
-	if ( !isset( $GLOBALS['smwgSparqlDatabaseMaster'] ) ) {
-		$connectionProvider = new SparqlDBConnectionProvider();
-		$GLOBALS['smwgSparqlDatabaseMaster'] = $connectionProvider->getConnection();
-	}
-
-	return $GLOBALS['smwgSparqlDatabaseMaster'];
-}
-
-/**
  * Compatibility helper for using Linker methods.
  * MW 1.16 has a Linker with non-static methods,
  * where in MW 1.19 they are static, and a DummyLinker
@@ -219,6 +207,27 @@ function smwfGetLinker() {
 }
 
 /**
+ * @private
+ *
+ * Copied from wfCountDown as it became deprecated in 1.31
+ *
+ * @since 3.0
+ */
+function swfCountDown( $seconds ) {
+	for ( $i = $seconds; $i >= 0; $i-- ) {
+		if ( $i != $seconds ) {
+			echo str_repeat( "\x08", strlen( $i + 1 ) );
+		}
+		echo $i;
+		flush();
+		if ( $i ) {
+			sleep( 1 );
+		}
+	}
+	echo "\n";
+}
+
+/**
  * Function to switch on Semantic MediaWiki. This function must be called in
  * LocalSettings.php after including SMW_Settings.php. It is used to ensure
  * that required parameters for SMW are really provided explicitly. For
@@ -237,6 +246,9 @@ function smwfGetLinker() {
  */
 function enableSemantics( $namespace = null, $complete = false ) {
 	global $smwgNamespace;
+
+	// #1732 + #2813
+	wfLoadExtension( 'SemanticMediaWiki', dirname( __DIR__ ) . '/extension.json' );
 
 	// Apparently this is required (1.28+) as the earliest possible execution
 	// point in order for settings that refer to the SMW_NS_PROPERTY namespace

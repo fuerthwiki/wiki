@@ -2,11 +2,11 @@
 
 namespace SMW\SQLStore\TableBuilder;
 
+use DatabaseBase;
 use Onoi\MessageReporter\MessageReporter;
 use Onoi\MessageReporter\MessageReporterAware;
-use SMW\SQLStore\TableBuilder as TableBuilderInterface;
-use DatabaseBase;
 use RuntimeException;
+use SMW\SQLStore\TableBuilder as TableBuilderInterface;
 
 /**
  * @license GNU GPL v2+
@@ -14,7 +14,7 @@ use RuntimeException;
  *
  * @author mwjames
  */
-abstract class TableBuilder implements TableBuilderInterface, MessageReporter {
+abstract class TableBuilder implements TableBuilderInterface, MessageReporterAware, MessageReporter {
 
 	/**
 	 * @var DatabaseBase
@@ -29,7 +29,12 @@ abstract class TableBuilder implements TableBuilderInterface, MessageReporter {
 	/**
 	 * @var array
 	 */
-	protected $configurations = array();
+	protected $config = [];
+
+	/**
+	 * @var array
+	 */
+	protected $activityLog = [];
 
 	/**
 	 * @since 2.5
@@ -68,8 +73,8 @@ abstract class TableBuilder implements TableBuilderInterface, MessageReporter {
 			throw new RuntimeException( "Unknown or unsupported DB type " . $connection->getType() );
 		}
 
-		$instance->addConfiguration( 'wgDBname', $GLOBALS['wgDBname'] );
-		$instance->addConfiguration( 'wgDBTableOptions', $GLOBALS['wgDBTableOptions'] );
+		$instance->addConfig( 'wgDBname', $GLOBALS['wgDBname'] );
+		$instance->addConfig( 'wgDBTableOptions', $GLOBALS['wgDBTableOptions'] );
 
 		return $instance;
 	}
@@ -80,8 +85,8 @@ abstract class TableBuilder implements TableBuilderInterface, MessageReporter {
 	 * @param string|integer $key
 	 * @param mixed
 	 */
-	public function addConfiguration( $key, $value ) {
-		$this->configurations[$key] = $value;
+	public function addConfig( $key, $value ) {
+		$this->config[$key] = $value;
 	}
 
 	/**
@@ -127,27 +132,27 @@ abstract class TableBuilder implements TableBuilderInterface, MessageReporter {
 	 */
 	public function create( Table $table ) {
 
-		$configuration = $table->getConfiguration();
+		$attributes = $table->getAttributes();
 		$tableName = $table->getName();
 
 		$this->reportMessage( "Checking table $tableName ...\n" );
 
 		if ( $this->connection->tableExists( $tableName ) === false ) { // create new table
 			$this->reportMessage( "   Table not found, now creating...\n" );
-			$this->doCreateTable( $tableName, $configuration );
+			$this->doCreateTable( $tableName, $attributes );
 		} else {
 			$this->reportMessage( "   Table already exists, checking structure ...\n" );
-			$this->doUpdateTable( $tableName, $configuration );
+			$this->doUpdateTable( $tableName, $attributes );
 		}
 
 		$this->reportMessage( "   ... done.\n" );
 
-		if ( !isset( $configuration['indicies'] ) ) {
+		if ( !isset( $attributes['indices'] ) ) {
 			return $this->reportMessage( "No index structures for table $tableName ...\n" );
 		}
 
 		$this->reportMessage( "Checking index structures for table $tableName ...\n" );
-		$this->doCreateIndicies( $tableName, $configuration );
+		$this->doCreateIndices( $tableName, $attributes );
 
 		$this->reportMessage( "   ... done.\n" );
 	}
@@ -170,12 +175,30 @@ abstract class TableBuilder implements TableBuilderInterface, MessageReporter {
 	}
 
 	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function optimize( Table $table ) {
+		$this->doOptimize( $table->getName() );
+	}
+
+	/**
 	 * @since 2.5
 	 *
 	 * @param string $event
 	 */
 	public function checkOn( $event ) {
 		return false;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function getLog() {
+		return $this->activityLog;
 	}
 
 	/**
@@ -194,12 +217,17 @@ abstract class TableBuilder implements TableBuilderInterface, MessageReporter {
 	 * @param string $tableName
 	 * @param array $indexOptions
 	 */
-	abstract protected function doCreateIndicies( $tableName, array $indexOptions = null );
+	abstract protected function doCreateIndices( $tableName, array $indexOptions = null );
 
 	/**
 	 * @param string $tableName
 	 */
 	abstract protected function doDropTable( $tableName );
+
+	/**
+	 * @param string $tableName
+	 */
+	abstract protected function doOptimize( $tableName );
 
 	// #1978
 	// http://php.net/manual/en/function.array-search.php

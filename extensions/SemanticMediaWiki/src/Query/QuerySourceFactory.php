@@ -2,10 +2,10 @@
 
 namespace SMW\Query;
 
-use SMW\Store;
-use SMW\QueryEngine;
-use SMW\StoreAware;
 use RuntimeException;
+use SMW\QueryEngine;
+use SMW\Store;
+use SMW\StoreAware;
 
 /**
  * @private
@@ -25,24 +25,20 @@ class QuerySourceFactory {
 	/**
 	 * @var array
 	 */
-	private $querySources = array();
-
-	/**
-	 * @var string|false
-	 */
-	private $queryEndpoint = false;
+	private $querySources = [];
 
 	/**
 	 * @since 2.5
 	 *
 	 * @param Store $store
 	 * @param array $querySources
-	 * @param boolean|string $queryEndpoint
 	 */
-	public function __construct( Store $store, $querySources = array(), $queryEndpoint = false ) {
+	public function __construct( Store $store, $querySources = [] ) {
 		$this->store = $store;
 		$this->querySources = $querySources;
-		$this->queryEndpoint = $queryEndpoint;
+
+		// Standard store
+		$this->querySources['sql_store'] = 'SMW\SQLStore\SQLStore';
 	}
 
 	/**
@@ -57,14 +53,28 @@ class QuerySourceFactory {
 	 */
 	public function get( $source = null ) {
 
+		$params = [];
+
 		if ( $source !== '' && isset( $this->querySources[$source] ) ) {
-			$source = $this->querySources[$source];
+
+			$querySource = $this->querySources[$source];
+
+			// [ '\SMW\FooHandler', ... parameters ],
+			if ( is_array( $querySource ) ) {
+				$source = array_shift( $querySource );
+				$params = $querySource;
+			} else {
+				$source = $this->querySources[$source];
+			}
 		}
 
-		if ( $source !== '' && class_exists( $source ) ) {
-			$source = new $source;
-		} else {
+		// Fallback to the default store
+		if ( $source === null || !class_exists( $source ) ) {
 			$source = $this->store;
+		} elseif ( $params !== [] ) {
+			$source = new $source( $params );
+		} else {
+			$source = new $source;
 		}
 
 		if ( !$source instanceof QueryEngine && !$source instanceof Store ) {
@@ -85,25 +95,17 @@ class QuerySourceFactory {
 	 *
 	 * @return string
 	 */
-	public function getAsString( $source = null ) {
+	public function toString( $source = null ) {
+
+		if ( $source === 'sql_store' ) {
+			return 'SMWSQLStore';
+		}
 
 		if ( $source !== '' && $source !== null ) {
 			return $source;
 		}
 
-		$source = get_class( $this->store );
-		$store = $this->store;
-
-		if ( strpos( $source, "\\") !== false ) {
-			$source = explode("\\", $source );
-			$source = end( $source );
-		}
-
-		if ( strpos( strtolower( $source ), 'sparql' ) !== false && $this->queryEndpoint === false ) {
-			$source .=  ' (' . $store::$baseStoreClass . ')';
-		}
-
-		return $source;
+		return json_encode( $this->store->getInfo( 'store' ) );
 	}
 
 }

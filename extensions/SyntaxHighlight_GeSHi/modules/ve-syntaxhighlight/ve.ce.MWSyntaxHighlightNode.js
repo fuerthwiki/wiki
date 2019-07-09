@@ -24,20 +24,19 @@ OO.initClass( ve.ce.MWSyntaxHighlightNode );
 
 ve.ce.MWSyntaxHighlightNode.static.name = 'mwSyntaxHighlight';
 
-ve.ce.MWSyntaxHighlightNode.static.primaryCommandName = 'syntaxhighlightDialog';
-
 /* Methods */
 
-/** */
+// Inherits from ve.ce.GeneratedContentNode
 ve.ce.MWSyntaxHighlightNode.prototype.generateContents = function () {
-	if ( !this.getModel().isLanguageSupported() ) {
-		return $.Deferred().reject().promise();
-	}
+	var node = this,
+		args = arguments;
 	// Parent method
-	return ve.ce.MWExtensionNode.prototype.generateContents.apply( this, arguments );
+	return mw.loader.using( 'ext.pygments' ).then( function () {
+		return ve.ce.MWExtensionNode.prototype.generateContents.apply( node, args );
+	} );
 };
 
-/** */
+// Inherits from ve.ce.BranchNode
 ve.ce.MWSyntaxHighlightNode.prototype.onSetup = function () {
 	// Parent method
 	ve.ce.MWExtensionNode.prototype.onSetup.call( this );
@@ -46,7 +45,7 @@ ve.ce.MWSyntaxHighlightNode.prototype.onSetup = function () {
 	this.$element.addClass( 've-ce-mwSyntaxHighlightNode' );
 };
 
-/** */
+// Inherits from ve.ce.FocusableNode
 ve.ce.MWSyntaxHighlightNode.prototype.getBoundingRect = function () {
 	// HACK: Because nodes can overflow due to the pre tag, just use the
 	// first rect (of the wrapper div) for placing the context.
@@ -68,6 +67,8 @@ OO.inheritClass( ve.ce.MWBlockSyntaxHighlightNode, ve.ce.MWBlockExtensionNode );
 OO.mixinClass( ve.ce.MWBlockSyntaxHighlightNode, ve.ce.MWSyntaxHighlightNode );
 
 ve.ce.MWBlockSyntaxHighlightNode.static.name = 'mwBlockSyntaxHighlight';
+
+ve.ce.MWBlockSyntaxHighlightNode.static.primaryCommandName = 'syntaxhighlightDialog';
 
 ve.ce.MWInlineSyntaxHighlightNode = function VeCeMWInlineSyntaxHighlightNode() {
 	// Parent method

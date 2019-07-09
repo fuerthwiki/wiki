@@ -12,7 +12,6 @@
 	"authorprotect-move": "Begræns flytning til forfattere",
 	"authorprotect-intro": "Brug denne formular til at låse denne side fra ikke-forfattere",
 	"authorprotect-success": "Siden er beskyttet!",
-	"authorprotect-failure": "Det lykkedes ikke at beskytte siden",
 	"protect-level-author": "Beskyt mod ikke-forfattere",
 	"restriction-level-author": "Forfatterbeskyttet"
 }

@@ -13,7 +13,6 @@
 	"authorprotect-move": "শুধুমাত্র প্রণেতাদের জন্য স্থানান্তর সীমাবদ্ধ করুন",
 	"authorprotect-intro": "এই ফর্মটি ব্যবহার করে অ-প্রণেতাদের কাছে এই পাতাটি সুরক্ষিত করুন",
 	"authorprotect-success": "সুরক্ষা সফল!",
-	"authorprotect-failure": "সুরক্ষা ব্যর্থ হয়েছে।",
 	"protect-level-author": "প্রণেতা ছাড়া সবার কাছে সুরক্ষিত করুন",
 	"restriction-level-author": "প্রণেতা-সুরক্ষিত",
 	"right-authorprotect": "প্রণেতার পাতা সুরক্ষা করুন"

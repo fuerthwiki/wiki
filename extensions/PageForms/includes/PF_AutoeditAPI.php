@@ -38,6 +38,7 @@ class PFAutoeditAPI extends ApiBase {
 	private $mOptions = array();
 	private $mAction;
 	private $mStatus;
+	private $mIsAutoEdit = false;
 
 	/**
 	 * Converts an options string into an options array and stores it
@@ -109,8 +110,11 @@ class PFAutoeditAPI extends ApiBase {
 
 		try {
 			$this->doAction();
-		} catch ( MWException $e ) {
-			$this->logMessage( $e->getMessage(), $e->getCode() );
+		} catch ( Exception $e ) {
+			// This has to be Exception, not MWException, due to
+			// DateTime errors and possibly others.
+			global $wgParser;
+			$this->logMessage( $wgParser->recursiveTagParseFully( $e->getMessage() ), $e->getCode() );
 		}
 
 		$this->finalizeResults();
@@ -165,6 +169,7 @@ class PFAutoeditAPI extends ApiBase {
 		} elseif ( array_key_exists( 'action', $this->mOptions ) ) {
 			switch ( $this->mOptions['action'] ) {
 				case 'pfautoedit' :
+					$this->mIsAutoEdit = true;
 					$this->mAction = self::ACTION_SAVE;
 					break;
 				case 'preview' :
@@ -320,6 +325,7 @@ class PFAutoeditAPI extends ApiBase {
 		$data = array_merge(
 				array(
 					'wpTextbox1' => $targetContent,
+					'wpUnicodeCheck' => 'ℳ𝒲♥𝓊𝓃𝒾𝒸ℴ𝒹ℯ',
 					'wpSummary' => '',
 					'wpStarttime' => wfTimestampNow(),
 					'wpEdittime' => '',
@@ -370,7 +376,6 @@ class PFAutoeditAPI extends ApiBase {
 
 		Hooks::run( 'EditPage::showEditForm:initial', array( &$editor, &$wgOut ) );
 
-		$this->getOutput()->addStyle( 'common/IE80Fixes.css', 'screen', 'IE 8' );
 		$this->getOutput()->setRobotPolicy( 'noindex,nofollow' );
 
 		// This hook seems slightly odd here, but makes things more
@@ -846,6 +851,8 @@ class PFAutoeditAPI extends ApiBase {
 		// pages.
 		if ( !$pageExists ) {
 			Hooks::run( 'PageForms::EditFormPreloadText', array( &$preloadContent, $targetTitle, $formTitle ) );
+		} else {
+			Hooks::run( 'PageForms::EditFormInitialText', array( &$preloadContent, $targetTitle, $formTitle ) );
 		}
 
 		// Flag to keep track of formHTML() runs.
@@ -866,7 +873,12 @@ class PFAutoeditAPI extends ApiBase {
 			// HTML of the existing page.
 			list( $formHTML, $targetContent, $form_page_title, $generatedTargetNameFormula ) =
 				$wgPageFormsFormPrinter->formHTML(
-					$formContent, $isFormSubmitted, $pageExists, $formArticleId, $preloadContent, $targetName, $targetNameFormula
+					// Special handling for autoedit edits -
+					// otherwise, multi-instance templates
+					// don't get saved, for some convoluted
+					// reason.
+					$formContent, ( $isFormSubmitted && !$this->mIsAutoEdit ), $pageExists,
+					$formArticleId, $preloadContent, $targetName, $targetNameFormula
 				);
 			$formHtmlHasRun = true;
 
@@ -1155,7 +1167,7 @@ class PFAutoeditAPI extends ApiBase {
 
 	/**
 	 * Returns an array of parameter descriptions.
-	 * Don't call this functon directly: use getFinalParamDescription() to
+	 * Don't call this function directly: use getFinalParamDescription() to
 	 * allow hooks to modify descriptions as needed.
 	 *
 	 * @return array or false

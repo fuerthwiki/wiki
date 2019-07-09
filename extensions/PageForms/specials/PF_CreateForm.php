@@ -13,9 +13,6 @@
  */
 class PFCreateForm extends SpecialPage {
 
-	/**
-	 * Constructor
-	 */
 	function __construct() {
 		parent::__construct( 'CreateForm' );
 	}
@@ -33,7 +30,7 @@ class PFCreateForm extends SpecialPage {
 			$fieldFormText = $req->getVal( 'formfield' );
 
 			$paramValues = array();
-			// @TODO - is any of this "params" stuff necesary?
+			// @TODO - is any of this "params" stuff necessary?
 			// For now, it's removed - if the setting of params is
 			// going to be re-added, that has to be done in the JS.
 			/*
@@ -284,7 +281,7 @@ class PFCreateForm extends SpecialPage {
 		$text = "\t" . '<form action="" method="post">' . "\n";
 		if ( is_null( $presetFormName ) ) {
 			// Set 'title' field, in case there's no URL niceness
-			$text .= Html::hidden( 'title', $this->getTitle()->getPrefixedText() );
+			$text .= Html::hidden( 'title', $this->getPageTitle()->getPrefixedText() );
 			$text .= "\n\t<p><label>" . wfMessage( 'pf_createform_nameinput' )->escaped() .
 				' ' . wfMessage( 'pf_createform_nameinputdesc' )->escaped() .
 				Html::input( 'form_name', $form_name, 'text', array( 'size' => 25 ) );
@@ -399,7 +396,6 @@ END;
 	}
 
 	function sectionCreationHTML( $section, $section_count ) {
-		global $wgRequest;
 		$paramValues = array();
 		$section_name = $section->getSectionName();
 		$section_level = $section->getSectionLevel();
@@ -409,7 +405,7 @@ END;
 		$text .= '<div class="sectionForm">';
 		$text .= Html::element( 'h2', array(), $section_str );
 
-		foreach ( $wgRequest->getValues() as $key => $value ) {
+		foreach ( $this->getRequest()->getValues() as $key => $value ) {
 			if ( ( $pos = strpos( $key, '_section_'.$section_count ) ) != false ) {
 				$paramName = substr( $key, 0, $pos );
 				$paramName = str_replace( '_', ' ', $paramName );
@@ -546,9 +542,8 @@ END;
 			$cur_input_type = $possible_input_types[0];
 		}
 
-		global $wgRequest;
 		$paramValues = array();
-		foreach ( $wgRequest->getValues() as $key => $value ) {
+		foreach ( $this->getRequest()->getValues() as $key => $value ) {
 			if ( ( $pos = strpos( $key, '_' . $field_form_text ) ) != false ) {
 				$paramName = substr( $key, 0, $pos );
 				// Spaces got replaced by underlines in the

@@ -358,6 +358,23 @@ END;
 		);
 	}
 
+	public static function setGlobalVarsForSpreadsheet() {
+		global $wgPageFormsContLangYes, $wgPageFormsContLangNo, $wgPageFormsContLangMonths;
+
+		// JS variables that hold boolean and date values in the wiki's
+		// (as opposed to the user's) language.
+		$wgPageFormsContLangYes = wfMessage( 'htmlform-yes' )->inContentLanguage()->text();
+		$wgPageFormsContLangNo = wfMessage( 'htmlform-no' )->inContentLanguage()->text();
+		$monthMessages = array(
+			"january", "february", "march", "april", "may_long", "june",
+			"july", "august", "september", "october", "november", "december"
+		);
+		$wgPageFormsContLangMonths = array( '' );
+		foreach ( $monthMessages as $monthMsg ) {
+			$wgPageFormsContLangMonths[] = wfMessage( $monthMsg )->inContentLanguage()->text();
+		}
+	}
+
 	/**
 	 * Parse the form definition and return it
 	 * @param Parser $parser
@@ -391,7 +408,8 @@ END;
 		// the Parser strip state because the Parser would during parsing replace all strip items and then
 		// mangle them into HTML code. So we have to use our own. Which means we also can not just use
 		// Parser::insertStripItem() (see below).
-		$rnd = wfRandomString( 32 );
+		// Also include a quotation mark, to help avoid security leaks.
+		$rnd = wfRandomString( 16 ) . '"' . wfRandomString( 15 );
 
 		// This regexp will find any PF triple braced tags (including correct handling of contained braces), i.e.
 		// {{{field|foo|default={{Bar}}}}} is not a problem. When used with preg_match and friends, $matches[0] will
@@ -416,13 +434,15 @@ END;
 			$form_def
 		);
 
-		// parse wiki-text
+		// Parse wiki-text.
 		if ( isset( $parser->mInParse ) && $parser->mInParse === true ) {
 			$form_def = $parser->recursiveTagParse( $form_def );
 			$output = $parser->getOutput();
 		} else {
 			$title = is_object( $parser->getTitle() ) ? $parser->getTitle() : new Title();
-			$output = $parser->parse( $form_def, $title, $parser->getOptions() );
+			// We need to pass "false" in to the parse() $clearState param so that
+			// embedding Special:RunQuery will work.
+			$output = $parser->parse( $form_def, $title, $parser->getOptions(), true, false );
 			$form_def = $output->getText();
 		}
 		$form_def = preg_replace_callback(
@@ -567,14 +587,19 @@ END;
 	 * Get a cache key.
 	 *
 	 * @param string $formId
-	 * @param Parser $parser Provide parser to get unique cache key
+	 * @param Parser|null $parser Provide parser to get unique cache key
 	 * @return string
 	 */
 	public static function getCacheKey( $formId, $parser = null ) {
 		if ( is_null( $parser ) ) {
 			return wfMemcKey( 'ext.PageForms.formdefinition', $formId );
 		} else {
-			$optionsHash = $parser->getOptions()->optionsHash( ParserOptions::legacyOptions() );
+			if ( method_exists( ParserOptions::class, 'allCacheVaryingOptions' ) ) {
+				$options = ParserOptions::allCacheVaryingOptions(); // 1.30
+			} else {
+				$options = ParserOptions::legacyOptions();
+			}
+			$optionsHash = $parser->getOptions()->optionsHash( $options );
 			return wfMemcKey( 'ext.PageForms.formdefinition', $formId, $optionsHash );
 		}
 	}

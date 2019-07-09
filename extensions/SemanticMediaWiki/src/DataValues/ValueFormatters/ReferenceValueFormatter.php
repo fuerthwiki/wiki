@@ -4,14 +4,14 @@ namespace SMW\DataValues\ValueFormatters;
 
 use RuntimeException;
 use SMW\DataValueFactory;
+use SMW\DataValues\ExternalIdentifierValue;
 use SMW\DataValues\ReferenceValue;
-use SMW\DIProperty;
 use SMW\DIWikiPage;
 use SMW\Message;
 use SMWDataValue as DataValue;
-use SMWPropertyValue as PropertyValue;
-use SMWDIUri as DIUri;
 use SMWDITime as DITime;
+use SMWDIUri as DIUri;
+use SMWPropertyValue as PropertyValue;
 
 /**
  * @license GNU GPL v2+
@@ -83,12 +83,12 @@ class ReferenceValueFormatter extends DataValueFormatter {
 		// to show the "normal" tooltip
 		$result .= \Html::rawElement(
 			'span',
-			array(
+			[
 				'class' => $class,
 				'data-title'   =>  Message::get( 'smw-ui-tooltip-title-reference', Message::TEXT, Message::USER_LANGUAGE ),
 				'data-content' => '<ul><li>' . implode( '</li><li>', $results ) . '</li></ul>',
 				'title' => strip_tags( implode( ', ', $results ) )
-			)
+			]
 		);
 
 		return $result;
@@ -96,7 +96,7 @@ class ReferenceValueFormatter extends DataValueFormatter {
 
 	private function getListOfFormattedPropertyDataItems( $type, $linker, $propertyDataItems ) {
 
-		$results = array();
+		$results = [];
 
 		foreach ( $propertyDataItems as $propertyDataItem ) {
 
@@ -105,7 +105,7 @@ class ReferenceValueFormatter extends DataValueFormatter {
 
 			// By definition the first element in the list is the VALUE other
 			// members are referencing to
-			$isValue = $results === array();
+			$isValue = $results === [];
 			$dataValue = null;
 
 			if ( $dataItem !== false ) {
@@ -117,7 +117,7 @@ class ReferenceValueFormatter extends DataValueFormatter {
 
 			// Return a plain value in case no linker object is available
 			if ( $dataValue !== null && $linker === null ) {
-				return array( $dataValue->getWikiValue() );
+				return [ $dataValue->getWikiValue() ];
 			}
 
 			$dataValue = DataValueFactory::getInstance()->newDataValueByItem(
@@ -130,11 +130,11 @@ class ReferenceValueFormatter extends DataValueFormatter {
 
 			if ( !$isValue && $type !== self::VALUE ) {
 				$output = Message::get(
-					array(
+					[
 						'smw-datavalue-reference-outputformat',
 						$dataValue->getShortHTMLText( smwfGetLinker() ),
 						$output
-					),
+					],
 					Message::TEXT
 				);
 			}
@@ -152,7 +152,7 @@ class ReferenceValueFormatter extends DataValueFormatter {
 		// Turn Uri/Page links into a href representation when not used as value
 		if ( !$isValue &&
 			( $dataItem instanceof DIUri || $dataItem instanceof DIWikiPage ) &&
-			$type !== self::VALUE ) {
+			$type !== self::VALUE || $dataValue->getTypeID() === ExternalIdentifierValue::TYPE_ID ) {
 			return $dataValue->getShortHTMLText( smwfGetLinker() );
 		}
 

@@ -3,7 +3,7 @@
 namespace ProofreadPage\Pagination;
 
 /**
- * @licence GNU GPL v2+
+ * @license GPL-2.0-or-later
  *
  * Representation for a <pagelist> tag
  */
@@ -12,12 +12,12 @@ class PageList {
 	/**
 	 * @var array parameters of the <pagelist> tag
 	 */
-	private $params = array();
+	private $params = [];
 
 	/**
 	 * @var PageNumber[] PageNumber already computed
 	 */
-	private $pageNumbers = array();
+	private $pageNumbers = [];
 
 	/**
 	 * @param array $params parameters of the <pagelist> tag
@@ -29,7 +29,7 @@ class PageList {
 	/**
 	 * Returns the PageNumber for the page number $pageNumber
 	 *
-	 * @param integer $pageNumber
+	 * @param int $pageNumber
 	 * @return PageNumber
 	 */
 	public function getNumber( $pageNumber ) {
@@ -47,7 +47,7 @@ class PageList {
 	 * @return PageNumber
 	 */
 	private function buildNumber( $pageNumber ) {
-		$mode = PageNumber::DISPLAY_NORMAL; //default mode
+		$mode = PageNumber::DISPLAY_NORMAL; // default mode
 		$offset = 0;
 		$displayedpageNumber = '';
 		$isEmpty = false;
@@ -77,21 +77,23 @@ class PageList {
 			}
 		}
 
-		$displayedpageNumber = ($displayedpageNumber === '') ? $pageNumber - $offset : $displayedpageNumber;
+		$displayedpageNumber = ( $displayedpageNumber === '' )
+			? $pageNumber - $offset
+			: $displayedpageNumber;
 		return new PageNumber( $displayedpageNumber, $mode, $isEmpty );
 	}
 
 	/**
-	 * Returns if a number is in a range as definded by <pagelist>
+	 * Returns if a number is in a range as defined by <pagelist>
 	 * Such range may be a single integer or something in the format XXtoYY
 	 *
-	 * @param $range
-	 * @param $number
-	 * @return boolean
+	 * @param string $range
+	 * @param int $number
+	 * @return bool
 	 */
 	protected function numberInRange( $range, $number ) {
-		return
-			is_numeric( $range ) && $range == $number ||
-			preg_match( '/^([0-9]*)to([0-9]*)$/', $range, $m ) && $m[1] <= $number && $number <= $m[2];
+		return is_numeric( $range ) && $range == $number ||
+			preg_match( '/^([0-9]*)to([0-9]*)$/', $range, $m ) &&
+			$m[1] <= $number && $number <= $m[2];
 	}
 }

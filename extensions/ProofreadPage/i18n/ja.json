@@ -7,9 +7,12 @@
 			"Schu",
 			"Shirayuki",
 			"青子守歌",
-			"Otokoume"
+			"Otokoume",
+			"夢蝶葬花"
 		]
 	},
+	"nstab-page": "ページ",
+	"nstab-index": "目次",
 	"indexpages": "書誌情報ページの一覧",
 	"pageswithoutscans": "スキャン画像と関連付けていないページ",
 	"proofreadpage_desc": "底本のスキャン画像と写本の本文の比較を容易にさせる",
@@ -18,13 +21,9 @@
 	"proofreadpage_index_expected": "エラー: 書誌情報を入力してください",
 	"proofreadpage_nosuch_index": "エラー: そのような書誌情報はありません",
 	"proofreadpage_nosuch_file": "エラー: そのようなファイルはありません",
-	"proofreadpage_badpage": "間違ったフォーマット",
-	"proofreadpage_badpagetext": "保存しようとしたページのフォーマットが正しくありません。",
-	"proofreadpage_indexdupe": "重複したリンク",
 	"proofreadpage_indexdupetext": "ページ上に複数の書誌情報ページを載せることはできません。",
 	"proofreadpage_nologin": "ログインしていません",
 	"proofreadpage_nologintext": "ページの校正ステータスを変更するには[[Special:UserLogin|ログイン]]する必要があります。",
-	"proofreadpage_notallowed": "変更が許可されていません",
 	"proofreadpage_notallowedtext": "このページの校正ステータスを変更することはできません。",
 	"proofreadpage_dataconfig_badformatted": "データの構成のエラー",
 	"proofreadpage_dataconfig_badformattedtext": "ページ [[Mediawiki:Proofreadpage index data config]] は正しい形式の JSON ではありません。",

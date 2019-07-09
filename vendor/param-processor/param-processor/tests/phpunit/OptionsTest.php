@@ -3,18 +3,16 @@
 namespace ParamProcessor\Tests;
 
 use ParamProcessor\Options;
+use PHPUnit\Framework\TestCase;
 
 /**
- * @covers ParamProcessor\Options
+ * @covers \ParamProcessor\Options
  *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
-class OptionsTest extends \PHPUnit_Framework_TestCase {
+class OptionsTest extends TestCase {
 
-	/**
-	 * @return Options
-	 */
 	protected function getInstance() {
 		return new Options();
 	}

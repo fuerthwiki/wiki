@@ -1,12 +1,12 @@
 {
 	"@metadata": {
 		"authors": [
-			"DCLXVI"
+			"DCLXVI",
+			"StanProg"
 		]
 	},
 	"authorprotect-desc": "Позволява на автора на страница да я защити от другите потребители",
-	"authorprotect-notauthor": "Не сте автор на тази страница",
+	"authorprotect-notauthor": "{{GENDER:$1|Не сте}} {{GENDER:$1|автор}} на тази страница.",
 	"authorprotect-confirm": "Промяна степента на защита",
-	"authorprotect-success": "Защитата беше успешна!",
-	"authorprotect-failure": "Защитата беше неуспешна"
+	"authorprotect-success": "Защитата е установена!"
 }

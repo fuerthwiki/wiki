@@ -28,6 +28,8 @@ $calendarMessages = [ 'messages' => [
 		'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat',
 		'srf-ui-eventcalendar-label-today', 'srf-ui-eventcalendar-label-month',
 		'srf-ui-eventcalendar-label-week', 'srf-ui-eventcalendar-label-day',
+		'srf-ui-eventcalendar-label-listmonth', 'srf-ui-eventcalendar-label-listweek',
+		'srf-ui-eventcalendar-label-listday',
 		'srf-ui-eventcalendar-label-allday', 'srf-ui-eventcalendar-format-time',
 		'srf-ui-eventcalendar-format-time-agenda', 'srf-ui-eventcalendar-format-axis',
 		'srf-ui-eventcalendar-format-title-month', 'srf-ui-eventcalendar-format-title-week',
@@ -36,7 +38,7 @@ $calendarMessages = [ 'messages' => [
 		'srf-ui-tooltip-title-legend', 'srf-ui-tooltip-title-filter',
 		'srf-ui-common-label-refresh', 'srf-ui-eventcalendar-label-update-success',
 		'srf-ui-eventcalendar-label-update-error', 'srf-ui-common-label-parameters',
-		'srf-ui-common-label-paneview', 'smw_qui_limt', 'srf-ui-common-label-daterange',
+		'srf-ui-common-label-paneview', 'srf-ui-common-label-daterange',
 		'srf-ui-eventcalendar-click-popup',
 	]
 ];
@@ -122,6 +124,14 @@ return [
 			'formats/calendar/resources/ext.srf.formats.eventcalendar.css',
 		],
 		'dependencies' => 'ext.smw.api',
+		'position' => 'top',
+		'group' => 'ext.srf'
+	],
+
+	'ext.srf.styles' => $moduleTemplate + [
+		'styles'  => [
+			'resources/ext.srf.css',
+		],
 		'position' => 'top',
 		'group' => 'ext.srf'
 	],
@@ -516,9 +526,47 @@ return [
 	],
 
 	// Timeline
-	'ext.smile.timeline' => $formatModule + [
-		'scripts' => 'timeline/resources/SimileTimeline/timeline-api.js'
+	// Copied from timeline-api.js
+	'ext.smile.timeline.core' => $formatModule + [
+		'scripts' => [
+			'timeline/resources/SimileTimeline/scripts/timeline.js',
+			'timeline/resources/SimileTimeline/scripts/util/platform.js',
+			'timeline/resources/SimileTimeline/scripts/util/debug.js',
+			'timeline/resources/SimileTimeline/scripts/util/xmlhttp.js',
+			'timeline/resources/SimileTimeline/scripts/util/dom.js',
+			'timeline/resources/SimileTimeline/scripts/util/graphics.js',
+			'timeline/resources/SimileTimeline/scripts/util/date-time.js',
+			'timeline/resources/SimileTimeline/scripts/util/data-structure.js',
+			'timeline/resources/SimileTimeline/scripts/units.js',
+			'timeline/resources/SimileTimeline/scripts/themes.js',
+			'timeline/resources/SimileTimeline/scripts/ethers.js',
+			'timeline/resources/SimileTimeline/scripts/ether-painters.js',
+			'timeline/resources/SimileTimeline/scripts/labellers.js',
+			'timeline/resources/SimileTimeline/scripts/sources.js',
+			'timeline/resources/SimileTimeline/scripts/layouts.js',
+			'timeline/resources/SimileTimeline/scripts/painters.js',
+			'timeline/resources/SimileTimeline/scripts/decorators.js',
+			'timeline/resources/SimileTimeline/scripts/labellers.js',
+
+			// Keep this with in the same load sequence
+			'timeline/resources/SimileTimeline/scripts/l10n/en/labellers.js',
+			'timeline/resources/SimileTimeline/scripts/l10n/en/timeline.js'
+		],
+		'styles'  => [
+			'timeline/resources/SimileTimeline/styles/timeline.css',
+			'timeline/resources/SimileTimeline/styles/ethers.css',
+			'timeline/resources/SimileTimeline/styles/events.css',
+		],
+		'targets' => [ 'mobile', 'desktop' ]
 	],
+
+	'ext.smile.timeline' => $formatModule + [
+		'scripts' => [
+			'timeline/resources/SimileTimeline/timeline-api.js',
+		],
+		'targets' => [ 'mobile', 'desktop' ]
+	],
+
 	'ext.srf.timeline' => $formatModule + [
 		'scripts' => 'timeline/resources/ext.srf.timeline.js',
 		'dependencies' => [
@@ -526,6 +574,7 @@ return [
 			'mediawiki.legacy.wikibits'
 		],
 		'position' => 'top',
+		'targets' => [ 'mobile', 'desktop' ]
 	],
 
 	// D3
@@ -665,7 +714,10 @@ return [
 
 	// fullCalendar
 	'ext.jquery.fullcalendar' => $moduleTemplate + [
-		'scripts' => 'resources/jquery/fullcalendar/fullcalendar.js',
+		'scripts' => [
+			'resources/jquery/fullcalendar/moment.js',
+			'resources/jquery/fullcalendar/fullcalendar.js'
+		],
 		'styles' => 'resources/jquery/fullcalendar/fullcalendar.css',
 	// If you have MW 1.20+ the definitions below will work but not for earlier
 	// MW installations
@@ -722,33 +774,26 @@ return [
 				'filtered/resources/js/ext.srf.filtered.js',
 			],
 			'styles' => [
-				'filtered/resources/css/ext.srf.filtered.css',
+				'filtered/resources/css/ext.srf.filtered.less',
+			],
+			'messages' => [
+				'srf-filtered-value-filter-placeholder',
+				'srf-filtered-value-filter-and',
+				'srf-filtered-value-filter-or',
 			],
 			'dependencies' => [
 				'ext.srf',
 			],
-		],
-
-	'ext.srf.filtered.list-view' => $formatModule + [
-			'dependencies' => [
-				'ext.srf.filtered',
-			],
-		],
-
-	'ext.srf.filtered.table-view' => $formatModule + [
-			'dependencies' => [
-				'ext.srf.filtered',
-			],
+			'position' => 'top',
 		],
 
 	'ext.srf.filtered.calendar-view.messages' => $formatModule + $calendarMessages,
 
 	'ext.srf.filtered.calendar-view' => $formatModule +  array(
 			'styles' => array(
-				'filtered/resources/css/ext.srf.filtered.calendar-view.css',
+				'filtered/resources/css/ext.srf.filtered.calendar-view.less',
 			),
 			'dependencies' => array(
-				'ext.srf.filtered',
 				'ext.srf.filtered.calendar-view.messages',
 				'ext.jquery.fullcalendar'
 			),
@@ -765,39 +810,32 @@ return [
 
 	'ext.srf.filtered.map-view' => $formatModule + [
 			'styles' => [
-				'filtered/resources/css/ext.srf.filtered.map-view.css',
-			],
-			'dependencies' => [
-				'ext.srf.filtered',
-				'ext.srf.filtered.map-view.leaflet',
+				'filtered/resources/css/ext.srf.filtered.map-view.less',
 			],
 		],
 
 	'ext.srf.filtered.value-filter' => $formatModule + [
-			'styles' => [
-				'filtered/resources/css/ext.srf.filtered.value-filter.css',
-			],
-			'dependencies' => [
-				'ext.srf.filtered',
-			],
+			'styles' => [ 'filtered/resources/css/ext.srf.filtered.value-filter.less' ],
+		],
+
+	'ext.srf.filtered.value-filter.select' => $formatModule + [
+			'scripts' => [ 'filtered/resources/js/ext.srf.filtered.select.js' ],
+			'styles' => [ 'filtered/resources/css/ext.srf.filtered.select.css' ],
+		],
+
+	'ext.srf.filtered.slider' => $formatModule + [
+			'scripts' => [ 'filtered/resources/js/ext.srf.filtered.slider.js' ],
+			'styles' => [ 'filtered/resources/css/ext.srf.filtered.slider.css' ],
 		],
 
 	'ext.srf.filtered.distance-filter' => $formatModule + [
-			'styles' => [ 'filtered/resources/css/ext.srf.filtered.distance-filter.css' ],
-			'dependencies' => [
-				'ext.srf.filtered',
-				'jquery.ui.slider',
-			],
+			'styles' => [ 'filtered/resources/css/ext.srf.filtered.distance-filter.less' ],
+			'dependencies' => [ 'ext.srf.filtered.slider' ],
 		],
 
 	'ext.srf.filtered.number-filter' => $formatModule + [
-			'styles' => [
-				'filtered/resources/css/ext.srf.filtered.number-filter.css',
-			],
-			'dependencies' => [
-				'ext.srf.filtered',
-				'jquery.ui.slider',
-			],
+			'styles' => [ 'filtered/resources/css/ext.srf.filtered.number-filter.less' ],
+			'dependencies' => [ 'ext.srf.filtered.slider' ],
 		],
 
 	// Slideshow

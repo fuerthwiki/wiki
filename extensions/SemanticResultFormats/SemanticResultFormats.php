@@ -5,14 +5,6 @@
  *
  * @defgroup SRF Semantic Result Formats
  */
-if ( !defined( 'MEDIAWIKI' ) ) {
-	die( 'This file is part of the Semantic Result Formats extension. It is not a valid entry point.' );
-}
-
-if ( defined( 'SRF_VERSION' ) ) {
-	// Do not initialize more than once.
-	return 1;
-}
 
 SemanticResultFormats::load();
 
@@ -36,43 +28,15 @@ class SemanticResultFormats {
 
 		// Load DefaultSettings
 		require_once __DIR__ . '/DefaultSettings.php';
-
-		// In case extension.json is being used, the succeeding steps are
-		// expected to be handled by the ExtensionRegistry aka extension.json
-		self::initExtension();
-
-		$GLOBALS['wgExtensionFunctions'][] = function() {
-			self::onExtensionFunction();
-		};
 	}
 
 	/**
 	 * @since 2.5
 	 */
-	public static function initExtension() {
+	public static function initExtension( $credits = [] ) {
 
-		define( 'SRF_VERSION', '2.5.2' );
-
-		// Register the extension
-		$GLOBALS['wgExtensionCredits']['semantic'][] = [
-			'path' => __FILE__,
-			'name' => 'Semantic Result Formats',
-			'version' => SRF_VERSION,
-			// At least 14 people have contributed formats to this extension, so
-			// it would be prohibitive to list them all in the credits. Instead,
-			// the current rule is to list anyone who has created, or contributed
-			// significantly to, at least three formats, or the overall extension.
-			'author' => [
-				'James Hong Kong',
-				'Stephan Gambke',
-				'Jeroen De Dauw',
-				'Yaron Koren',
-				'...'
-			],
-			'url' => 'https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Result_Formats',
-			'descriptionmsg' => 'srf-desc',
-			'license-name'   => 'GPL-2.0+'
-		];
+		// See https://phabricator.wikimedia.org/T151136
+		define( 'SRF_VERSION', isset( $credits['version'] ) ? $credits['version'] : 'UNKNOWN' );
 
 		// Register message files
 		$GLOBALS['wgMessagesDirs']['SemanticResultFormats'] = __DIR__ . '/i18n';
@@ -107,21 +71,10 @@ class SemanticResultFormats {
 		$GLOBALS['wgAPIModules']['ext.srf.slideshow.show'] = 'SRFSlideShowApi';
 
 		// User preference
-		$GLOBALS['wgHooks']['GetPreferences'][] = 'SRFHooks::onGetPreferences';
-	}
+		$GLOBALS['wgHooks']['SMW::GetPreferences'][] = 'SRFHooks::onGetPreferences';
 
-	/**
-	 * @since 2.5
-	 */
-	public static function doCheckRequirements() {
-
-		if ( version_compare( $GLOBALS[ 'wgVersion' ], '1.23', 'lt' ) ) {
-			die( '<b>Error:</b> This version of <a href="https://github.com/SemanticMediaWiki/SemanticResultFormats/">Semantic Result Formats</a> is only compatible with MediaWiki 1.23 or above. You need to upgrade MediaWiki first.' );
-		}
-
-		if ( !defined( 'SMW_VERSION' ) ) {
-			die( '<b>Error:</b> <a href="https://github.com/SemanticMediaWiki/SemanticResultFormats/">Semantic Result Formats</a> requires the <a href="https://github.com/SemanticMediaWiki/SemanticMediaWiki/">Semantic MediaWiki</a> extension. Please enable or install the extension first.' );
-		}
+		// Allows last minute changes to the output page, e.g. adding of CSS or JavaScript by extensions
+		$GLOBALS['wgHooks']['BeforePageDisplay'][] = 'SRFHooks::onBeforePageDisplay';
 	}
 
 	/**
@@ -129,10 +82,18 @@ class SemanticResultFormats {
 	 */
 	public static function onExtensionFunction() {
 
-		// Check requirements after LocalSetting.php has been processed, thid has
-		// be done here to ensure SMW is loaded in case
-		// wfLoadExtension( 'SemanticMediaWiki' ) is used
-		self::doCheckRequirements();
+		if ( !defined( 'SMW_VERSION' ) ) {
+
+			if ( PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg' ) {
+				die( "\nThe 'Semantic Result Formats' extension requires 'Semantic MediaWiki' to be installed and enabled.\n" );
+			} else {
+				die(
+					'<b>Error:</b> The <a href="https://github.com/SemanticMediaWiki/SemanticResultFormats/">Semantic Result Formats</a> ' .
+					'extension requires <a href="https://www.semantic-mediawiki.org/wiki/Semantic_MediaWiki">Semantic MediaWiki</a> to be ' .
+					'installed and enabled.<br />'
+				);
+			}
+		}
 
 		// Admin Links hook needs to be called in a delayed way so that it
 		// will always be called after SMW's Admin Links addition; as of
@@ -146,8 +107,8 @@ class SemanticResultFormats {
 			// 'boilerplate' => 'SRFBoilerplate',
 			'timeline' => 'SRFTimeline',
 			'eventline' => 'SRFTimeline',
-			'vcard' => 'SRFvCard',
-			'icalendar' => 'SRFiCalendar',
+			'vcard' => 'SRF\vCard\vCardFileExportPrinter',
+			'icalendar' => 'SRF\iCalendar\iCalendarFileExportPrinter',
 			'bibtex' => 'SRFBibTeX',
 			'calendar' => 'SRFCalendar',
 			'eventcalendar' => 'SRF\EventCalendar',

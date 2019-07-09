@@ -86,7 +86,7 @@ class RefreshSQLStoreDBIntegrationTest extends MwDBaseUnitTestCase {
 			$useJobs
 		);
 
-		$entityRebuildDispatcher->startRebuildWith( $refreshPosition );
+		$entityRebuildDispatcher->rebuild( $refreshPosition );
 
 		$this->assertGreaterThan(
 			0,
@@ -95,11 +95,11 @@ class RefreshSQLStoreDBIntegrationTest extends MwDBaseUnitTestCase {
 	}
 
 	public function titleProvider() {
-		$provider = array();
+		$provider = [];
 
 	//	$provider[] = array( NS_MAIN, 'withInterWiki', 'commons' );
-		$provider[] = array( NS_MAIN, 'normalTite', '' );
-		$provider[] = array( NS_MAIN, 'useUpdateJobs', '' );
+		$provider[] = [ NS_MAIN, 'normalTite', '' ];
+		$provider[] = [ NS_MAIN, 'useUpdateJobs', '' ];
 
 		return $provider;
 	}

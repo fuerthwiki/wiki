@@ -2,14 +2,13 @@
 
 namespace SMW\MediaWiki\Specials\Admin;
 
+use Html;
 use SMW\ApplicationFactory;
+use SMW\DIWikiPage;
 use SMW\MediaWiki\Renderer\HtmlFormRenderer;
 use SMW\Message;
-use SMW\Store;
-use Html;
-use WebRequest;
 use Title;
-use Job;
+use WebRequest;
 
 /**
  * @license GNU GPL v2+
@@ -18,11 +17,6 @@ use Job;
  * @author mwjames
  */
 class FulltextSearchTableRebuildJobTaskHandler extends TaskHandler {
-
-	/**
-	 * @var Store
-	 */
-	private $store;
 
 	/**
 	 * @var HtmlFormRenderer
@@ -35,16 +29,46 @@ class FulltextSearchTableRebuildJobTaskHandler extends TaskHandler {
 	private $outputFormatter;
 
 	/**
+	 * @var boolean
+	 */
+	public $isApiTask = true;
+
+	/**
 	 * @since 2.5
 	 *
-	 * @param Store $store
 	 * @param HtmlFormRenderer $htmlFormRenderer
 	 * @param OutputFormatter $outputFormatter
 	 */
-	public function __construct( Store $store, HtmlFormRenderer $htmlFormRenderer, OutputFormatter $outputFormatter ) {
-		$this->store = $store;
+	public function __construct( HtmlFormRenderer $htmlFormRenderer, OutputFormatter $outputFormatter ) {
 		$this->htmlFormRenderer = $htmlFormRenderer;
 		$this->outputFormatter = $outputFormatter;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function getSection() {
+		return self::SECTION_DATAREPAIR;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function hasAction() {
+		return true;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function isApiTask() {
+		return $this->isApiTask;
 	}
 
 	/**
@@ -63,33 +87,48 @@ class FulltextSearchTableRebuildJobTaskHandler extends TaskHandler {
 	 */
 	public function getHtml() {
 
-		// smw-admin-fulltext
-		$this->htmlFormRenderer
-				->addHeader( 'h3', $this->getMessageAsString( 'smw-admin-fulltext-title' ) )
-				->addParagraph( $this->getMessageAsString( 'smw-admin-fulltext-intro', Message::PARSE ) );
+		$subject = DIWikiPage::newFromTitle( \SpecialPage::getTitleFor( 'SMWAdmin' ) );
 
-		if ( $this->isEnabledFeature( SMW_ADM_FULLT ) && !$this->hasFulltextSearchTableRebuildJob() ) {
+		if ( $this->isEnabledFeature( SMW_ADM_FULLT ) && !$this->hasPendingJob() ) {
 			$this->htmlFormRenderer
+				->addHeader( 'h4', $this->msg( 'smw-admin-fulltext-title' ) )
+				->addParagraph( $this->msg( 'smw-admin-fulltext-intro', Message::PARSE ), [ 'class' => 'plainlinks' ] )
 				->setMethod( 'post' )
 				->addHiddenField( 'action', 'fulltrebuild' )
 				->addSubmitButton(
-					$this->getMessageAsString( 'smw-admin-fulltext-button' ),
-					array(
-						'class' => ''
-					)
+					$this->msg( 'smw-admin-fulltext-button' ),
+					[
+						'class' => $this->isApiTask() ? 'smw-admin-api-job-task' : '',
+						'data-job' => 'SMW\FulltextSearchTableRebuildJob',
+						'data-subject' => $subject->getHash(),
+						'data-parameters' => json_encode( [ 'mode' => '' ] )
+					]
 				);
 		} elseif ( $this->isEnabledFeature( SMW_ADM_FULLT ) ) {
 			$this->htmlFormRenderer
+				->addHeader( 'h4', $this->msg( 'smw-admin-fulltext-title' ) )
+				->addParagraph( $this->msg( 'smw-admin-fulltext-intro', Message::PARSE ), [ 'class' => 'plainlinks' ] )
 				->addParagraph(
-					Html::element( 'span', array( 'class' => 'smw-admin-circle-orange' ), '' ) .
-					Html::element( 'span', array( 'style' => 'font-style:italic; margin-left:25px;' ), $this->getMessageAsString( 'smw-admin-fulltext-active' ) )
+					Html::element(
+						'span',
+						[
+							'class' => 'smw-admin-circle-orange'
+						]
+					) . Html::element(
+						'span',
+						[
+							'style' => 'font-style:italic; margin-left:25px;'
+						],
+						$this->msg( 'smw-admin-fulltext-active' )
+					)
 				);
-		} else {
-			$this->htmlFormRenderer
-				->addParagraph( $this->getMessageAsString( 'smw-admin-feature-disabled' ) );
 		}
 
-		return Html::rawElement( 'div', array(), $this->htmlFormRenderer->getForm() );
+		return Html::rawElement(
+			'div',
+			[],
+			$this->htmlFormRenderer->getForm()
+		);
 	}
 
 	/**
@@ -99,37 +138,25 @@ class FulltextSearchTableRebuildJobTaskHandler extends TaskHandler {
 	 */
 	public function handleRequest( WebRequest $webRequest ) {
 
-		if ( $this->isEnabledFeature( SMW_ADM_FULLT ) && !$this->hasFulltextSearchTableRebuildJob() ) {
-			$fulltextSearchTableRebuildJob = ApplicationFactory::getInstance()->newJobFactory()->newByType(
-				'SMW\FulltextSearchTableRebuildJob',
-				\SpecialPage::getTitleFor( 'SMWAdmin' ),
-				array(
-					'mode' => 'full'
-				)
-			);
-
-			$fulltextSearchTableRebuildJob->insert();
+		if ( !$this->isEnabledFeature( SMW_ADM_FULLT ) || $this->hasPendingJob() || $this->isApiTask() ) {
+			return $this->outputFormatter->redirectToRootPage( '', [ 'tab' => 'rebuild' ] );
 		}
 
-		$this->outputFormatter->redirectToRootPage( $this->getMessageAsString( 'smw-admin-fulltext-title' ) );
+		$job = ApplicationFactory::getInstance()->newJobFactory()->newByType(
+			'smw.fulltextSearchTableRebuild',
+			\SpecialPage::getTitleFor( 'SMWAdmin' ),
+			[
+				'mode' => 'full'
+			]
+		);
+
+		$job->insert();
+
+		$this->outputFormatter->redirectToRootPage( '', [ 'tab' => 'rebuild' ] );
 	}
 
-	private function hasFulltextSearchTableRebuildJob() {
-
-		if ( !$this->isEnabledFeature( SMW_ADM_FULLT ) ) {
-			return false;
-		}
-
-		$jobQueueLookup = ApplicationFactory::getInstance()->create(
-			'JobQueueLookup',
-			$this->store->getConnection( 'mw.db' )
-		);
-
-		$row = $jobQueueLookup->selectJobRowBy(
-			'SMW\FulltextSearchTableRebuildJob'
-		);
-
-		return $row !== null && $row !== false;
+	private function hasPendingJob() {
+		return ApplicationFactory::getInstance()->getJobQueue()->hasPendingJob( 'smw.fulltextSearchTableRebuild' );
 	}
 
 }

@@ -2,8 +2,6 @@
 
 namespace SMW\DataValues;
 
-use SMWStringValue as StringValue;
-use SMW\ApplicationFactory;
 use SMW\DIProperty;
 
 /**
@@ -24,7 +22,7 @@ class ExternalIdentifierValue extends StringValue {
 	/**
 	 * @var string|null
 	 */
-	private $externalFormattedUri = null;
+	private $uri = null;
 
 	/**
 	 * @param string $typeid
@@ -61,18 +59,26 @@ class ExternalIdentifierValue extends StringValue {
 			return $this->m_caption;
 		}
 
-		$externalFormattedUri = $this->getExternalFormattedUri( $this->m_dataitem->getString() );
+		$uri = $this->makeUri(
+			$this->m_dataitem->getString()
+		);
 
 		if ( !$this->isValid() ) {
 			return '';
 		}
 
+		if ( $this->getOutputFormat() == 'nowiki' ) {
+			$url = $this->makeNonlinkedWikiText( $uri );
+		} else {
+			$url = '['. $uri . ' '. $this->m_caption . ']';
+		}
+
 		return \Html::rawElement(
 			'span',
-			array(
+			[
 				'class' => 'plainlinks smw-eid'
-			),
-			'['. $externalFormattedUri . ' '. $this->m_caption . ']'
+			],
+			$url
 		);
 	}
 
@@ -93,7 +99,9 @@ class ExternalIdentifierValue extends StringValue {
 			return $this->m_caption;
 		}
 
-		$externalFormattedUri = $this->getExternalFormattedUri( $this->m_dataitem->getString() );
+		$uri = $this->makeUri(
+			$this->m_dataitem->getString()
+		);
 
 		if ( !$this->isValid() ) {
 			return $this->m_caption;
@@ -101,10 +109,10 @@ class ExternalIdentifierValue extends StringValue {
 
 		return \Html::rawElement(
 			'a',
-			array(
-				'href'   => $externalFormattedUri,
+			[
+				'href'   => $uri,
 				'target' => '_blank'
-			),
+			],
 			$this->m_caption
 		);
 	}
@@ -128,27 +136,27 @@ class ExternalIdentifierValue extends StringValue {
 	 *
 	 * @return DataItem
 	 */
-	public function getWithFormattedUri() {
+	public function getUri() {
 
 		if ( !$this->isValid() ) {
 			return '';
 		}
 
-		$dataValue = ApplicationFactory::getInstance()->getDataValueFactory()->newDataValueByType(
+		$dataValue = $this->dataValueServiceFactory->getDataValueFactory()->newDataValueByType(
 			'_uri',
-			$this->getExternalFormattedUri( $this->m_dataitem->getString() )
+			$this->makeUri( $this->m_dataitem->getString() )
 		);
 
 		return $dataValue->getDataItem();
 	}
 
-	private function getExternalFormattedUri( $value ) {
+	private function makeUri( $value ) {
 
-		if ( $this->externalFormattedUri !== null ) {
-			return $this->externalFormattedUri;
+		if ( $this->uri !== null ) {
+			return $this->uri;
 		}
 
-		$dataItem = ApplicationFactory::getInstance()->getPropertySpecificationLookup()->getExternalFormatterUriBy(
+		$dataItem = $this->dataValueServiceFactory->getPropertySpecificationLookup()->getExternalFormatterUri(
 			$this->getProperty()
 		);
 
@@ -157,17 +165,21 @@ class ExternalIdentifierValue extends StringValue {
 			return;
 		}
 
-		$dataValue = ApplicationFactory::getInstance()->getDataValueFactory()->newDataValueByItem(
+		$dataValue = $this->dataValueServiceFactory->getDataValueFactory()->newDataValueByItem(
 			$dataItem,
 			new DIProperty( '_PEFU' )
 		);
 
-		if ( $dataValue->getErrors() !== array() ) {
+		if ( $dataValue->getErrors() !== [] ) {
 			$this->addError( $dataValue->getErrors() );
 			return;
 		}
 
-		return $this->externalFormattedUri = $dataValue->getFormattedUriWith( $value );
+		return $this->uri = $dataValue->getUriWithPlaceholderSubstitution( $value );
+	}
+
+	private function makeNonlinkedWikiText( $url ) {
+		return str_replace( ':', '&#58;', $url );
 	}
 
 }

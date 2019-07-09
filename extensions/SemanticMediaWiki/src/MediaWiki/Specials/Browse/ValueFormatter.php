@@ -2,16 +2,14 @@
 
 namespace SMW\MediaWiki\Specials\Browse;
 
-use SMW\Message;
 use SMW\ApplicationFactory;
-use SMWDataValue as DataValue;
-use SMWDataItem as DataItem;
-use SMWPropertyValue as PropertyValue;
 use SMW\DataValueFactory;
+use SMW\DataValues\PropertyValue;
 use SMW\DataValues\ValueFormatters\DataValueFormatter;
-use SMWInfolink as Infolink;
 use SMW\DIProperty;
 use SMW\Localizer;
+use SMWDataValue as DataValue;
+use SMWInfolink as Infolink;
 
 /**
  * @private
@@ -70,7 +68,7 @@ class ValueFormatter {
 	 *
 	 * @return string
 	 */
-	public static function getFormattedValue( DataValue $dataValue, PropertyValue $propertyValue, $incoming = false ) {
+	public static function getFormattedValue( DataValue $dataValue, PropertyValue $propertyValue, $incoming = false, $user = null ) {
 
 		$linker = smwfGetLinker();
 		$dataItem = $dataValue->getContextPage();
@@ -86,8 +84,18 @@ class ValueFormatter {
 			Localizer::getInstance()->getUserLanguage()->getCode()
 		);
 
+		$outputFormat = $dataValue->getOutputFormat();
+
+		if ( $outputFormat === false ) {
+			$outputFormat = 'LOCL';
+
+			if ( Localizer::getInstance()->hasLocalTimeOffsetPreference( $user ) ) {
+				$outputFormat .= '#TO';
+			}
+		}
+
 		// Use LOCL formatting where appropriate (date)
-		$dataValue->setOutputFormat( 'LOCL' );
+		$dataValue->setOutputFormat( $outputFormat );
 
 		// For a redirect, disable the DisplayTitle to show the original (aka source) page
 		if ( $propertyValue->isValid() && $propertyValue->getDataItem()->getKey() == '_REDI' ) {
@@ -96,11 +104,22 @@ class ValueFormatter {
 
 		$html = $dataValue->getLongHTMLText( $linker );
 
-		if ( $dataValue->getTypeID() === '_wpg' || $dataValue->getTypeID() === '__sob' ) {
-			$html .= "&#160;" . Infolink::newBrowsingLink( '+', $dataValue->getLongWikiText() )->getHTML( $linker );
+		if ( $dataValue->getOption( DataValue::OPT_DISABLE_INFOLINKS, false ) === true ) {
+			return $html;
+		}
+
+		$isCompactLink = $dataValue->getOption( DataValue::OPT_COMPACT_INFOLINKS, false );
+		$noInfolinks = [ '_INST', '_SKEY' ];
+
+		if ( in_array( $dataValue->getTypeID(), [ '_wpg', '_wpp', '__sob'] ) ) {
+			$infolink = Infolink::newBrowsingLink( '+', $dataValue->getLongWikiText() );
+			$infolink->setCompactLink( $isCompactLink );
+			$html .= "&#160;" . $infolink->getHTML( $linker );
 		} elseif ( $incoming && $propertyValue->isVisible() ) {
-			$html .= "&#160;" . Infolink::newInversePropertySearchLink( '+', $dataValue->getTitle(), $propertyValue->getDataItem()->getLabel(), 'smwsearch' )->getHTML( $linker );
-		} elseif ( $dataValue->getProperty() instanceof DIProperty && $dataValue->getProperty()->getKey() !== '_INST' ) {
+			$infolink = Infolink::newInversePropertySearchLink( '+', $dataValue->getTitle(), $propertyValue->getDataItem()->getLabel(), 'smwsearch' );
+			$infolink->setCompactLink( $isCompactLink );
+			$html .= "&#160;" . $infolink->getHTML( $linker );
+		} elseif ( $dataValue->getProperty() instanceof DIProperty && !in_array( $dataValue->getProperty()->getKey(), $noInfolinks ) ) {
 			$html .= $dataValue->getInfolinkText( SMW_OUTPUT_HTML, $linker );
 		}
 
@@ -131,7 +150,7 @@ class ValueFormatter {
 			$propertyValue->setCaption( self::findPropertyLabel( $propertyValue, $incoming, $showInverse ) );
 			$proptext = $propertyValue->getShortHTMLText( $linker ) . "\n";
 		} elseif ( $property->getKey() == '_INST' ) {
-			$proptext = $linker->specialLink( 'Categories' );
+			$proptext = $linker->specialLink( 'Categories', 'smw-category' );
 		} elseif ( $property->getKey() == '_REDI' ) {
 			$proptext = $linker->specialLink( 'Listredirects', 'isredirect' );
 		}
@@ -153,14 +172,14 @@ class ValueFormatter {
 			return self::addNonBreakingSpace( $propertyValue->getWikiValue() );
 		}
 
-		$inverseProperty = PropertyValue::makeUserProperty( wfMessage( 'smw_inverse_label_property' )->text() );
+		$inverseProperty = DataValueFactory::getInstance()->newPropertyValueByLabel( wfMessage( 'smw_inverse_label_property' )->text() );
 
 		$dataItems = ApplicationFactory::getInstance()->getStore()->getPropertyValues(
 			$property->getDiWikiPage(),
 			$inverseProperty->getDataItem()
 		);
 
-		if ( $dataItems !== array() ) {
+		if ( $dataItems !== [] ) {
 			$text = str_replace( '_', ' ', end( $dataItems )->getDBKey() );
 		} else {
 			$text = wfMessage( 'smw_inverse_label_default', $propertyValue->getWikiValue() )->text();

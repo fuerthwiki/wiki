@@ -2,8 +2,7 @@
 
 namespace SMW\Tests\System;
 
-use RuntimeException;
-use SMW\ExtraneousLanguage\ExtraneousLanguage;
+use SMW\Lang\Lang;
 
 /**
  * @group SMW
@@ -24,7 +23,7 @@ class LanguagesAccessibilityAndIntegrityTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testCommonInterfaceMethods( $langcode ) {
 
-		$methods = array(
+		$methods = [
 			'getDateFormats' => 'array',
 			'getNamespaces'  => 'array',
 			'getNamespaceAliases' => 'array',
@@ -32,12 +31,12 @@ class LanguagesAccessibilityAndIntegrityTest extends \PHPUnit_Framework_TestCase
 			'getDatatypeAliases'  => 'array',
 			'getPropertyLabels'   => 'array',
 			'getPropertyAliases'  => 'array',
-		);
+		];
 
 		$class = $this->loadLanguageFileAndConstructClass( $langcode );
 
 		foreach ( $methods as $method => $type ) {
-			$this->assertInternalType( $type, call_user_func( array( $class, $method ) ) );
+			$this->assertInternalType( $type, call_user_func( [ $class, $method ] ) );
 		}
 	}
 
@@ -49,7 +48,7 @@ class LanguagesAccessibilityAndIntegrityTest extends \PHPUnit_Framework_TestCase
 
 		$class = $this->loadLanguageFileAndConstructClass( $langcode );
 
-		$baseToCompareInstance = ExtraneousLanguage::getInstance()->fetchByLanguageCode( 'en' );
+		$baseToCompareInstance = Lang::getInstance()->fetch( 'en' );
 		$targetLanguageInstance = $class;
 
 		$result = array_diff_key(
@@ -58,7 +57,7 @@ class LanguagesAccessibilityAndIntegrityTest extends \PHPUnit_Framework_TestCase
 		);
 
 		$this->assertTrue(
-			$result === array(),
+			$result === [],
 			"Asserts predfined property keys for the language pair EN - {$langcode} with {$this->formatAsString($result)}"
 		);
 	}
@@ -72,8 +71,8 @@ class LanguagesAccessibilityAndIntegrityTest extends \PHPUnit_Framework_TestCase
 
 		for ( $i=1; $i <= 12; $i++ ) {
 
-			$label = call_user_func( array( $class, 'getMonthLabel' ), $i );
-			$month = call_user_func( array( $class, 'findMonth' ), $label );
+			$label = call_user_func( [ $class, 'getMonthLabel' ], $i );
+			$month = call_user_func( [ $class, 'findMonth' ], $label );
 
 			$this->assertInternalType( 'string', $label );
 			$this->assertEquals( $i, $month );
@@ -82,23 +81,23 @@ class LanguagesAccessibilityAndIntegrityTest extends \PHPUnit_Framework_TestCase
 
 	public function languageCodeProvider() {
 
-		$provider = array();
+		$provider = [];
 
-		$languageCodes = array(
+		$languageCodes = [
 			'En', 'Ar', 'Arz', 'Ca', 'De', 'Es', 'Fi',
 			'Fr', 'He', 'Id', 'It', 'Nb', 'Nl', 'Pl',
 			'Pt', 'Ru', 'Sk', 'Zh-cn', 'Zh-tw'
-		);
+		];
 
 		foreach ( $languageCodes as $code ) {
-			$provider[] = array( $code );
+			$provider[] = [ $code ];
 		}
 
 		return $provider;
 	}
 
 	private function loadLanguageFileAndConstructClass( $langcode ) {
-		return ExtraneousLanguage::getInstance()->fetchByLanguageCode( $langcode );
+		return Lang::getInstance()->fetch( $langcode );
 	}
 
 	private function formatAsString( $expected ) {

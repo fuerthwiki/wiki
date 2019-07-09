@@ -20,11 +20,17 @@ class MySQLTableBuilder extends TableBuilder {
 	 */
 	public function getStandardFieldType( $fieldType ) {
 
-		$fieldTypes = array(
+		$charLongLength = FieldType::CHAR_LONG_LENGTH;
+
+		$fieldTypes = [
 			 // like page_id in MW page table
-			'id'         => 'INT(8) UNSIGNED',
+			'id'         => 'INT(11) UNSIGNED',
 			 // like page_id in MW page table
-			'id primary' => 'INT(8) UNSIGNED NOT NULL KEY AUTO_INCREMENT',
+			'id_primary' => 'INT(11) UNSIGNED NOT NULL KEY AUTO_INCREMENT',
+
+			 // (see postgres on the difference)
+			'id_unsigned' => 'INT(11) UNSIGNED',
+
 			 // like page_namespace in MW page table
 			'namespace'  => 'INT(11)',
 			 // like page_title in MW page table
@@ -32,16 +38,19 @@ class MySQLTableBuilder extends TableBuilder {
 			 // like iw_prefix in MW interwiki table
 			'interwiki'  => 'VARBINARY(32)',
 			'iw'         => 'VARBINARY(32)',
+			'hash'       => 'VARBINARY(40)',
 			 // larger blobs of character data, usually not subject to SELECT conditions
 			'blob'       => 'MEDIUMBLOB',
 			'text'       => 'TEXT',
 			'boolean'    => 'TINYINT(1)',
 			'double'     => 'DOUBLE',
 			'integer'    => 'INT(8)',
-			'char nocase'      => 'VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci',
-			'usage count'      => 'INT(8) UNSIGNED',
-			'integer unsigned' => 'INT(8) UNSIGNED'
-		);
+			'char_long'  => "VARBINARY($charLongLength)",
+			'char_nocase'      => 'VARCHAR(255) CHARSET utf8 COLLATE utf8_general_ci',
+			'char_long_nocase' => "VARCHAR($charLongLength) CHARSET utf8 COLLATE utf8_general_ci",
+			'usage_count'      => 'INT(8) UNSIGNED',
+			'integer_unsigned' => 'INT(8) UNSIGNED'
+		];
 
 		return FieldType::mapType( $fieldType, $fieldTypes );
 	}
@@ -53,35 +62,35 @@ class MySQLTableBuilder extends TableBuilder {
 	 *
 	 * {@inheritDoc}
 	 */
-	protected function doCreateTable( $tableName, array $tableOptions = null ) {
+	protected function doCreateTable( $tableName, array $attributes = null ) {
 
 		$tableName = $this->connection->tableName( $tableName );
 		$sql = '';
 
-		$fieldSql = array();
-		$fields = $tableOptions['fields'];
+		$fieldSql = [];
+		$fields = $attributes['fields'];
 
 		foreach ( $fields as $fieldName => $fieldType ) {
 			$fieldSql[] = "$fieldName " . $this->getStandardFieldType( $fieldType );
 		}
 
 		// @see $wgDBname
-		$dbName = isset( $this->configurations['wgDBname'] ) ? "`". $this->configurations['wgDBname'] . "`." : '';
+		$dbName = isset( $this->config['wgDBname'] ) ? "`". $this->config['wgDBname'] . "`." : '';
 
 		$sql .= 'CREATE TABLE ' . $dbName . $tableName . ' (' . implode( ',', $fieldSql ) . ') ';
-		$sql .= $this->createExtraSQLFromTableOptions( $tableOptions );
+		$sql .= $this->sql_from( $attributes );
 
 		$this->connection->query( $sql, __METHOD__ );
 	}
 
-	private function createExtraSQLFromTableOptions( array $tableOptions ) {
+	private function sql_from( array $attributes ) {
 
 		// $smwgFulltextSearchTableOptions can define:
 		// - 'mysql' => array( 'ENGINE=MyISAM, DEFAULT CHARSET=utf8' )
 		// - 'mysql' => array( 'ENGINE=MyISAM, DEFAULT CHARSET=utf8', 'WITH PARSER ngram' )
-		if ( isset( $tableOptions['fulltextSearchTableOptions']['mysql'] ) ) {
+		if ( isset( $attributes['fulltextSearchTableOptions']['mysql'] ) ) {
 
-			$tableOption = $tableOptions['fulltextSearchTableOptions']['mysql'];
+			$tableOption = $attributes['fulltextSearchTableOptions']['mysql'];
 
 			// By convention the first index has table specific relevance
 			if ( is_array( $tableOption ) ) {
@@ -93,8 +102,8 @@ class MySQLTableBuilder extends TableBuilder {
 
 		// @see $wgDBTableOptions, This replacement is needed for compatibility,
 		// http://bugs.mysql.com/bug.php?id=17501
-		if ( isset( $this->configurations['wgDBTableOptions'] ) ) {
-			return str_replace( 'TYPE', 'ENGINE', $this->configurations['wgDBTableOptions'] );
+		if ( isset( $this->config['wgDBTableOptions'] ) ) {
+			return str_replace( 'TYPE', 'ENGINE', $this->config['wgDBTableOptions'] );
 		}
 	}
 
@@ -105,17 +114,17 @@ class MySQLTableBuilder extends TableBuilder {
 	 *
 	 * {@inheritDoc}
 	 */
-	protected function doUpdateTable( $tableName, array $tableOptions = null ) {
+	protected function doUpdateTable( $tableName, array $attributes = null ) {
 
 		$tableName = $this->connection->tableName( $tableName );
 		$currentFields = $this->getCurrentFields( $tableName );
 
-		$fields = $tableOptions['fields'];
+		$fields = $attributes['fields'];
 		$position = 'FIRST';
 
 		// Loop through all the field definitions, and handle each definition
 		foreach ( $fields as $fieldName => $fieldType ) {
-			$this->doUpdateField( $tableName, $fieldName, $fieldType, $currentFields, $position, $tableOptions );
+			$this->doUpdateField( $tableName, $fieldName, $fieldType, $currentFields, $position, $attributes );
 
 			$position = "AFTER $fieldName";
 			$currentFields[$fieldName] = false;
@@ -135,7 +144,7 @@ class MySQLTableBuilder extends TableBuilder {
 		$sql = 'DESCRIBE ' . $tableName;
 
 		$res = $this->connection->query( $sql, __METHOD__ );
-		$currentFields = array();
+		$currentFields = [];
 
 		foreach ( $res as $row ) {
 			$type = strtoupper( $row->Type );
@@ -162,12 +171,21 @@ class MySQLTableBuilder extends TableBuilder {
 		return $currentFields;
 	}
 
-	private function doUpdateField( $tableName, $fieldName, $fieldType, $currentFields, $position, array $tableOptions ) {
+	private function doUpdateField( $tableName, $fieldName, $fieldType, $currentFields, $position, array $attributes ) {
+
+		if ( !isset( $this->activityLog[$tableName] ) ) {
+			$this->activityLog[$tableName] = [];
+		}
 
 		$fieldType = $this->getStandardFieldType( $fieldType );
+		$default = '';
+
+		if ( isset( $attributes['defaults'][$fieldName] ) ) {
+			$default = "DEFAULT '" . $attributes['defaults'][$fieldName] . "'";
+		}
 
 		if ( !array_key_exists( $fieldName, $currentFields ) ) {
-			$this->doCreateField( $tableName, $fieldName, $position, $fieldType );
+			$this->doCreateField( $tableName, $fieldName, $position, $fieldType, $default );
 		} elseif ( $currentFields[$fieldName] != $fieldType ) {
 			$this->doUpdateFieldType( $tableName, $fieldName, $position, $currentFields[$fieldName], $fieldType );
 		} else {
@@ -175,14 +193,27 @@ class MySQLTableBuilder extends TableBuilder {
 		}
 	}
 
-	private function doCreateField( $tableName, $fieldName, $position, $fieldType ) {
+	private function doCreateField( $tableName, $fieldName, $position, $fieldType, $default ) {
+
+		$this->activityLog[$tableName][$fieldName] = self::PROC_FIELD_NEW;
+
 		$this->reportMessage( "   ... creating field $fieldName ... " );
-		$this->connection->query( "ALTER TABLE $tableName ADD `$fieldName` $fieldType $position", __METHOD__ );
+		$this->connection->query( "ALTER TABLE $tableName ADD `$fieldName` $fieldType $default $position", __METHOD__ );
 		$this->reportMessage( "done.\n" );
 	}
 
 	private function doUpdateFieldType( $tableName, $fieldName, $position, $oldFieldType, $newFieldType ) {
-		$this->reportMessage( "   ... changing type of field $fieldName from '$oldFieldType' to '$newFieldType' ... " );
+
+		$this->activityLog[$tableName][$fieldName] = self::PROC_FIELD_UPD;
+
+		// Continue to alter the type but silence the output since we cannot get
+		// any better information from MySQL about the types hence we a hack the
+		// message
+		if ( strpos( $oldFieldType, 'binary' ) !== false && strpos( $newFieldType, 'CHARSET utf8 COLLATE utf8_general_ci' ) !== false ) {
+			$this->reportMessage( "   ... changing to a CHARSET utf8 field type ... " );
+		} else {
+			$this->reportMessage( "   ... changing type of field $fieldName from '$oldFieldType' to '$newFieldType' ... " );
+		}
 
 		// To avoid Error: 1068 Multiple primary key defined when a PRIMARY is involved
 		if ( strpos( $newFieldType, 'AUTO_INCREMENT' ) !== false ) {
@@ -201,6 +232,9 @@ class MySQLTableBuilder extends TableBuilder {
 	}
 
 	private function doDropField( $tableName, $fieldName ) {
+
+		$this->activityLog[$tableName][$fieldName] = self::PROC_FIELD_DROP;
+
 		$this->reportMessage( "   ... deleting obsolete field $fieldName ... " );
 		$this->connection->query( "ALTER TABLE $tableName DROP COLUMN `$fieldName`", __METHOD__ );
 		$this->reportMessage( "done.\n" );
@@ -213,15 +247,15 @@ class MySQLTableBuilder extends TableBuilder {
 	 *
 	 * {@inheritDoc}
 	 */
-	protected function doCreateIndicies( $tableName, array $indexOptions = null ) {
+	protected function doCreateIndices( $tableName, array $indexOptions = null ) {
 
-		$indicies = $indexOptions['indicies'];
+		$indices = $indexOptions['indices'];
 
-		// First remove possible obsolete indicies
-		$this->doDropObsoleteIndicies( $tableName, $indicies );
+		// First remove possible obsolete indices
+		$this->doDropObsoleteIndices( $tableName, $indices );
 
 		// Add new indexes.
-		foreach ( $indicies as $indexName => $index ) {
+		foreach ( $indices as $indexName => $index ) {
 			// If the index is an array, it contains the column
 			// name as first element, and index type as second one.
 			if ( is_array( $index ) ) {
@@ -236,19 +270,31 @@ class MySQLTableBuilder extends TableBuilder {
 		}
 	}
 
-	private function doDropObsoleteIndicies( $tableName, array &$indicies ) {
+	private function doDropObsoleteIndices( $tableName, array &$indices ) {
 
 		$tableName = $this->connection->tableName( $tableName );
-		$currentIndicies = $this->getIndexInfo( $tableName );
+		$currentIndices = $this->getIndexInfo( $tableName );
 
-		foreach ( $currentIndicies as $indexName => $indexColumn ) {
-			// Indicies may contain something like array( 'id', 'UNIQUE INDEX' )
-			$id = $this->recursive_array_search( $indexColumn, $indicies );
+		$idx = [];
+
+		// #2717
+		// The index info doesn't return length information (...idx1(200),idx2...)
+		// for an index hence to avoid a constant remove/create cycle we eliminate
+		// the length information from the temporary mirror when comparing new and
+		// old; of course we won't detect length changes!
+		foreach ( $indices as $k => $columns ) {
+			$idx[$k] = preg_replace("/\([^)]+\)/", "", $columns );
+		}
+
+		foreach ( $currentIndices as $indexName => $indexColumn ) {
+			// Indices may contain something like array( 'id', 'UNIQUE INDEX' )
+			$id = $this->recursive_array_search( $indexColumn, $idx );
 			if ( $id !== false || $indexName == 'PRIMARY' ) {
 				$this->reportMessage( "   ... index $indexColumn is fine.\n" );
 
 				if ( $id !== false ) {
-					unset( $indicies[$id] );
+					unset( $indices[$id] );
+					unset( $idx[$id] );
 				}
 
 			} else { // Duplicate or unrequired index.
@@ -266,7 +312,7 @@ class MySQLTableBuilder extends TableBuilder {
 	 */
 	private function getIndexInfo( $tableName ) {
 
-		$indices = array();
+		$indices = [];
 
 		$res = $this->connection->query( 'SHOW INDEX FROM ' . $tableName, __METHOD__ );
 
@@ -298,7 +344,7 @@ class MySQLTableBuilder extends TableBuilder {
 
 		$this->reportMessage( "   ... creating new index $columns ..." );
 
-		// @see MySQLTableBuilder::createExtraSQLFromTableOptions
+		// @see MySQLTableBuilder::createExtraSQLFromattributes
 		// @see https://dev.mysql.com/doc/refman/5.7/en/fulltext-search-ngram.html
 		if ( isset( $indexOptions['fulltextSearchTableOptions']['mysql'] ) ) {
 			$indexOption = $indexOptions['fulltextSearchTableOptions']['mysql'];
@@ -327,6 +373,30 @@ class MySQLTableBuilder extends TableBuilder {
 	 */
 	protected function doDropTable( $tableName ) {
 		$this->connection->query( 'DROP TABLE ' . $this->connection->tableName( $tableName ), __METHOD__ );
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	protected function doOptimize( $tableName ) {
+
+		$this->reportMessage( "Checking table $tableName ...\n" );
+
+		// https://dev.mysql.com/doc/refman/5.7/en/analyze-table.html
+		// Performs a key distribution analysis and stores the distribution for
+		// the named table or tables
+		$this->reportMessage( "   ... analyze" );
+		$this->connection->query( 'ANALYZE TABLE ' . $this->connection->tableName( $tableName ), __METHOD__ );
+
+		// https://dev.mysql.com/doc/refman/5.7/en/optimize-table.html
+		// Reorganizes the physical storage of table data and associated index data,
+		// to reduce storage space and improve I/O efficiency
+		$this->reportMessage( ", optimize " );
+		$this->connection->query( 'OPTIMIZE TABLE ' . $this->connection->tableName( $tableName ), __METHOD__ );
+
+		$this->reportMessage( "done.\n" );
 	}
 
 }

@@ -3,9 +3,9 @@
 namespace SMW\MediaWiki\Hooks;
 
 use SMW\ApplicationFactory;
-use SMW\EventHandler;
-use SMW\DIWikiPage;
 use SMW\DIProperty;
+use SMW\DIWikiPage;
+use SMW\EventHandler;
 use WikiPage;
 
 /**
@@ -49,7 +49,7 @@ class ArticlePurge {
 		$dispatchContext->set( 'title', $wikiPage->getTitle() );
 		$dispatchContext->set( 'context', 'ArticlePurge' );
 
-		if ( $settings->get( 'smwgFactboxCacheRefreshOnPurge' ) ) {
+		if ( $settings->isFlagSet( 'smwgFactboxFeatures', SMW_FACTBOX_PURGE_REFRESH ) ) {
 			EventHandler::getInstance()->getEventDispatcher()->dispatch(
 				'factbox.cache.delete',
 				$dispatchContext

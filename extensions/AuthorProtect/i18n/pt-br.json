@@ -3,18 +3,20 @@
 		"authors": [
 			"Cainamarques",
 			"Eduardo.mps",
-			"Giro720"
+			"Giro720",
+			"Iagocds",
+			"Eduardo Addad de Oliveira"
 		]
 	},
+	"action-authorprotect": "proteger contra não autores",
 	"authorprotect": "Proteger página contra não-autores",
 	"authorprotect-desc": "Permite ao autor de uma página protegê-la de outros utilizadores",
-	"authorprotect-notauthor": "Você não é o autor desta página",
+	"authorprotect-notauthor": "{{GENDER:$1|Você}} não é o {{GENDER:$1|autor}} desta página",
 	"authorprotect-confirm": "Alterar níveis de proteção",
 	"authorprotect-edit": "Restringir edição a autores",
 	"authorprotect-move": "Restringir a movimentação da página a autores",
 	"authorprotect-intro": "Use este formulário para bloquear a página contra não-autores",
-	"authorprotect-success": "Proteção com sucesso!",
-	"authorprotect-failure": "Proteção sem sucesso",
+	"authorprotect-success": "Proteção definida!",
 	"protect-level-author": "Proteger de não-autores",
 	"restriction-level-author": "Protegida pelo autor",
 	"right-authorprotect": "Proteger páginas de autoria própria",

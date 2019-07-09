@@ -38,7 +38,7 @@
         //add info to anchor tag for discovery by fancybox
         $(this)
           .data("fancybox-href", new_img_src)
-          .data("fancybox-title", img_title + '<a href="' + $(this).attr("href") + '">Details</a>')
+          .data("fancybox-title", img_title + '<a href="' + $(this).attr("href") + '">more info</a>')
           .addClass('fancybox');
     });
 

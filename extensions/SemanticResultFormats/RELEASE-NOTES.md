@@ -1,5 +1,93 @@
 These are the release notes for the [Semantic Result Formats](https://www.semantic-mediawiki.org/wiki/Extension:Semantic_Result_Formats) MediaWiki extension.
 
+## SRF 3.0.1
+
+Released on March 27, 2019.
+
+* [#391](https://github.com/SemanticMediaWiki/SemanticResultFormats/issues/391) Updates build tools, thus fixing a security issue for the "filtered" format (by Stephan Gambke)
+* [#444](https://github.com/SemanticMediaWiki/SemanticResultFormats/pull/444) Removed a feature switch, now always using `TraditionalImageGallery`; fixes a potential "method not found" warning both for the "gallery" format (by Stephan Gambke)
+* [#462](https://github.com/SemanticMediaWiki/SemanticResultFormats/pull/462) Removed usage of `$this->mFormat` which was no longer taken into account thus fixing the "listwidget" format (by Stephan Gambke)
+* [#471](https://github.com/SemanticMediaWiki/SemanticResultFormats/pull/471) Updated to secure versions of dependencies for the "filtered" format (by Stephan Gambke)
+* Updated translations (by translatewiki.net community)
+
+## SRF 3.0.0
+
+Released on October 12, 2018.
+
+* Minimum requirement for
+  * PHP changed to version 5.6 and later
+  * MediaWiki changed to version 1.27 and later
+  * Semantic MediaWiki changed to version 3.0 and later
+* #438 Added support for extension registration via "extension.json" (by James Hong Kong)  
+  → Now you have to use `wfLoadExtension( 'SemanticResultFormats' );` in the "LocalSettings.php" file to invoke the extension
+* Improved filtered format: More options, better test coverage, re-enabled by default (by Stephan Gambke)
+* Refactored vcard format: Mostly code improvements (by James Hong Kong)
+* [#248](https://github.com/SemanticMediaWiki/SemanticResultFormats/pull/248) Fixed localization of numbers in the math result formats (by James Hong Kong)
+* [#311](https://github.com/SemanticMediaWiki/SemanticResultFormats/pull/365) Improved display of user preference options on special page "Preferences" (by James Hong Kong)
+* [#365](https://github.com/SemanticMediaWiki/SemanticResultFormats/pull/365) Added support for the latest versions of the GraphViz extension (by Sam Wilson)
+* [#375](https://github.com/SemanticMediaWiki/SemanticResultFormats/pull/375) Fixed exposing of file dimensions in captions for the "gallery" format (by James Hong Kong)
+* [#384](https://github.com/SemanticMediaWiki/SemanticResultFormats/pull/384) Updated "fullcalendar" library as well as added the "list views" feature for the "eventcalendar" format (by Nischay Nahata and James Hong Kong)
+* [#435](https://github.com/SemanticMediaWiki/SemanticResultFormats/pull/435) Fixed time zone transitions (by James Hong Kong)
+* [#436](https://github.com/SemanticMediaWiki/SemanticResultFormats/pull/436) Removed the `template arguments` parameter of the "gallery" format (by Stephan Gambke)
+* Added support for installation together with the latest versions of the Maps extension (by Jeroen De Dauw)
+* Provided general code improvements as well as additional integrations tests for several result formats
+* Updated translations (by translatewiki.net community)
+
+## SRF 2.5.6
+
+Released on September 7, 2018.
+
+* 399: Fixes columnsearchinput field being always disabled for the "datatables" format (by Matthew A.Thompson)
+* 410 Added support for installation together with the latest versions of the Maps extension (by Jeroen De Dauw)
+
+## SRF 2.5.5
+
+Released on April 4, 2018.
+
+* #354: Fixed value filter labels for the "filtered" format (by Stephan Gambke)
+* #355: Fixed missing namespace in the "tagcloud" format (by Cindy Cicalese)
+* #361: Set stacking context for srf-gallery-slideshow in the "gallery" format (by Stephan Gambke)
+* #374: Fixed "select2" list elements rendering outside of containing element for the "filtered" format (by Matthew A.Thompson)
+* #379: Fixed result printers still using the Google Chart API ("googlechart", "googlepie") via http (by Karsten Hoffmeyer)
+* #383: Updated some "leaflet" and "select2" modules and fixed "package-lock.json" for the "fitered" format (by Stephan Gambke)
+
+## SRF 2.5.4
+
+Released on November 13, 2017.
+
+* #337: Fixed style issues when collapsing filters for the "filtered" format (by Stephan Gambke)
+* #343: Fixed style and layout fixes and optimise performance of the "filtered" format (by Stephan Gambke)
+* #346: Brings more performance improvements and adds missing system messages for the value filter of the "filtered" format (by Stephan Gambke)
+* #349: Removed `default` parameter from "earliest" and "latest" formats (by James Hong Kong)
+* #351: Added `map view marker icon property` and `map view marker icons` parameters to allow map icons depending on a printout value to the "filtered" format (by Stephan Gambke)
+* Made map assets load over HTTPS for the "exhibit" format (by Máté Szabó)
+
+## SRF 2.5.3
+
+Released on October 25, 2017.
+
+* #293: Fixes resource loading for the "timeline" format (by James Hong Kong)
+* #295: Fixes issues with subobject for the "timeline" format (by James Hong Kong)
+* #299: Brings improvements to the "filtered" format as authored with the following pull requests: (by Stephan Gambke)
+    - #224: Makes radio buttons belong to the same button group
+    - #278: Adds a multi-select dropdown or similar for value filters
+    - #286: Brings a reworked number filter
+    - #291: Fixes `list view template` to actually show the template instead of defaulting to a table
+* #300: Brings improvements and fixes to the "filtered" format: (by Stephan Gambke)
+    - Brings back checkboxes for value filter with only few values  
+    - Brings new query parameter ` |+value filter max checkboxes`  
+    - Allows for easier installation of "data-values/geo"
+* #302: Fixes error messages shown in the instance language instead of the user language for the "filtered" format (by Stephan Gambke)
+* #305: Fixes "SRF\Filtered\Filtered::setParser() must be an instance of Parser..." for the "filtered" format (by Stephan Gambke)
+* Fixes issues with HTML-encoded values sent by JavaScript for the "filtered" format (by Stephan Gambke)
+* #324: Brings improvements to the "filtered" format as authored with the following pull requests: (by Stephan Gambke)  
+    - #318: Wrap input elements of the Value filter (checkboxes and radioboxes) in label elements. This way they will also be triggered when only the label text is clicked.
+    - #322: Show a spinner while filtering. This will block users from triggering further filter events while filtering is still ongoing.
+    - #323: Adds printout parameter`|+show if undefined`. Setting it makes filters show a result item even if the printout does not contain a value.
+* #328: Brings useability fixes to the "filtered" foramat like the fix for the styling of Value filter for long labels as well as the fix for the slider grid when showing less than 4 step values (by Stephan Gambke)
+* #331: Switches the "filtered" format to use Less instead of CSS (by Stephan Gambke)
+* #334: Adds an On/Off switch for filters to the "filtered" format (by Stephan Gambke)
+
 ## SRF 2.5.2
 
 Released on August 17, 2017.
@@ -8,7 +96,7 @@ Released on August 17, 2017.
 * #269: Fixed bug #263: Fix the `link` and `userparam` parameters on the "tree" format and provide tests for it (by Stephan Gambke)
 * #276: Use type `parser-html` for JsonScript tests of the "tree" format (by Stephan Gambke)
 * #284: Fixed rendering of the "calendar" format in Internet Explorer (by kwji)
-*	#285: Add `+hide` for all views of the "filtered" format (by Stephan Gambke)
+* #285: Add `+hide` for all views of the "filtered" format (by Stephan Gambke)
 * Provided translation updates (by translatewiki.net community)
 
 ## SRF 2.5.1
@@ -39,6 +127,12 @@ Released on June 13, 2017.
 * Fixed jplayer file path used by media format (by Stephan Gambke)
 * Fixed gallery format to ensure compatibility with MW 1.23+ (by James Hong Kong)
 * Provided translation updates (by translatewiki.net community)
+
+## SRF 2.4.3
+
+Released on May 7, 2017
+
+* #199: Fixed uncaught TypeError on 'in' operator to search for 'length' for "eventcalendar" format (by gesinn.it)
 
 ## SRF 2.4.2
 

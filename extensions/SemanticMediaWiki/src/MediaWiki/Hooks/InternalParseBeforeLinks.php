@@ -4,7 +4,8 @@ namespace SMW\MediaWiki\Hooks;
 
 use Parser;
 use SMW\ApplicationFactory;
-use SMW\InTextAnnotationParser;
+use SMW\Parser\InTextAnnotationParser;
+use StripState;
 
 /**
  * Hook: InternalParseBeforeLinks is used to process the expanded wiki
@@ -25,7 +26,7 @@ use SMW\InTextAnnotationParser;
  *
  * @author mwjames
  */
-class InternalParseBeforeLinks {
+class InternalParseBeforeLinks extends HookHandler {
 
 	/**
 	 * @var Parser
@@ -33,26 +34,19 @@ class InternalParseBeforeLinks {
 	private $parser;
 
 	/**
-	 * @var array
+	 * @var StripState
 	 */
-	private $enabledSpecialPage = array();
+	private $stripState;
 
 	/**
 	 * @since 1.9
 	 *
 	 * @param Parser $parser
+	 * @param StripState $stripState
 	 */
-	public function __construct( Parser &$parser ) {
+	public function __construct( Parser &$parser, $stripState ) {
 		$this->parser = $parser;
-	}
-
-	/**
-	 * @since 2.5
-	 *
-	 * @param array|boolean $enabledSpecialPage
-	 */
-	public function setEnabledSpecialPage( $enabledSpecialPage ) {
-		$this->enabledSpecialPage = (array)$enabledSpecialPage;
+		$this->stripState = $stripState;
 	}
 
 	/**
@@ -94,7 +88,7 @@ class InternalParseBeforeLinks {
 		}
 
 		// #2529
-		foreach ( $this->enabledSpecialPage as $specialPage ) {
+		foreach ( $this->getOption( 'smwgEnabledSpecialPage', [] ) as $specialPage ) {
 			if ( is_string( $specialPage ) && $title->isSpecial( $specialPage ) ) {
 				return true;
 			}
@@ -125,10 +119,21 @@ class InternalParseBeforeLinks {
 			$parserData
 		);
 
-		$inTextAnnotationParser->setRedirectTarget( $this->getRedirectTarget() );
+		$stripMarkerDecoder = $applicationFactory->newMwCollaboratorFactory()->newStripMarkerDecoder(
+			$this->stripState
+		);
+
+		$inTextAnnotationParser->setStripMarkerDecoder(
+			$stripMarkerDecoder
+		);
+
+		$inTextAnnotationParser->setRedirectTarget(
+			$this->getRedirectTarget()
+		);
+
 		$inTextAnnotationParser->parse( $text );
 
-		$parserData->setSemanticDataStateToParserOutputProperty();
+		$parserData->markParserOutput();
 
 		return true;
 	}

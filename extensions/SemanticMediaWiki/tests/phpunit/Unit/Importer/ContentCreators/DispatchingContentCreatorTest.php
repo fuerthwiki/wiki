@@ -1,9 +1,10 @@
 <?php
 
-namespace SMW\TestsImporter\ContentCreators;
+namespace SMW\Tests\Importer\ContentCreators;
 
 use SMW\Importer\ContentCreators\DispatchingContentCreator;
 use SMW\Importer\ImportContents;
+use SMW\Tests\PHPUnitCompat;
 
 /**
  * @covers \SMW\Importer\ContentCreators\DispatchingContentCreator
@@ -15,6 +16,8 @@ use SMW\Importer\ImportContents;
  * @author mwjames
  */
 class DispatchingContentCreatorTest extends \PHPUnit_Framework_TestCase {
+
+	use PHPUnitCompat;
 
 	private $wikiImporter;
 	private $messageReporter;
@@ -39,7 +42,7 @@ class DispatchingContentCreatorTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertInstanceOf(
 			'\SMW\Importer\ContentCreators\DispatchingContentCreator',
-			new DispatchingContentCreator( array() )
+			new DispatchingContentCreator( [] )
 		);
 	}
 
@@ -58,9 +61,9 @@ class DispatchingContentCreatorTest extends \PHPUnit_Framework_TestCase {
 			->will( $this->returnValue( true ) );
 
 		$instance = new DispatchingContentCreator(
-			array(
+			[
 				$contentCreator
-			)
+			]
 		);
 
 		$this->assertTrue(
@@ -82,14 +85,14 @@ class DispatchingContentCreatorTest extends \PHPUnit_Framework_TestCase {
 			->will( $this->returnValue( true ) );
 
 		$contentCreator->expects( $this->any() )
-			->method( 'doCreateFrom' )
+			->method( 'create' )
 			->with( $this->equalTo( $importContents ) )
 			->will( $this->returnValue( true ) );
 
 		$instance = new DispatchingContentCreator(
-			array(
+			[
 				$contentCreator
-			)
+			]
 		);
 
 		$instance->setMessageReporter(
@@ -97,7 +100,7 @@ class DispatchingContentCreatorTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$this->assertTrue(
-			$instance->doCreateFrom( $importContents )
+			$instance->create( $importContents )
 		);
 	}
 
@@ -115,16 +118,16 @@ class DispatchingContentCreatorTest extends \PHPUnit_Framework_TestCase {
 			->will( $this->returnValue( false ) );
 
 		$contentCreator->expects( $this->never() )
-			->method( 'doCreateFrom' );
+			->method( 'create' );
 
 		$instance = new DispatchingContentCreator(
-			array(
+			[
 				$contentCreator
-			)
+			]
 		);
 
 		$this->setExpectedException( 'RuntimeException' );
-		$instance->doCreateFrom( $importContents );
+		$instance->create( $importContents );
 	}
 
 }

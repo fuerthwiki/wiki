@@ -2,11 +2,9 @@
 
 namespace SMW\MediaWiki\Specials\Admin;
 
-use SMW\ApplicationFactory;
-use SMW\MediaWiki\Renderer\HtmlFormRenderer;
-use SMW\Message;
-use WebRequest;
 use Html;
+use SMW\MediaWiki\Renderer\HtmlFormRenderer;
+use WebRequest;
 
 /**
  * @license GNU GPL v2+
@@ -31,6 +29,24 @@ class SupportListTaskHandler extends TaskHandler {
 	}
 
 	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function getSection() {
+		return self::SECTION_SUPPORT;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * {@inheritDoc}
+	 */
+	public function hasAction() {
+		return false;
+	}
+
+	/**
 	 * @since 2.5
 	 *
 	 * {@inheritDoc}
@@ -46,36 +62,55 @@ class SupportListTaskHandler extends TaskHandler {
 	 */
 	public function getHtml() {
 
-		$html = $this->htmlFormRenderer
+		$html = $this->createSupportForm() . $this->createRegistryForm();
+		$html .= Html::element( 'p', [], '' );
+
+		return Html::rawElement( 'div', [], $html );
+	}
+
+	/**
+	 * @since 2.5
+	 *
+	 * @return string
+	 */
+	public function createSupportForm() {
+		$this->htmlFormRenderer
+			->setName( 'support' )
+			->addHeader( 'h3', $this->msg('smw-admin-support' ) )
+			->addParagraph( $this->msg( 'smw-admin-supportdocu' ) )
+			->addParagraph(
+				Html::rawElement( 'ul', [],
+					Html::rawElement( 'li', [], $this->msg( 'smw-admin-installfile' ) ) .
+					Html::rawElement( 'li', [], $this->msg( 'smw-admin-smwhomepage' ) ) .
+					Html::rawElement( 'li', [], $this->msg( 'smw-admin-bugsreport' ) ) .
+					Html::rawElement( 'li', [], $this->msg( 'smw-admin-questions' ) )
+				)
+			);
+
+		return $this->htmlFormRenderer->getForm();
+	}
+
+	/**
+	 * @since 2.5
+	 *
+	 * @return string
+	 */
+	public function createRegistryForm() {
+
+		$this->htmlFormRenderer
 			->setName( 'announce' )
 			->setMethod( 'get' )
 			->setActionUrl( 'https://wikiapiary.com/wiki/WikiApiary:Semantic_MediaWiki_Registry' )
-			->addHeader( 'h2', $this->getMessageAsString( 'smw-admin-announce' ) )
-			->addParagraph( $this->getMessageAsString( 'smw-admin-announce-text' ) )
+			->addHeader( 'h3', $this->msg( 'smw-admin-announce' ) )
+			->addParagraph( $this->msg( 'smw-admin-announce-text' ) )
 			->addSubmitButton(
-				$this->getMessageAsString( 'smw-admin-announce' ),
-				array(
+				$this->msg( 'smw-admin-announce' ),
+				[
 					'class' => ''
-				)
-			)
-			->getForm();
+				]
+			);
 
-		$html .= Html::element( 'p', array(), '' );
-
-		$html .= $this->htmlFormRenderer
-			->setName( 'support' )
-			->addHeader( 'h2', $this->getMessageAsString('smw-admin-support' ) )
-			->addParagraph( $this->getMessageAsString( 'smw-admin-supportdocu' ) )
-			->addParagraph(
-				Html::rawElement( 'ul', array(),
-					Html::rawElement( 'li', array(), $this->getMessageAsString( 'smw-admin-installfile' ) ) .
-					Html::rawElement( 'li', array(), $this->getMessageAsString( 'smw-admin-smwhomepage' ) ) .
-					Html::rawElement( 'li', array(), $this->getMessageAsString( 'smw-admin-bugsreport' ) ) .
-					Html::rawElement( 'li', array(), $this->getMessageAsString( 'smw-admin-questions' ) )
-				) )
-			->getForm();
-
-		return Html::rawElement( 'div', array(), $html );
+		return $this->htmlFormRenderer->getForm();
 	}
 
 	/**

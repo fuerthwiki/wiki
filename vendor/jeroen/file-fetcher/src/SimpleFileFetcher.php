@@ -1,5 +1,7 @@
 <?php
 
+declare( strict_types = 1 );
+
 namespace FileFetcher;
 
 /**
@@ -7,20 +9,16 @@ namespace FileFetcher;
  *
  * @since 3.0
  *
- * @licence GNU GPL v2+
+ * @licence BSD-3-Clause
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class SimpleFileFetcher implements FileFetcher {
 
 	/**
 	 * @see FileFetcher::fetchFile
-	 *
-	 * @param string $fileUrl
-	 *
-	 * @return string
 	 * @throws FileFetchingException
 	 */
-	public function fetchFile( $fileUrl ) {
+	public function fetchFile( string $fileUrl ): string {
 		$fileContent = @file_get_contents( $fileUrl );
 
 		if ( is_string( $fileContent ) ) {

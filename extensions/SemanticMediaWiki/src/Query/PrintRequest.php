@@ -3,13 +3,13 @@
 namespace SMW\Query;
 
 use InvalidArgumentException;
+use SMW\DataValues\PropertyChainValue;
 use SMW\Localizer;
+use SMW\Query\PrintRequest\Deserializer;
+use SMW\Query\PrintRequest\Formatter;
+use SMW\Query\PrintRequest\Serializer;
 use SMWDataValue;
 use SMWPropertyValue as PropertyValue;
-use SMW\DataValues\PropertyChainValue;
-use SMW\Query\PrintRequest\Deserializer;
-use SMW\Query\PrintRequest\Serializer;
-use SMW\Query\PrintRequest\Formatter;
 use Title;
 
 /**
@@ -61,7 +61,20 @@ class PrintRequest {
 
 	protected $m_hash = false; // cache your hash (currently useful since SMWQueryResult accesses the hash many times, might be dropped at some point)
 
-	protected $m_params = array();
+	protected $m_params = [];
+
+	/**
+	 * Identifies whether this instance was used/added and is diconnected to
+	 * the original query where it was added.
+	 *
+	 * Mostly used in cases where QueryProcessor::addThisPrintout was executed.
+	 */
+	private $isDisconnected = false;
+
+	/**
+	 * Whether the label was marked with an extra `#` identifier.
+	 */
+	private $labelMarker = false;
 
 	/**
 	 * Create a print request.
@@ -101,6 +114,38 @@ class PrintRequest {
 	}
 
 	/**
+	 * @since 3.0
+	 *
+	 * @param boolean $isDisconnected
+	 */
+	public function isDisconnected( $isDisconnected ) {
+		$this->isDisconnected = (bool)$isDisconnected;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $text
+	 */
+	public function markThisLabel( $text ) {
+
+		if ( $this->m_mode !== self::PRINT_THIS ) {
+			return;
+		}
+
+		$this->labelMarker = $text !== '' && $text{0} === '#';
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @return boolean
+	 */
+	public function hasLabelMarker() {
+		return $this->labelMarker;
+	}
+
+	/**
 	 * @since 2.5
 	 *
 	 * @param integer $mode
@@ -116,6 +161,26 @@ class PrintRequest {
 	}
 
 	public function getLabel() {
+		return $this->m_label;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @return string
+	 */
+	public function getCanonicalLabel() {
+
+		if ( $this->m_mode === self::PRINT_PROP ) {
+			return $this->m_data->getDataItem()->getCanonicalLabel();
+		} elseif ( $this->m_mode === self::PRINT_CHAIN ) {
+			return $this->m_data->getDataItem()->getString();
+		} elseif ( $this->m_mode === self::PRINT_CATS ) {
+			return Localizer::getInstance()->getNamespaceTextById( NS_CATEGORY );
+		} elseif ( $this->m_mode === self::PRINT_CCAT ) {
+			return $this->m_data->getPrefixedText();
+		}
+
 		return $this->m_label;
 	}
 
@@ -213,6 +278,14 @@ class PrintRequest {
 	 *                include the extra print request parameters
 	 */
 	public function getSerialisation( $showparams = false ) {
+
+		// In case of  disconnected instance (QueryProcessor::addThisPrintout as
+		// part of a post-processing) return an empty serialization when the
+		// mainLabel is available to avoid an extra `?...`
+		if ( $this->isMode( self::PRINT_THIS ) && $this->isDisconnected ) {
+			return '';
+		}
+
 		return Serializer::serialize( $this, $showparams );
 	}
 

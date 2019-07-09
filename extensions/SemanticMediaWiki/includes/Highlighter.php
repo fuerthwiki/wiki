@@ -15,25 +15,60 @@ use SMWOutputs;
  */
 class Highlighter {
 
-	// Highlighter ID for no types
-	const TYPE_NOTYPE    = 0;
-	// Highlighter ID for properties
-	const TYPE_PROPERTY  = 1;
-	// Highlighter ID for text
-	const TYPE_TEXT      = 2;
-	// Highlighter ID for quantities
-	const TYPE_QUANTITY  = 3;
-	//  Highlighter ID for warnings
-	const TYPE_WARNING   = 4;
-	//  Highlighter ID for informations
-	const TYPE_INFO      = 5;
-	//  Highlighter ID for help
-	const TYPE_HELP      = 6;
-	//  Highlighter ID for notes
-	const TYPE_NOTE      = 7;
-	//  Highlighter ID for service links
-	const TYPE_SERVICE   = 8;
-	const TYPE_REFERENCE = 9;
+	/**
+	 * Highlighter ID for no types
+	 */
+	const TYPE_NOTYPE = 0;
+
+	/**
+	 * Highlighter ID for properties
+	 */
+	const TYPE_PROPERTY = 1;
+
+	/**
+	 * Highlighter ID for text
+	 */
+	const TYPE_TEXT = 2;
+
+	/**
+	 * Highlighter ID for quantities
+	 */
+	const TYPE_QUANTITY = 3;
+
+	/**
+	 * Highlighter ID for warnings
+	 */
+	const TYPE_WARNING = 4;
+
+	/**
+	 * Highlighter ID for error
+	 */
+	const TYPE_ERROR = 5;
+
+	/**
+	 * Highlighter ID for information
+	 */
+	const TYPE_INFO = 6;
+
+	/**
+	 * Highlighter ID for help
+	 */
+	const TYPE_HELP = 7;
+
+	/**
+	 * Highlighter ID for notes
+	 */
+	const TYPE_NOTE = 8;
+
+	/**
+	 * Highlighter ID for service links
+	 */
+	const TYPE_SERVICE = 9;
+
+	/**
+	 * Highlighter ID for reference links
+	 */
+	const TYPE_REFERENCE = 10;
 
 	/**
 	 * @var array $options
@@ -81,14 +116,35 @@ class Highlighter {
 	 * @since 3.0
 	 *
 	 * @param string $text
+	 * @param string|null $type
+	 *
+	 * @return booelan
+	 */
+	public static function hasHighlighterClass( $text, $type = null ) {
+
+		if ( strpos( $text, 'smw-highlighter' ) === false ) {
+			return false;
+		}
+
+		if ( $type !== null ) {
+			return strpos( $text, 'data-type="' . self::getTypeId( $type ) . '"' ) !== false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $text
 	 *
 	 * @return string
 	 */
 	public static function decode( $text ) {
 		// #2347, '[' is handled by the MediaWiki parser/sanitizer itself
 		return str_replace(
-			array( '&amp;', '&lt;', '&gt;', '&#160;', '<nowiki>', '</nowiki>' ),
-			array( '&', '<', '>', ' ', '', '' ),
+			[ '&amp;', '&lt;', '&gt;', '&#160;', '<nowiki>', '</nowiki>' ],
+			[ '&', '<', '>', ' ', '', '' ],
 			$text
 		);
 	}
@@ -146,6 +202,8 @@ class Highlighter {
 			return self::TYPE_QUANTITY;
 			case 'warning':
 			return self::TYPE_WARNING;
+			case 'error':
+			return self::TYPE_ERROR;
 			case 'info':
 			return self::TYPE_INFO;
 			case 'help':
@@ -183,37 +241,48 @@ class Highlighter {
 		}
 
 		$language = is_string( $this->language ) ? $this->language : Message::USER_LANGUAGE;
+		$style = [];
+
+		if ( isset( $this->options['style'] ) ) {
+			$style = [ 'style' => $this->options['style'] ];
+		}
 
 		// #1875
 		// title attribute contains stripped content to allow for a display in
 		// no-js environments, the tooltip will remove the element once it is
 		// loaded
+		$title = $this->title( $this->options['content'], $language );
 
-		return Html::rawElement(
+		$html = Html::rawElement(
 			'span',
-			array(
+			[
 				'class'        => 'smw-highlighter',
 				'data-type'    => $this->options['type'],
 				'data-content' => isset( $this->options['data-content'] ) ? $this->options['data-content'] : null,
 				'data-state'   => $this->options['state'],
 				'data-title'   => Message::get( $this->options['title'], Message::TEXT, $language ),
-				'title'        => $this->createStrippedContentFrom( $this->options['content'], $language )
-			), Html::rawElement(
-					'span',
-					array(
-						'class' => $captionclass
-					), $this->options['caption']
-				) . Html::rawElement(
-					'div',
-					array(
-						'class' => 'smwttcontent'
-					), htmlspecialchars_decode( $this->options['content'] )
-				)
-			);
+				'title'        => $title
+			] + $style,
+			Html::rawElement(
+				'span',
+				[
+					'class' => $captionclass
+				],
+				$this->options['caption']
+			) . Html::rawElement(
+				'span',
+				[
+					'class' => 'smwttcontent'
+				],
+				htmlspecialchars_decode( $this->options['content'] )
+			)
+		);
+
+		return $html;
 	}
 
 	/**
-	 * Returns initial configuation settings
+	 * Returns initial configuration settings
 	 *
 	 * @note You could create a class per entity type but does this
 	 * really make sense just to get some configuration parameters?
@@ -225,7 +294,7 @@ class Highlighter {
 	 * @return array
 	 */
 	private function getTypeConfiguration( $type ) {
-		$settings = array();
+		$settings = [];
 		$settings['type'] = $type;
 		$settings['caption'] = '';
 		$settings['content'] = '';
@@ -256,6 +325,11 @@ class Highlighter {
 				$settings['title'] = 'smw-ui-tooltip-title-warning';
 				$settings['captionclass'] = 'smwtticon warning';
 				break;
+			case self::TYPE_ERROR:
+				$settings['state'] = 'inline';
+				$settings['title'] = 'smw-ui-tooltip-title-error';
+				$settings['captionclass'] = 'smwtticon error';
+				break;
 			case self::TYPE_SERVICE:
 				$settings['state'] = 'persistent';
 				$settings['title'] = 'smw-ui-tooltip-title-service';
@@ -282,15 +356,15 @@ class Highlighter {
 		return $settings;
 	}
 
-	private function createStrippedContentFrom( $content, $language ) {
+	private function title( $content, $language ) {
 
 		// Pre-process the content when used as title to avoid breaking elements
 		// (URLs etc.)
 		if ( strpos( $content, '[' ) !== false || strpos( $content, '//' ) !== false ) {
-			$content = Message::get( array( 'smw-parse', $content ), Message::PARSE, $language );
+			$content = Message::get( [ 'smw-parse', $content ], Message::PARSE, $language );
 		}
 
-		return strip_tags( htmlspecialchars_decode( str_replace( "[", "&#91;", $content ) ) );
+		return strip_tags( htmlspecialchars_decode( str_replace( [ "[", '&#160;' ], [ "&#91;", ' ' ], $content ) ) );
 	}
 
 }

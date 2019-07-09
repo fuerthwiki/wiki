@@ -2,7 +2,6 @@
 
 namespace SMW\Tests\MediaWiki\Hooks;
 
-use SMW\ApplicationFactory;
 use SMW\MediaWiki\Hooks\TitleMoveComplete;
 use SMW\Tests\TestEnvironment;
 use SMW\Tests\Utils\Mock\MockSuperUser;
@@ -28,11 +27,11 @@ class TitleMoveCompleteTest extends \PHPUnit_Framework_TestCase {
 		$this->testEnvironment = new TestEnvironment();
 		$this->user = new MockSuperUser();
 
-		$settings = array(
-			'smwgCacheType'             => 'hash',
+		$settings = [
+			'smwgMainCacheType'             => 'hash',
 			'smwgAutoRefreshOnPageMove' => true,
-			'smwgNamespacesWithSemanticLinks' => array( NS_MAIN => true, NS_HELP => false )
-		);
+			'smwgNamespacesWithSemanticLinks' => [ NS_MAIN => true, NS_HELP => false ]
+		];
 
 		$this->testEnvironment->withConfiguration(
 			$settings

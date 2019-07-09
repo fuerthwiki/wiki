@@ -5,7 +5,7 @@ namespace SMW\SQLStore\QueryDependency;
 use SMW\ApplicationFactory;
 use SMW\DIProperty;
 use SMW\DIWikiPage;
-use SMW\PropertyHierarchyLookup;
+use SMW\HierarchyLookup;
 use SMW\Query\Language\ClassDescription;
 use SMW\Query\Language\ConceptDescription;
 use SMW\Query\Language\Conjunction;
@@ -13,8 +13,6 @@ use SMW\Query\Language\Disjunction;
 use SMW\Query\Language\SomeProperty;
 use SMW\Query\Language\ThingDescription;
 use SMW\Query\Language\ValueDescription;
-use SMW\Store;
-use SMWQuery as Query;
 use SMWQueryResult as QueryResult;
 
 /**
@@ -26,9 +24,9 @@ use SMWQueryResult as QueryResult;
 class QueryResultDependencyListResolver {
 
 	/**
-	 * @var PropertyHierarchyLookup
+	 * @var HierarchyLookup
 	 */
-	private $propertyHierarchyLookup;
+	private $hierarchyLookup;
 
 	/**
 	 * Specifies a list of property keys to be excluded from the detection
@@ -36,16 +34,16 @@ class QueryResultDependencyListResolver {
 	 *
 	 * @var array
 	 */
-	private $propertyDependencyExemptionlist = array();
+	private $propertyDependencyExemptionlist = [];
 
 	/**
 	 * @since 2.3
 	 *
 	 * @param $queryResult Can be a string for when format=Debug
-	 * @param PropertyHierarchyLookup $propertyHierarchyLookup
+	 * @param HierarchyLookup $hierarchyLookup
 	 */
-	public function __construct( PropertyHierarchyLookup $propertyHierarchyLookup ) {
-		$this->propertyHierarchyLookup = $propertyHierarchyLookup;
+	public function __construct( HierarchyLookup $hierarchyLookup ) {
+		$this->hierarchyLookup = $hierarchyLookup;
 	}
 
 	/**
@@ -63,13 +61,11 @@ class QueryResultDependencyListResolver {
 
 	/**
 	 * At the point where the QueryResult instantiates results by means of the
-	 * ResultArray, record the objects with the help of the EntityListAccumulator.
-	 * Processing is depending and various factors which could be to early with
-	 * the row instance is not yet being resolved.
+	 * ResultArray, record the objects with the help of the ResolverJournal.
 	 *
-	 * QueryDependencyLinksStore::updateDependencyList is executed in deferred
-	 * mode therefore allows a "late" access to track dependencies of column/row
-	 * entities without having to resolve the QueryResult object on its own, see
+	 * When the `... updateDependencies` is executed in deferred mode it allows
+	 * a "late" access to track dependencies of column/row entities without having
+	 * to resolve the QueryResult object on its own, see
 	 * ResultArray::getNextDataValue/ResultArray::getNextDataItem.
 	 *
 	 * @since 2.4
@@ -81,13 +77,13 @@ class QueryResultDependencyListResolver {
 	public function getDependencyListByLateRetrievalFrom( $queryResult ) {
 
 		if ( !$this->canResolve( $queryResult ) ) {
-			return array();
+			return [];
 		}
 
-		$inMemoryEntityProcessList = $queryResult->getInMemoryEntityProcessList();
+		$resolverJournal = $queryResult->getResolverJournal();
 
-		$dependencyList = $inMemoryEntityProcessList->getEntityList();
-		$inMemoryEntityProcessList->prune();
+		$dependencyList = $resolverJournal->getEntityList();
+		$resolverJournal->prune();
 
 		return $dependencyList;
 	}
@@ -102,14 +98,14 @@ class QueryResultDependencyListResolver {
 	public function getDependencyListFrom( $queryResult ) {
 
 		if ( !$this->canResolve( $queryResult ) ) {
-			return array();
+			return [];
 		}
 
 		$description = $queryResult->getQuery()->getDescription();
 
-		$dependencySubjectList = array(
+		$dependencySubjectList = [
 			$queryResult->getQuery()->getContextPage()
-		);
+		];
 
 		// Find entities described by the query
 		$this->doResolveDependenciesFromDescription(
@@ -165,7 +161,7 @@ class QueryResultDependencyListResolver {
 		if ( $description instanceof ClassDescription ) {
 			foreach ( $description->getCategories() as $category ) {
 
-				if ( $this->propertyHierarchyLookup->hasSubcategoryFor( $category ) ) {
+				if ( $this->hierarchyLookup->hasSubcategory( $category ) ) {
 					$this->doMatchSubcategory( $subjects, $category );
 				}
 
@@ -193,7 +189,7 @@ class QueryResultDependencyListResolver {
 
 		$subject = $property->getCanonicalDiWikiPage();
 
-		if ( $this->propertyHierarchyLookup->hasSubpropertyFor( $property ) ) {
+		if ( $this->hierarchyLookup->hasSubproperty( $property ) ) {
 			$this->doMatchSubproperty( $subjects, $subject, $property );
 		}
 
@@ -208,20 +204,19 @@ class QueryResultDependencyListResolver {
 	private function doMatchSubcategory( &$subjects, DIWikiPage $category ) {
 
 		$hash = $category->getHash();
-		$subcategories = array();
+		$subcategories = [];
 
 		// #1713
 		// Safeguard against a possible category (or redirect thereof) to point
 		// to itself by relying on tracking the hash of already inserted objects
 		if ( !isset( $subjects[$hash] ) ) {
-			$subcategories = $this->propertyHierarchyLookup->findSubcategoryListFor( $category );
+			$subcategories = $this->hierarchyLookup->getConsecutiveHierarchyList( $category );
 		}
 
 		foreach ( $subcategories as $subcategory ) {
-
 			$subjects[$subcategory->getHash()] = $subcategory;
 
-			if ( $this->propertyHierarchyLookup->hasSubcategoryFor( $subcategory ) ) {
+			if ( $this->hierarchyLookup->hasSubcategory( $subcategory ) ) {
 				$this->doMatchSubcategory( $subjects, $subcategory );
 			}
 		}
@@ -229,7 +224,7 @@ class QueryResultDependencyListResolver {
 
 	private function doMatchSubproperty( &$subjects, $subject, DIProperty $property ) {
 
-		$subproperties = array();
+		$subproperties = [];
 
 		// Using the DBKey as short-cut, as we don't expect to match sub-properties for
 		// pre-defined properties instead it should be sufficient for user-defined
@@ -237,17 +232,19 @@ class QueryResultDependencyListResolver {
 		if (
 			!isset( $subjects[$subject->getHash()] ) &&
 			!isset( $this->propertyDependencyExemptionlist[$subject->getDBKey()] ) ) {
-			$subproperties = $this->propertyHierarchyLookup->findSubpropertListFor( $property );
+			$subproperties = $this->hierarchyLookup->getConsecutiveHierarchyList( $property );
 		}
 
 		foreach ( $subproperties as $subproperty ) {
 
-			if ( isset( $this->propertyDependencyExemptionlist[$subproperty->getDBKey()] ) ) {
+			if ( isset( $this->propertyDependencyExemptionlist[$subproperty->getKey()] ) ) {
 				continue;
 			}
 
-			$subjects[$subproperty->getHash()] = $subproperty;
-			$this->doMatchProperty( $subjects, new DIProperty( $subproperty->getDBKey() ) );
+			$subject = $subproperty->getCanonicalDiWikiPage();
+			$subjects[$subject->getHash()] = $subject;
+
+			$this->doMatchProperty( $subjects, $subproperty );
 		}
 	}
 
@@ -274,7 +271,7 @@ class QueryResultDependencyListResolver {
 			new DIProperty( '_CONC' )
 		);
 
-		if ( $value === null || $value === array() ) {
+		if ( $value === null || $value === [] ) {
 			return new ThingDescription();
 		}
 

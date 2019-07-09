@@ -9,20 +9,22 @@ use Title;
  *
  * @since 0.1
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0-or-later
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class TitleValidator extends ValueValidatorObject {
 
 	/**
 	 * @since 0.1
-	 * @var boolean
+	 *
+	 * @var bool
 	 */
 	protected $hasToExist = true;
 
 	/**
 	 * @since 0.1
-	 * @param boolean $hasToExist
+	 *
+	 * @param bool $hasToExist
 	 */
 	public function setHasToExist( $hasToExist ) {
 		$this->hasToExist = $hasToExist;
@@ -33,16 +35,12 @@ class TitleValidator extends ValueValidatorObject {
 	 *
 	 * @since 0.1
 	 *
-	 * @param mixed $value
+	 * @param Title $value
 	 */
 	public function doValidation( $value ) {
-		/**
-		 * @var Title $value
-		 */
-		if ( !$value instanceof Title ) {
+		if ( !( $value instanceof Title ) ) {
 			$this->addErrorMessage( 'Not a title' );
-		}
-		elseif( $this->hasToExist && !$value->exists() ) {
+		} elseif ( $this->hasToExist && !$value->exists() ) {
 			$this->addErrorMessage( 'Title does not exist' );
 		}
 	}

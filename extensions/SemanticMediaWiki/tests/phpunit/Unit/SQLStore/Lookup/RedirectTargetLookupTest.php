@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\SQLStore\Lookup;
 
-use SMW\SQLStore\Lookup\RedirectTargetLookup;
 use SMW\DIWikiPage;
+use SMW\SQLStore\Lookup\RedirectTargetLookup;
 
 /**
  * @covers \SMW\SQLStore\Lookup\RedirectTargetLookup
@@ -36,7 +36,7 @@ class RedirectTargetLookupTest extends \PHPUnit_Framework_TestCase {
 
 		$store = $this->getMockBuilder( '\SMW\Store' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'getRedirectTarget' ) )
+			->setMethods( [ 'getRedirectTarget' ] )
 			->getMockForAbstractClass();
 
 		$store->expects( $this->atLeastOnce() )
@@ -47,7 +47,7 @@ class RedirectTargetLookupTest extends \PHPUnit_Framework_TestCase {
 			->getMock();
 
 		$circularReferenceGuard->expects( $this->atLeastOnce() )
-			->method( 'isCircularByRecursionFor' )
+			->method( 'isCircular' )
 			->will( $this->returnValue( false ) );
 
 		$instance = new RedirectTargetLookup(
@@ -62,7 +62,7 @@ class RedirectTargetLookupTest extends \PHPUnit_Framework_TestCase {
 
 		$store = $this->getMockBuilder( '\SMW\Store' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'getRedirectTarget' ) )
+			->setMethods( [ 'getRedirectTarget' ] )
 			->getMockForAbstractClass();
 
 		$store->expects( $this->never() )
@@ -73,7 +73,7 @@ class RedirectTargetLookupTest extends \PHPUnit_Framework_TestCase {
 			->getMock();
 
 		$circularReferenceGuard->expects( $this->never() )
-			->method( 'isCircularByRecursionFor' );
+			->method( 'isCircular' );
 
 		$instance = new RedirectTargetLookup(
 			$store,
@@ -87,7 +87,7 @@ class RedirectTargetLookupTest extends \PHPUnit_Framework_TestCase {
 
 		$store = $this->getMockBuilder( '\SMW\Store' )
 			->disableOriginalConstructor()
-			->setMethods( array( 'getRedirectTarget' ) )
+			->setMethods( [ 'getRedirectTarget' ] )
 			->getMockForAbstractClass();
 
 		$store->expects( $this->never() )
@@ -98,7 +98,7 @@ class RedirectTargetLookupTest extends \PHPUnit_Framework_TestCase {
 			->getMock();
 
 		$circularReferenceGuard->expects( $this->atLeastOnce() )
-			->method( 'isCircularByRecursionFor' )
+			->method( 'isCircular' )
 			->will( $this->returnValue( true ) );
 
 		$instance = new RedirectTargetLookup(

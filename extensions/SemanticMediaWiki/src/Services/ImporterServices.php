@@ -2,13 +2,14 @@
 
 namespace SMW\Services;
 
-use SMW\Importer\Importer;
+use SMW\Importer\ContentCreators\DispatchingContentCreator;
+use SMW\Importer\ContentCreators\TextContentCreator;
+use SMW\Importer\ContentCreators\XmlContentCreator;
 use SMW\Importer\ContentIterator;
+use SMW\Importer\ContentModeller;
+use SMW\Importer\Importer;
 use SMW\Importer\JsonContentIterator;
 use SMW\Importer\JsonImportContentsFileDirReader;
-use SMW\Importer\ContentCreators\DispatchingContentCreator;
-use SMW\Importer\ContentCreators\XmlContentCreator;
-use SMW\Importer\ContentCreators\TextContentCreator;
 
 /**
  * @codeCoverageIgnore
@@ -21,7 +22,7 @@ use SMW\Importer\ContentCreators\TextContentCreator;
  *
  * @author mwjames
  */
-return array(
+return [
 
 	/**
 	 * ImporterServiceFactory
@@ -51,9 +52,11 @@ return array(
 	'TextContentCreator' => function( $containerBuilder ) {
 		$containerBuilder->registerExpectedReturnType( 'TextContentCreator', '\SMW\Importer\ContentCreators\TextContentCreator' );
 
+		$connectionManager = $containerBuilder->singleton( 'ConnectionManager' );
+
 		$textContentCreator = new TextContentCreator(
 			$containerBuilder->create( 'PageCreator' ),
-			$containerBuilder->create( 'DatabaseConnectionProvider' )->getConnection()
+			$connectionManager->getConnection( 'mw.db' )
 		);
 
 		return $textContentCreator;
@@ -68,10 +71,10 @@ return array(
 		$containerBuilder->registerExpectedReturnType( 'Importer', '\SMW\Importer\Importer' );
 
 		$dispatchingContentCreator = new DispatchingContentCreator(
-			array(
+			[
 				$containerBuilder->create( 'XmlContentCreator' ),
 				$containerBuilder->create( 'TextContentCreator' )
-			)
+			]
 		);
 
 		$importer = new Importer(
@@ -91,14 +94,15 @@ return array(
 	 *
 	 * @return callable
 	 */
-	'JsonContentIterator' => function( $containerBuilder, $importFileDir ) {
+	'JsonContentIterator' => function( $containerBuilder, $importFileDirs ) {
 		$containerBuilder->registerExpectedReturnType( 'JsonContentIterator', '\SMW\Importer\JsonContentIterator' );
 
 		$jsonImportContentsFileDirReader = new JsonImportContentsFileDirReader(
-			$importFileDir
+			new ContentModeller(),
+			$importFileDirs
 		);
 
 		return new JsonContentIterator( $jsonImportContentsFileDirReader );
 	},
 
-);
+];

@@ -1,5 +1,5 @@
 /**
- * mw pages tag inspector.
+ * Pages tag inspector.
  *
  * @class
  * @extends ve.ui.MWExtensionInspector
@@ -11,12 +11,12 @@ ve.ui.MWPagesInspector = function VeUiMWPagesInspector() {
 };
 
 /* Inheritance */
+
 OO.inheritClass( ve.ui.MWPagesInspector, ve.ui.MWExtensionInspector );
 
 /* Static properties */
-ve.ui.MWPagesInspector.static.name = 'pages';
 
-ve.ui.MWPagesInspector.static.icon = 'articles';
+ve.ui.MWPagesInspector.static.name = 'pages';
 
 ve.ui.MWPagesInspector.static.title = OO.ui.deferMsg( 'proofreadpage-visualeditor-node-pages-inspector-title' );
 
@@ -27,11 +27,13 @@ ve.ui.MWPagesInspector.static.allowedEmpty = true;
 ve.ui.MWPagesInspector.static.delayForIndexInput = 2000;
 
 /* Methods */
+
 /**
  * @inheritdoc
  */
 ve.ui.MWPagesInspector.prototype.initialize = function () {
-	this.constructor.super.prototype.initialize.apply( this, arguments );
+	// Parent method
+	ve.ui.MWPagesInspector.super.prototype.initialize.apply( this, arguments );
 
 	this.attributeInputs = {};
 	this.$attributes = $( '<div>' );
@@ -42,10 +44,12 @@ ve.ui.MWPagesInspector.prototype.initialize = function () {
  * @inheritdoc
  */
 ve.ui.MWPagesInspector.prototype.getSetupProcess = function ( data ) {
-	return this.constructor.super.prototype.getSetupProcess.call( this, data )
+	// Parent method
+	return ve.ui.MWPagesInspector.super.prototype.getSetupProcess.call( this, data )
 		.next( function () {
 			this.mwData = ( this.selectedNode !== null && this.selectedNode.getAttribute( 'mw' ) ) || {
-				attrs: {}
+				attrs: {},
+				body: { extsrc: '' }
 			};
 
 			this.setupForm();
@@ -67,40 +71,40 @@ ve.ui.MWPagesInspector.prototype.setupForm = function () {
 
 	this.pushPending();
 	this.getFileInfo( attributes.index ).done( function ( imageInfo ) {
-		inspector.addAttributeToWidget( inspector.createIndexWidget(), 'index' );
+		inspector.addAttributeWidgetToForm( inspector.createIndexWidget(), 'index' );
 
-		inspector.addAttributeToWidget( new OO.ui.DropdownInputWidget( {
+		inspector.addAttributeWidgetToForm( new OO.ui.DropdownInputWidget( {
 			options: inspector.buildHeaderFieldSelectorOptions( attributes.header )
 		} ), 'header' );
 
 		if ( imageInfo.pagecount !== undefined ) {
-			inspector.addAttributeToWidget( new OO.ui.NumberInputWidget( {
+			inspector.addAttributeWidgetToForm( new OO.ui.NumberInputWidget( {
 				isInteger: true,
 				min: 1,
 				max: imageInfo.pagecount
 			} ), 'from' );
-			inspector.addAttributeToWidget( new OO.ui.NumberInputWidget( {
+			inspector.addAttributeWidgetToForm( new OO.ui.NumberInputWidget( {
 				isInteger: true,
 				min: 1,
 				max: imageInfo.pagecount
 			} ), 'to' );
 		} else {
-			inspector.addAttributeToWidget( new mw.widgets.TitleInputWidget( {
+			inspector.addAttributeWidgetToForm( new mw.widgets.TitleInputWidget( {
 				namespace: inspector.getIdForNamespace( 'page' )
 			} ), 'from' );
-			inspector.addAttributeToWidget( new mw.widgets.TitleInputWidget( {
+			inspector.addAttributeWidgetToForm( new mw.widgets.TitleInputWidget( {
 				namespace: inspector.getIdForNamespace( 'page' )
 			} ), 'to' );
 		}
 
-		inspector.addAttributeToWidget( new OO.ui.TextInputWidget(), 'fromsection' );
-		inspector.addAttributeToWidget( new OO.ui.TextInputWidget(), 'tosection' );
+		inspector.addAttributeWidgetToForm( new OO.ui.TextInputWidget(), 'fromsection' );
+		inspector.addAttributeWidgetToForm( new OO.ui.TextInputWidget(), 'tosection' );
 
 		for ( key in attributes ) {
 			if ( key in inspector.attributeInputs ) {
 				inspector.attributeInputs[ key ].setValue( attributes[ key ] );
 			} else {
-				inspector.addAttributeToWidget( new OO.ui.TextInputWidget( {
+				inspector.addAttributeWidgetToForm( new OO.ui.TextInputWidget( {
 					value: attributes[ key ]
 				} ), key );
 			}
@@ -163,13 +167,13 @@ ve.ui.MWPagesInspector.prototype.buildHeaderFieldSelectorOptions = function ( he
 ve.ui.MWPagesInspector.prototype.getFileInfo = function ( fileName ) {
 	if ( fileName !== '' ) {
 		return ( new mw.Api() ).get( {
+			formatversion: 2,
 			action: 'query',
 			prop: 'imageinfo',
 			titles: 'File:' + fileName,
-			iiprop: 'size',
-			indexpageids: 1
+			iiprop: 'size'
 		} ).then( function ( data ) {
-			var file = data.query.pages[ data.query.pageids[ 0 ] ];
+			var file = data.query.pages[ 0 ];
 			return file.imageinfo && file.imageinfo[ 0 ] || {};
 		}, function () {
 			return $.Deferred().resolve( {} );
@@ -185,7 +189,7 @@ ve.ui.MWPagesInspector.prototype.getFileInfo = function ( fileName ) {
  * @param {OO.ui.Widget} attributeInput
  * @param {string} attributeKey the key of the attribute like "from"
  */
-ve.ui.MWPagesInspector.prototype.addAttributeToWidget = function ( attributeInput, attributeKey ) {
+ve.ui.MWPagesInspector.prototype.addAttributeWidgetToForm = function ( attributeInput, attributeKey ) {
 	var field = new OO.ui.FieldLayout(
 		attributeInput,
 		{
@@ -195,6 +199,7 @@ ve.ui.MWPagesInspector.prototype.addAttributeToWidget = function ( attributeInpu
 	);
 	this.$attributes.append( field.$element );
 	this.attributeInputs[ attributeKey ] = attributeInput;
+	attributeInput.connect( this, { change: 'onChangeHandler' } );
 };
 
 /**
@@ -205,6 +210,7 @@ ve.ui.MWPagesInspector.prototype.onIndexChange = function () {
 		this.updateMwData( this.mwData );
 		this.teardownForm();
 		this.setupForm();
+		this.onChangeHandler();
 	}
 };
 
@@ -220,7 +226,8 @@ ve.ui.MWPagesInspector.prototype.teardownForm = function () {
  * @inheritdoc
  */
 ve.ui.MWPagesInspector.prototype.getTeardownProcess = function ( data ) {
-	return this.constructor.super.prototype.getTeardownProcess.call( this, data )
+	// Parent method
+	return ve.ui.MWPagesInspector.super.prototype.getTeardownProcess.call( this, data )
 		.next( function () {
 			this.teardownForm();
 		}, this );
@@ -232,7 +239,8 @@ ve.ui.MWPagesInspector.prototype.getTeardownProcess = function ( data ) {
 ve.ui.MWPagesInspector.prototype.updateMwData = function ( mwData ) {
 	var key;
 
-	this.constructor.super.prototype.updateMwData.call( this, mwData );
+	// Parent method
+	ve.ui.MWPagesInspector.super.prototype.updateMwData.call( this, mwData );
 
 	mwData.attrs = mwData.attrs || {};
 	for ( key in this.attributeInputs ) {
@@ -241,4 +249,5 @@ ve.ui.MWPagesInspector.prototype.updateMwData = function ( mwData ) {
 };
 
 /* Registration */
+
 ve.ui.windowFactory.register( ve.ui.MWPagesInspector );

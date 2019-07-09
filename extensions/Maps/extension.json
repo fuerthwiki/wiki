@@ -1,0 +1,52 @@
+{
+	"name": "Maps",
+	"version": "7.3.0",
+
+	"author": [
+		"[https://www.mediawiki.org/wiki/User:Jeroen_De_Dauw Jeroen De Dauw]",
+		"..."
+	],
+	"url": "https://github.com/JeroenDeDauw/Maps/blob/master/README.md#maps",
+	"descriptionmsg": "maps-desc",
+	"license-name": "GPL-2.0-or-later",
+	"type": "parserhook",
+
+	"requires": {
+		"MediaWiki": ">= 1.31.0"
+	},
+
+	"MessagesDirs": {
+		"Maps.class": [
+			"i18n"
+		]
+	},
+	"ExtensionMessagesFiles": {
+		"MapsAlias": "i18n/aliases/Aliases.php",
+		"MapsMagic": "i18n/magic/MagicWords.php"
+	},
+
+	"callback": "MapsRegistration::onRegistration",
+	"ContentHandlers": {
+		"GeoJson": "Maps\\MediaWiki\\Content\\GeoJsonContentHandler"
+	},
+	"namespaces": [
+		{
+			"id": 420,
+			"constant": "NS_GEO_JSON",
+			"name": "GeoJson",
+			"subpages": false,
+			"content": true,
+			"defaultcontentmodel": "GeoJson"
+		},
+		{
+			"id": 421,
+			"constant": "NS_GEO_JSON_TALK",
+			"name": "GeoJson_talk",
+			"subpages": true,
+			"content": false,
+			"defaultcontentmodel": "wikitext"
+		}
+	],
+	"load_composer_autoloader": true,
+	"manifest_version": 2
+}

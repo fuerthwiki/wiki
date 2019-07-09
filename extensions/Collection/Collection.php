@@ -1,5 +1,7 @@
 <?php
 
+use MediaWiki\Session\SessionManager;
+
 /**
  * Collection Extension for MediaWiki
  *
@@ -30,27 +32,22 @@ EOT;
 	exit( 1 );
 }
 
-$wgExtensionCredits['specialpage'][] = array(
+$wgExtensionCredits['specialpage'][] = [
 	'path' => __FILE__,
 	'name' => 'Collection',
 	'version' => '1.7.0',
-	'author' => array( 'PediaPress GmbH', 'Siebrand Mazeland', 'Marcin Cieślak'),
+	'author' => [ 'PediaPress GmbH', 'Siebrand Mazeland', 'Marcin Cieślak' ],
 	'url' => 'https://www.mediawiki.org/wiki/Extension:Collection',
 	'descriptionmsg' => 'coll-desc',
-	'license-name' => 'GPL-2.0+',
-);
-
-$dir = __DIR__ . '/';
+	'license-name' => 'GPL-2.0-or-later',
+];
 
 # ==============================================================================
 
 # Configuration:
 
-/** Bump the version number every time you change any of the JavaScript files */
-$wgCollectionStyleVersion = 9;
-
 /** URL of mw-serve render server */
-$wgCollectionMWServeURL = 'http://tools.pediapress.com/mw-serve/';
+$wgCollectionMWServeURL = 'https://tools.pediapress.com/mw-serve/';
 
 /** Login credentials to this MediaWiki as 'USERNAME:PASSWORD' string */
 $wgCollectionMWServeCredentials = null;
@@ -59,7 +56,7 @@ $wgCollectionMWServeCredentials = null;
 $wgCollectionMWServeCert = null;
 
 /** Array of namespaces that can be added to a collection */
-$wgCollectionArticleNamespaces = array(
+$wgCollectionArticleNamespaces = [
 	NS_MAIN,
 	NS_TALK,
 	NS_USER,
@@ -80,7 +77,7 @@ $wgCollectionArticleNamespaces = array(
 	109,
 	110,
 	111,
-);
+];
 
 /** Namespace for "community books" */
 $wgCommunityCollectionNamespace = NS_PROJECT;
@@ -96,61 +93,61 @@ $wgCollectionLicenseURL = null;
 
 /** List of available download formats,
 		as mapping of mwlib writer to format name */
-$wgCollectionFormats = array(
+$wgCollectionFormats = [
 	'rl' => 'PDF',
-);
+];
 
 /** Additional renderer options for collections. Format is as for
  * HTMLForm::loadInputFromParameters. Note that fieldnames may only contain
  * [a-zA-Z0-9_-], and values may not contain pipes or newlines. If the
  * 'options' field is an array, keys will be interpreted as messages.
  */
-$wgCollectionRendererSettings = array(
-	'papersize' => array(
+$wgCollectionRendererSettings = [
+	'papersize' => [
 		'type' => 'select',
 		'label-message' => 'coll-setting-papersize',
 		'default' => 'a4',
-		'options' => array(
+		'options' => [
 			'coll-setting-papersize-a4' => 'a4',
 			'coll-setting-papersize-letter' => 'letter',
-		),
-	),
-	'toc' => array(
+		],
+	],
+	'toc' => [
 		'type' => 'select',
 		'label-message' => 'coll-setting-toc',
 		'default' => 'auto',
-		'options' => array(
+		'options' => [
 			'coll-setting-toc-auto' => 'auto',
 			'coll-setting-toc-yes' => 'yes',
 			'coll-setting-toc-no' => 'no',
-		)
-	),
-	'columns' => array(
+		]
+	],
+	'columns' => [
 		'type' => 'select',
 		'label-message' => 'coll-setting-columns',
 		'default' => '2',
-		'options' => array(
+		'options' => [
 			'coll-setting-columns-1' => '1',
 			'coll-setting-columns-2' => '2',
-		),
-	),
-);
+		],
+	],
+];
 
 /** Some commands require an external server
  */
-$wgCollectionCommandToServeURL = array();
+$wgCollectionCommandToServeURL = [];
 
 /** For formats which rendering depends on an external server
 */
-$wgCollectionFormatToServeURL = array();
+$wgCollectionFormatToServeURL = [];
 
-$wgCollectionContentTypeToFilename = array(
+$wgCollectionContentTypeToFilename = [
 	'application/pdf' => 'collection.pdf',
 	'application/vnd.oasis.opendocument.text' => 'collection.odt',
 	'text/plain' => 'collection.txt',
-);
+];
 
-$wgCollectionPortletFormats = array( 'rl' );
+$wgCollectionPortletFormats = [ 'rl' ];
 
 $wgCollectionPortletForLoggedInUsersOnly = false;
 
@@ -160,95 +157,157 @@ $wgCollectionSuggestCheapWeightThreshhold = 50;
 
 $wgCollectionSuggestThreshhold = 100;
 
-$wgCollectionPODPartners = array(
-	'pediapress' => array(
+$wgCollectionPODPartners = [
+	'pediapress' => [
 		'name' => 'PediaPress',
-		'url' => 'http://pediapress.com/',
-		'posturl' => 'http://pediapress.com/api/collections/',
+		'url' => 'https://pediapress.com/',
+		'posturl' => 'https://pediapress.com/api/collections/',
 		'infopagetitle' => 'coll-order_info_article',
-	),
-);
+	],
+];
+
+# Optional notes that are displayed on the download screen for the rendered
+# document. Each entry is a message key.
+$wgCollectionShowRenderNotes = [
+	'coll-rendering_finished_note_not_satisfied',
+];
+
+# Disable the download section
+# see https://phabricator.wikimedia.org/T175996
+$wgCollectionDisableDownloadSection = true;
+
 # ==============================================================================
 
 # register Special:Book:
-$wgAutoloadClasses['SpecialCollection'] = $dir . 'Collection.body.php';
-$wgAutoloadClasses['CollectionSession'] = $dir . 'Collection.session.php';
-$wgAutoloadClasses['CollectionHooks'] = $dir . 'Collection.hooks.php';
-$wgAutoloadClasses['CollectionSuggest'] = $dir . 'Collection.suggest.php';
-$wgAutoloadClasses['CollectionProposals'] = $dir . 'Collection.suggest.php';
-$wgAutoloadClasses['CollectionPageTemplate'] = $dir . 'Collection.templates.php';
-$wgAutoloadClasses['CollectionListTemplate'] = $dir . 'Collection.templates.php';
-$wgAutoloadClasses['CollectionLoadOverwriteTemplate'] = $dir . 'Collection.templates.php';
-$wgAutoloadClasses['CollectionSaveOverwriteTemplate'] = $dir . 'Collection.templates.php';
-$wgAutoloadClasses['CollectionRenderingTemplate'] = $dir . 'Collection.templates.php';
-$wgAutoloadClasses['CollectionFinishedTemplate'] = $dir . 'Collection.templates.php';
-$wgAutoloadClasses['CollectionFailedTemplate'] = $dir . 'Collection.templates.php';
-$wgAutoloadClasses['CollectionSuggestTemplate'] = $dir . 'Collection.templates.php';
-$wgAutoloadClasses['CollectionRenderingAPI'] = $dir . 'RenderingAPI.php';
-$wgAutoloadClasses['MWServeRenderingAPI'] = $dir . 'RenderingAPI.php';
-$wgAutoloadClasses['NewRenderingAPI'] = $dir . 'RenderingAPI.php';
-$wgAutoloadClasses['CollectionAPIResult'] = $dir . 'RenderingAPI.php';
+$wgAutoloadClasses['SpecialCollection'] = __DIR__ . '/Collection.body.php';
+$wgAutoloadClasses['CollectionSession'] = __DIR__ . '/Collection.session.php';
+$wgAutoloadClasses['CollectionHooks'] = __DIR__ . '/Collection.hooks.php';
+$wgAutoloadClasses['CollectionSuggest'] = __DIR__ . '/CollectionSuggest.php';
+$wgAutoloadClasses['CollectionProposals'] = __DIR__ . '/CollectionProposals.php';
+
+$wgAutoloadClasses[\MediaWiki\Extensions\Collection\Specials\RenderBook::class]
+	= __DIR__ . '/includes/Specials/SpecialRenderBook.php';
+$wgAutoloadClasses[\MediaWiki\Extensions\Collection\DataProvider::class]
+	= __DIR__ . '/includes/DataProvider.php';
+$wgAutoloadClasses[\MediaWiki\Extensions\Collection\ElectronVirtualRestService::class]
+	= __DIR__ . '/includes/ElectronVirtualRestService.php';
+$wgAutoloadClasses[\MediaWiki\Extensions\Collection\BookRenderer::class]
+	= __DIR__ . '/includes/BookRenderer.php';
+$wgAutoloadClasses[MediaWiki\Extensions\Collection\RemexCollectionMunger::class]
+	= __DIR__ . '/includes/RemexCollectionMunger.php';
+$wgAutoloadClasses[\MediaWiki\Extensions\Collection\HeadingCounter::class]
+	= __DIR__ . '/includes/HeadingCounter.php';
+$wgAutoloadClasses[\MediaWiki\Extensions\Collection\BookRenderingMediator::class]
+	= __DIR__ . '/includes/BookRenderingMediator.php';
+$wgAutoloadClasses[\MediaWiki\Extensions\Collection\MessageBoxHelper::class ]
+	= __DIR__ . '/includes/MessageBoxHelper.php';
+
+$wgAutoloadClasses['CollectionPageTemplate'] = __DIR__ . '/templates/CollectionPageTemplate.php';
+$wgAutoloadClasses['CollectionListTemplate'] = __DIR__ . '/templates/CollectionListTemplate.php';
+$wgAutoloadClasses['CollectionLoadOverwriteTemplate'] =
+	__DIR__ . '/templates/CollectionLoadOverwriteTemplate.php';
+$wgAutoloadClasses['CollectionSaveOverwriteTemplate'] =
+	__DIR__ . '/templates/CollectionSaveOverwriteTemplate.php';
+$wgAutoloadClasses['CollectionRenderingTemplate'] =
+	__DIR__ . '/templates/CollectionRenderingTemplate.php';
+$wgAutoloadClasses['CollectionFinishedTemplate'] =
+	__DIR__ . '/templates/CollectionFinishedTemplate.php';
+$wgAutoloadClasses['CollectionFailedTemplate'] =
+	__DIR__ . '/templates/CollectionFailedTemplate.php';
+$wgAutoloadClasses['CollectionSuggestTemplate'] =
+	__DIR__ . '/templates/CollectionSuggestTemplate.php';
+
+$wgAutoloadClasses['CollectionRenderingAPI'] = __DIR__ . '/rendering/CollectionRenderingAPI.php';
+$wgAutoloadClasses['MWServeRenderingAPI'] = __DIR__ . '/rendering/MWServeRenderingAPI.php';
+$wgAutoloadClasses['CollectionAPIResult'] = __DIR__ . '/rendering/CollectionAPIResult.php';
 
 $wgMessagesDirs['Collection'] = __DIR__ . '/i18n';
-$wgExtensionMessagesFiles['Collection'] = $dir . 'Collection.i18n.php';
-$wgExtensionMessagesFiles['CollectionAlias'] = $dir . 'Collection.alias.php';
+$wgExtensionMessagesFiles['CollectionAlias'] = __DIR__ . '/Collection.alias.php';
 
 $wgSpecialPages['Book'] = 'SpecialCollection';
+$wgSpecialPages['RenderBook'] = \MediaWiki\Extensions\Collection\Specials\RenderBook::class;
 
 $wgHooks['SkinTemplateBuildNavUrlsNav_urlsAfterPermalink'][] = 'CollectionHooks::buildNavUrls';
 $wgHooks['SidebarBeforeOutput'][] = 'CollectionHooks::buildSidebar';
 $wgHooks['SiteNoticeAfter'][] = 'CollectionHooks::siteNoticeAfter';
 $wgHooks['OutputPageCheckLastModified'][] = 'CollectionHooks::checkLastModified';
-$wgExtensionFunctions[] = 'CollectionHooks::onSetup';
+$wgHooks['UnitTestsList'][] = 'CollectionHooks::onUnitTestsList';
 
 $wgAvailableRights[] = 'collectionsaveasuserpage';
 $wgAvailableRights[] = 'collectionsaveascommunitypage';
 
-$collResourceTemplate = array(
-	'localBasePath' => "$dir/modules",
-	'remoteExtPath' => 'Collection/modules'
-);
+$collResourceTemplate = [
+	'localBasePath' => __DIR__ . '/resources',
+	'remoteExtPath' => 'Collection/resources'
+];
 
-$wgResourceModules += array(
-	'ext.collection' => $collResourceTemplate + array(
-		'scripts' => 'collection.js',
-		'dependencies' => array(
+$wgResourceModules += [
+	'ext.collection' => $collResourceTemplate + [
+		'scripts' => 'ext.collection/collection.js',
+		'dependencies' => [
 			'ext.collection.bookcreator',
 			'jquery.ui.sortable',
 			'mediawiki.language',
-		),
-	),
-	'ext.collection.bookcreator' => $collResourceTemplate + array(
-		'scripts' => 'bookcreator.js',
-		'styles' => 'bookcreator.css',
-		'dependencies' => 'jquery.jStorage'
-	),
-	'ext.collection.checkLoadFromLocalStorage' => $collResourceTemplate + array(
-		'scripts' => 'check_load_from_localstorage.js',
-		'styles' => 'bookcreator.css',
-		'dependencies' => array(
+		],
+	],
+	'ext.collection.bookcreator.styles' => $collResourceTemplate + [
+		'styles' => 'ext.collection.bookcreator.styles/bookcreator.css'
+	],
+	'ext.collection.bookcreator' => $collResourceTemplate + [
+		'scripts' => 'ext.collection.bookcreator/bookcreator.js',
+		'dependencies' => [ 'jquery.jStorage', 'ext.collection.bookcreator.styles' ],
+	],
+	'ext.collection.checkLoadFromLocalStorage' => $collResourceTemplate + [
+		'scripts' => 'ext.collection.checkLoadFromLocalStorage/check_load_from_localstorage.js',
+		'dependencies' => [
 			'ext.collection',
+			'ext.collection.bookcreator.styles',
 			'jquery.jStorage',
-		),
-		'messages' => array(
+		],
+		'messages' => [
 			'coll-load_local_book'
-		)
-	),
-	'ext.collection.suggest' => $collResourceTemplate + array(
-		'scripts' => 'suggest.js',
+		]
+	],
+	'ext.collection.suggest' => $collResourceTemplate + [
+		'scripts' => 'ext.collection.suggest/suggest.js',
 		'dependencies' => 'ext.collection.bookcreator'
-	),
-);
+	],
+	'ext.collection.offline' => $collResourceTemplate + [
+		'styles' => 'ext.collection.offline/offline.less',
+	],
+
+	// Message boxes introduced in T175996 to warn users about disabling PDF feature
+	'ext.collection.bookcreator.messageBox' => $collResourceTemplate + [
+		'dependencies' => [
+			'mediawiki.hlist',
+			'ext.collection.bookcreator.messageBox.styles',
+			'ext.collection.bookcreator.messageBox.icons',
+		],
+	],
+	'ext.collection.bookcreator.messageBox.styles' => $collResourceTemplate + [
+			'styles' => 'ext.collection.bookcreator.messageBox/messageBox.less',
+		],
+	'ext.collection.bookcreator.messageBox.icons' => $collResourceTemplate + [
+		'position' => 'top',
+		'class' => 'ResourceLoaderImageModule',
+		'selector' => '.collection-icon-{name}:before',
+		'images' => [
+			'warning' => 'ext.collection.bookcreator.messageBox/images/warning-icon.svg',
+			'info' => 'ext.collection.bookcreator.messageBox/images/info-icon.svg'
+		]
+	],
+];
 
 # register global Ajax functions:
 
 function wfAjaxGetCollection() {
-	if ( isset( $_SESSION['wsCollection'] ) ) {
-		$collection = $_SESSION['wsCollection'];
+	$session = SessionManager::getGlobalSession();
+	if ( isset( $session['wsCollection'] ) ) {
+		$collection = $session['wsCollection'];
 	} else {
-		$collection = array();
+		$collection = [];
 	}
-	$r = new AjaxResponse( FormatJson::encode( array( 'collection' => $collection ) ) );
+	$r = new AjaxResponse( FormatJson::encode( [ 'collection' => $collection ] ) );
 	$r->setContentType( 'application/json' );
 	return $r;
 }
@@ -256,12 +315,12 @@ function wfAjaxGetCollection() {
 $wgAjaxExportList[] = 'wfAjaxGetCollection';
 
 function wfAjaxPostCollection( $collection = '', $redirect = '' ) {
-	if ( session_id() == '' ) {
-		wfSetupSession();
-	}
+	$session = SessionManager::getGlobalSession();
+	$session->persist();
+
 	$collection = FormatJson::decode( $collection, true );
 	$collection['enabled'] = true;
-	$_SESSION['wsCollection'] = $collection;
+	$session['wsCollection'] = $collection;
 	$r = new AjaxResponse();
 	if ( $redirect ) {
 		$title = Title::newFromText( $redirect );
@@ -272,7 +331,7 @@ function wfAjaxPostCollection( $collection = '', $redirect = '' ) {
 		$title = SpecialPage::getTitleFor( 'Book' );
 		$redirecturl = wfExpandUrl( $title->getFullURL(), PROTO_CURRENT );
 		$r->setContentType( 'application/json' );
-		$r->addText( FormatJson::encode( array( 'redirect_url' => $redirecturl ) ) );
+		$r->addText( FormatJson::encode( [ 'redirect_url' => $redirecturl ] ) );
 	}
 	return $r;
 }
@@ -280,7 +339,8 @@ function wfAjaxPostCollection( $collection = '', $redirect = '' ) {
 $wgAjaxExportList[] = 'wfAjaxPostCollection';
 
 function wfAjaxGetMWServeStatus( $collection_id = '', $writer = 'rl' ) {
-	$response = CollectionRenderingAPI::instance( $writer )->getRenderStatus( $collection_id, $writer );
+	$response = CollectionRenderingAPI::instance( $writer )
+		->getRenderStatus( $collection_id );
 	$result = $response->response;
 	if ( isset( $result['status']['progress'] ) ) {
 		$result['status']['progress'] = number_format( $result['status']['progress'], 2, '.', '' );
@@ -313,7 +373,11 @@ function wfAjaxCollectionAddCategory( $title = '' ) {
 
 $wgAjaxExportList[] = 'wfAjaxCollectionAddCategory';
 
-function wfAjaxCollectionGetBookCreatorBoxContent( $ajaxHint = '', $oldid = null, $pageName = null ) {
+function wfAjaxCollectionGetBookCreatorBoxContent(
+	$ajaxHint = '',
+	$oldid = null,
+	$pageName = null
+) {
 	if ( !is_null( $oldid ) ) {
 		$oldid = intval( $oldid );
 	}
@@ -328,7 +392,7 @@ function wfAjaxCollectionGetBookCreatorBoxContent( $ajaxHint = '', $oldid = null
 
 	$html = CollectionHooks::getBookCreatorBoxContent( $title, $ajaxHint, $oldid );
 
-	$result = array();
+	$result = [];
 	$result['html'] = $html;
 	$r = new AjaxResponse( FormatJson::encode( $result ) );
 	$r->setContentType( 'application/json' );
@@ -338,7 +402,7 @@ function wfAjaxCollectionGetBookCreatorBoxContent( $ajaxHint = '', $oldid = null
 $wgAjaxExportList[] = 'wfAjaxCollectionGetBookCreatorBoxContent';
 
 function wfAjaxCollectionGetItemList() {
-	$collection = $_SESSION['wsCollection'];
+	$collection = CollectionSession::getCollection();
 
 	$template = new CollectionListTemplate();
 	$template->set( 'collection', $collection );
@@ -348,7 +412,7 @@ function wfAjaxCollectionGetItemList() {
 	$html = ob_get_contents();
 	ob_end_clean();
 
-	$result = array();
+	$result = [];
 	$result['html'] = $html;
 	$result['collection'] = $collection;
 	$r = new AjaxResponse( FormatJson::encode( $result ) );
@@ -391,9 +455,9 @@ function wfAjaxCollectionSetTitles( $title, $subtitle, $settings = '' ) {
 $wgAjaxExportList[] = 'wfAjaxCollectionSetTitles';
 
 function wfAjaxCollectionSetSorting( $items_string ) {
-	$parsed = array();
+	$parsed = [];
 	parse_str( $items_string, $parsed );
-	$items = array();
+	$items = [];
 	foreach ( $parsed['item'] as $s ) {
 		if ( is_numeric( $s ) ) {
 			$items[] = intval( $s );
@@ -416,7 +480,7 @@ $wgAjaxExportList[] = 'wfAjaxCollectionClear';
 function wfAjaxCollectionGetPopupData( $title ) {
 	global $wgExtensionAssetsPath;
 
-	$result = array();
+	$result = [];
 	$imagePath = "$wgExtensionAssetsPath/Collection/images";
 	$t = Title::newFromText( $title );
 	if ( $t && $t->isRedirect() ) {
@@ -446,25 +510,28 @@ $wgAjaxExportList[] = 'wfAjaxCollectionGetPopupData';
 
 /**
  * Backend of several following SAJAX function handlers...
- * @param String $action provided by the specific handlers internally
- * @param String $article title passed in from client
+ * @param string $action provided by the specific handlers internally
+ * @param string $article title passed in from client
  * @return AjaxResponse with JSON-encoded array including HTML fragment.
  */
 function wfCollectionSuggestAction( $action, $article ) {
 	$result = CollectionSuggest::refresh( $action, $article );
 	$undoLink = Xml::element( 'a',
-		array(
+		[
 			'href' => SkinTemplate::makeSpecialUrl(
 				'Book',
-				array( 'bookcmd' => 'suggest', 'undo' => $action, 'arttitle' => $article )
+				[ 'bookcmd' => 'suggest', 'undo' => $action, 'arttitle' => $article ]
 			),
 			'onclick' => "collectionSuggestCall('UndoArticle'," .
-				Xml::encodeJsVar( array( $action, $article ) ) . "); return false;",
+				Xml::encodeJsVar( [ $action, $article ] ) . "); return false;",
 			'title' => wfMessage( 'coll-suggest_undo_tooltip' )->text(),
-		),
+		],
 		wfMessage( 'coll-suggest_undo' )->text()
 	);
-	// Message keys used: coll-suggest_article_ban, coll-suggest_article_add, coll-suggest_article_remove
+	// Message keys used:
+	// coll-suggest_article_ban
+	// coll-suggest_article_add
+	// coll-suggest_article_remove
 	$result['last_action'] = wfMessage( "coll-suggest_article_$action", $article )
 		->rawParams( $undoLink )->parse();
 	$result['collection'] = CollectionSession::getCollection();

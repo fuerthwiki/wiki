@@ -2,11 +2,11 @@
 
 namespace SMW\MediaWiki\Specials\PropertyLabelSimilarity;
 
+use Html;
 use SMW\MediaWiki\Renderer\HtmlFormRenderer;
 use SMW\Message;
 use SMW\RequestOptions;
 use SMW\SQLStore\Lookup\PropertyLabelSimilarityLookup;
-use Html;
 
 /**
  * @license GNU GPL v2+
@@ -65,18 +65,20 @@ class ContentsBuilder {
 			$requestOptions
 		);
 
+		$resultCount = is_array( $result ) ? count( $result ) : 0;
+
 		$html = $this->getForm(
 			$requestOptions->getLimit(),
 			$requestOptions->getOffset(),
-			count( $result ),
+			$resultCount,
 			$threshold,
 			$type
 		);
 
-		if ( $result !== array() ) {
+		if ( $result !== [] ) {
 			 $html .= '<pre>' . json_encode( $result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) . '</pre>';
 		} else {
-			 $html .= $this->getMessageAsString( 'smw-property-label-similarity-noresult' );
+			 $html .= $this->msg( 'smw-property-label-similarity-noresult' );
 		}
 
 		return $html;
@@ -93,8 +95,8 @@ class ContentsBuilder {
 			$lookupCount = $limit + $offset + 1;
 		}
 
-		$html = $this->getMessageAsString(
-			array( 'smw-property-label-similarity-docu', $exemptionProperty ),
+		$html = $this->msg(
+			[ 'smw-property-label-similarity-docu', $exemptionProperty ],
 			Message::PARSE
 		);
 
@@ -110,7 +112,7 @@ class ContentsBuilder {
 			->addHiddenField( 'limit', $limit )
 			->addHiddenField( 'offset', $offset )
 			->addInputField(
-				$this->getMessageAsString( 'smw-property-label-similarity-threshold' ),
+				$this->msg( 'smw-property-label-similarity-threshold' ),
 				'threshold',
 				$threshold,
 				'',
@@ -118,23 +120,23 @@ class ContentsBuilder {
 			)
 			->addNonBreakingSpace()
 			->addCheckbox(
-				$this->getMessageAsString( 'smw-property-label-similarity-type' ),
+				$this->msg( 'smw-property-label-similarity-type' ),
 				'type',
 				'yes',
 				$type === 'yes',
 				null,
-				array(
+				[
 					'style' => 'float:right'
-				)
+				]
 			)
 			->addQueryParameter( 'type', $type )
-			->addSubmitButton( $this->getMessageAsString( 'allpagessubmit' ) )
+			->addSubmitButton( $this->msg( 'allpagessubmit' ) )
 			->getForm();
 
-		return Html::rawElement( 'div', array( 'class' => 'plainlinks'), $html ) . Html::element( 'p', array(), '' );
+		return Html::rawElement( 'div', [ 'class' => 'plainlinks'], $html ) . Html::element( 'p', [], '' );
 	}
 
-	private function getMessageAsString( $parameters, $type = Message::TEXT ) {
+	private function msg( $parameters, $type = Message::TEXT ) {
 		return Message::get( $parameters, $type, Message::USER_LANGUAGE );
 	}
 

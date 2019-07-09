@@ -1,7 +1,8 @@
 <?php
 
-/* // Umleitung zur Wartungsseite
-if ($_SERVER['REMOTE_ADDR'] != '146.52.238.94') {
+// Umleitung zur Wartungsseite
+/*
+if ($_SERVER['REMOTE_ADDR'] != '188.195.221.74') {
 	header('HTTP/1.1 503 Service Temporarily Unavailable'); //send the proper response code
 	header('Retry-After: 10800'); //Retry after 3 hours
 	header('Location: /wartung/');
@@ -25,7 +26,7 @@ if (date('d') == '21' && date('m') == '3' && date('Y') == '2019') {
  * See the README, INSTALL, and UPGRADE files for basic setup instructions
  * and pointers to the online documentation.
  *
- * https://www.mediawiki.org/
+ * https://www.mediawiki.org/wiki/Special:MyLanguage/MediaWiki
  *
  * ----------
  *
@@ -49,9 +50,8 @@ if (date('d') == '21' && date('m') == '3' && date('Y') == '2019') {
 
 // Bail on old versions of PHP, or if composer has not been run yet to install
 // dependencies. Using dirname( __FILE__ ) here because __DIR__ is PHP5.3+.
-// @codingStandardsIgnoreStart MediaWiki.Usage.DirUsage.FunctionFound
+// phpcs:ignore MediaWiki.Usage.DirUsage.FunctionFound
 require_once dirname( __FILE__ ) . '/includes/PHPVersionCheck.php';
-// @codingStandardsIgnoreEnd
 wfEntryPointCheck( 'index.php' );
 
 require __DIR__ . '/includes/WebStart.php';

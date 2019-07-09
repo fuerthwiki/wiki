@@ -2,10 +2,10 @@
 
 namespace SMW\SQLStore;
 
-use SMW\EventHandler;
-use SMW\DIWikiPage;
-use SMW\Iterators\ResultIterator;
 use SMW\ApplicationFactory;
+use SMW\DIWikiPage;
+use SMW\EventHandler;
+use SMW\Iterators\ResultIterator;
 
 /**
  * @private
@@ -37,6 +37,11 @@ class PropertyTableIdReferenceDisposer {
 	private $onTransactionIdle = false;
 
 	/**
+	 * @var boolean
+	 */
+	private $redirectRemoval = false;
+
+	/**
 	 * @since 2.4
 	 *
 	 * @param SQLStore $store
@@ -47,14 +52,30 @@ class PropertyTableIdReferenceDisposer {
 	}
 
 	/**
-	 * @note MW 1.29+ showed transaction collisions when executed using the
-	 * JobQueue in connection with purging the BagOStuff cache, use
-	 * 'onTransactionIdle' to isolate the execution for some of the tasks.
+	 * @since 3.0
 	 *
+	 * @param boolean $redirectRemoval
+	 */
+	public function setRedirectRemoval( $redirectRemoval ) {
+		$this->redirectRemoval = $redirectRemoval;
+	}
+
+	/**
 	 * @since 2.5
 	 */
 	public function waitOnTransactionIdle() {
 		$this->onTransactionIdle = true;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param integer $id
+	 *
+	 * @return boolean
+	 */
+	public function isDisposable( $id ) {
+		return $this->store->getPropertyTableIdReferenceFinder()->hasResidualReferenceForId( $id ) === false;
 	}
 
 	/**
@@ -77,7 +98,7 @@ class PropertyTableIdReferenceDisposer {
 			return null;
 		}
 
-		$this->doRemoveEntityReferencesById( $id );
+		$this->cleanUpSecondaryReferencesById( $id, false );
 	}
 
 	/**
@@ -89,8 +110,8 @@ class PropertyTableIdReferenceDisposer {
 
 		$res = $this->connection->select(
 			SQLStore::ID_TABLE,
-			array( 'smw_id' ),
-			array( 'smw_iw' => SMW_SQL3_SMWDELETEIW ),
+			[ 'smw_id' ],
+			[ 'smw_iw' => SMW_SQL3_SMWDELETEIW ],
 			__METHOD__
 		);
 
@@ -121,9 +142,23 @@ class PropertyTableIdReferenceDisposer {
 	 */
 	public function cleanUpTableEntriesById( $id ) {
 
+		if ( $this->onTransactionIdle ) {
+			return $this->connection->onTransactionIdle( function() use ( $id ) {
+				$this->cleanUpReferencesById( $id );
+			} );
+		} else {
+			$this->cleanUpReferencesById( $id );
+		}
+	}
+
+	private function cleanUpReferencesById( $id ) {
+
 		$subject = $this->store->getObjectIds()->getDataItemById( $id );
+		$isRedirect = false;
 
 		if ( $subject instanceof DIWikiPage ) {
+			$isRedirect = $subject->getInterwiki() === SMW_SQL3_SMWREDIIW;
+
 			// Use the subject without an internal 'smw-delete' iw marker
 			$subject = new DIWikiPage(
 				$subject->getDBKey(),
@@ -133,7 +168,7 @@ class PropertyTableIdReferenceDisposer {
 			);
 		}
 
-		$this->triggerCleanUpEvents( $subject, $this->onTransactionIdle );
+		$this->triggerCleanUpEvents( $subject );
 
 		$this->connection->beginAtomicTransaction( __METHOD__ );
 
@@ -141,7 +176,7 @@ class PropertyTableIdReferenceDisposer {
 			if ( $proptable->usesIdSubject() ) {
 				$this->connection->delete(
 					$proptable->getName(),
-					array( 's_id' => $id ),
+					[ 's_id' => $id ],
 					__METHOD__
 				);
 			}
@@ -149,7 +184,7 @@ class PropertyTableIdReferenceDisposer {
 			if ( !$proptable->isFixedPropertyTable() ) {
 				$this->connection->delete(
 					$proptable->getName(),
-					array( 'p_id' => $id ),
+					[ 'p_id' => $id ],
 					__METHOD__
 				);
 			}
@@ -160,39 +195,47 @@ class PropertyTableIdReferenceDisposer {
 			if ( isset( $fields['o_id'] ) ) {
 				$this->connection->delete(
 					$proptable->getName(),
-					array( 'o_id' => $id ),
+					[ 'o_id' => $id ],
 					__METHOD__
 				);
 			}
 		}
 
-		$this->doRemoveEntityReferencesById( $id );
+		$this->cleanUpSecondaryReferencesById( $id, $isRedirect );
 		$this->connection->endAtomicTransaction( __METHOD__ );
+
+		\Hooks::run(
+			'SMW::SQLStore::EntityReferenceCleanUpComplete',
+			[ $this->store, $id, $subject, $isRedirect ]
+		);
 	}
 
-	private function doRemoveEntityReferencesById( $id ) {
+	private function cleanUpSecondaryReferencesById( $id, $isRedirect ) {
 
-		$this->connection->delete(
-			SQLStore::ID_TABLE,
-			array( 'smw_id' => $id ),
-			__METHOD__
-		);
+		// When marked as redirect, don't remove the reference
+		if ( $isRedirect === false || ( $isRedirect && $this->redirectRemoval ) ) {
+			$this->connection->delete(
+				SQLStore::ID_TABLE,
+				[ 'smw_id' => $id ],
+				__METHOD__
+			);
+		}
 
 		$this->connection->delete(
 			SQLStore::PROPERTY_STATISTICS_TABLE,
-			array( 'p_id' => $id ),
+			[ 'p_id' => $id ],
 			__METHOD__
 		);
 
 		$this->connection->delete(
 			SQLStore::QUERY_LINKS_TABLE,
-			array( 's_id' => $id ),
+			[ 's_id' => $id ],
 			__METHOD__
 		);
 
 		$this->connection->delete(
 			SQLStore::QUERY_LINKS_TABLE,
-			array( 'o_id' => $id ),
+			[ 'o_id' => $id ],
 			__METHOD__
 		);
 
@@ -201,7 +244,7 @@ class PropertyTableIdReferenceDisposer {
 		try {
 			$this->connection->delete(
 				SQLStore::FT_SEARCH_TABLE,
-				array( 's_id' => $id ),
+				[ 's_id' => $id ],
 				__METHOD__
 			);
 		} catch ( \DBError $e ) {
@@ -209,22 +252,22 @@ class PropertyTableIdReferenceDisposer {
 		}
 	}
 
-	private function triggerCleanUpEvents( $subject, $onTransactionIdle ) {
+	private function triggerCleanUpEvents( $subject ) {
 
 		if ( !$subject instanceof DIWikiPage ) {
 			return;
 		}
 
-		if ( $onTransactionIdle ) {
-			return $this->connection->onTransactionIdle( function() use( $subject ) {
-				$this->triggerCleanUpEvents( $subject, false );
-			} );
+		// Skip any reset for subobjects where it is expected that the base
+		// subject is cleaning up all related cache entries
+		if ( $subject->getSubobjectName() !== '' ) {
+			return;
 		}
 
 		$eventHandler = EventHandler::getInstance();
 
 		$dispatchContext = $eventHandler->newDispatchContext();
-		$dispatchContext->set( 'subject', $subject->asBase() );
+		$dispatchContext->set( 'subject', $subject );
 		$dispatchContext->set( 'context', 'PropertyTableIdReferenceDisposal' );
 
 		$eventHandler->getEventDispatcher()->dispatch(
@@ -236,13 +279,6 @@ class PropertyTableIdReferenceDisposer {
 			'factbox.cache.delete',
 			$dispatchContext
 		);
-
-		if ( $subject->getNamespace() === SMW_NS_PROPERTY ) {
-			$eventHandler->getEventDispatcher()->dispatch(
-				'property.specification.change',
-				$dispatchContext
-			);
-		}
 	}
 
 }

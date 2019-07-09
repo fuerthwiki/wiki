@@ -17,9 +17,6 @@ class PFFormEdit extends UnlistedSpecialPage {
 	public $mForm;
 	public $mError;
 
-	/**
-	 * Constructor
-	 */
 	function __construct() {
 		parent::__construct( 'FormEdit' );
 	}
@@ -46,13 +43,13 @@ class PFFormEdit extends UnlistedSpecialPage {
 	function printAltFormsList( $alt_forms, $target_name ) {
 		$text = "";
 		$fe = SpecialPageFactory::getPage( 'FormEdit' );
-		$fe_url = $fe->getTitle()->getFullURL();
+		$fe_url = $fe->getPageTitle()->getFullURL();
 		$i = 0;
 		foreach ( $alt_forms as $alt_form ) {
 			if ( $i++ > 0 ) {
 				$text .= ', ';
 			}
-			$altFormURL = $fe_url . '/' . rawurlencode( $alt_form ) . '/' . rawurlencode( $target_name );
+			$altFormURL = $fe_url . '/' . $alt_form . '/' . $target_name;
 			$text .= Html::element( 'a',
 				array( 'href' => $altFormURL ),
 				str_replace( '_', ' ', $alt_form )
@@ -64,6 +61,10 @@ class PFFormEdit extends UnlistedSpecialPage {
 	function printForm( $form_name, $targetName, $alt_forms = array() ) {
 		$out = $this->getOutput();
 		$req = $this->getRequest();
+
+		// If this call is lower down, it doesn't take effect in
+		// "show changes" mode for some MW versions, for some reason.
+		PFUtils::addFormRLModules();
 
 		$module = new PFAutoeditAPI( new ApiMain(), 'pfautoedit' );
 		$module->setOption( 'form', $form_name );
@@ -93,13 +94,12 @@ class PFFormEdit extends UnlistedSpecialPage {
 
 		$text = '';
 
-		// if action was successful and action was a Save, return
+		// If action was successful and action was a save, return.
 		if ( $module->getStatus() === 200 ) {
 			if ( $module->getAction() === PFAutoeditAPI::ACTION_SAVE ) {
 				return;
 			}
 		} else {
-
 			if ( defined( 'ApiResult::META_CONTENT' ) ) {
 				$resultData = $module->getResult()->getResultData( null, array(
 					'BC' => array(),
@@ -145,7 +145,7 @@ class PFFormEdit extends UnlistedSpecialPage {
 			} else {
 				$pageTitle = wfMessage( 'pf_formedit_createtitle', $result[ 'form' ], $targetName )->text();
 			}
-		} elseif ( count( $alt_forms ) > 0 ) {
+		} elseif ( $alt_forms ) {
 			// We use the 'creating' message here, instead of
 			// 'pf_formedit_createtitlenotarget', to differentiate
 			// between a page with no (default) form, and one with
@@ -161,7 +161,7 @@ class PFFormEdit extends UnlistedSpecialPage {
 		}
 
 		$out->setPageTitle( $pageTitle );
-		if ( count( $alt_forms ) > 0 ) {
+		if ( $alt_forms ) {
 			$text .= '<div class="infoMessage">';
 			if ( $result[ 'form' ] != '' ) {
 				$text .= wfMessage( 'pf_formedit_altforms' )->escaped();
@@ -179,8 +179,6 @@ class PFFormEdit extends UnlistedSpecialPage {
 		if ( isset( $result[ 'formHTML' ] ) ) {
 			$text .= $result[ 'formHTML' ];
 		}
-
-		PFUtils::addFormRLModules();
 
 		$out->addHTML( $text );
 

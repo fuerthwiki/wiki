@@ -2,9 +2,9 @@
 
 namespace SMW\Tests\Benchmark;
 
-use SMW\Tests\JsonTestCaseScriptRunner;
-use SMW\Tests\JsonTestCaseFileHandler;
 use SMW\ApplicationFactory;
+use SMW\Tests\JsonTestCaseFileHandler;
+use SMW\Tests\JsonTestCaseScriptRunner;
 
 /**
  * @group semantic-mediawiki-benchmark
@@ -50,7 +50,7 @@ class BenchmarkJsonScriptRunnerTest extends JsonTestCaseScriptRunner {
 	/**
 	 * @var array
 	 */
-	private $benchmarkReports = array();
+	private $benchmarkReports = [];
 
 	/**
 	 * @see JsonTestCaseScriptRunner::$deletePagesOnTearDown
@@ -128,7 +128,7 @@ class BenchmarkJsonScriptRunnerTest extends JsonTestCaseScriptRunner {
 	 * @see JsonTestCaseScriptRunner::getAllowedTestCaseFiles
 	 */
 	protected function getAllowedTestCaseFiles() {
-		return array();
+		return [];
 	}
 
 	/**
@@ -153,16 +153,18 @@ class BenchmarkJsonScriptRunnerTest extends JsonTestCaseScriptRunner {
 			$this->benchmarkReports
 		);
 
-		$report = array(
+		$report = [
 			'mediawiki' => $GLOBALS['wgVersion'],
 			'semantic-mediawiki' => \SemanticMediaWiki::getVersion(),
-			'environment' => \SemanticMediaWiki::getEnvironment(),
+			'environment' => $this->getStore()->getInfo(),
 			'benchmarks' => $this->benchmarkReports
+		];
+
+		$cliOutputFormatter = new CliOutputFormatter(
+			CliOutputFormatter::FORMAT_JSON
 		);
 
-		$outputCliFormatter = new OutputCliFormatter( OutputCliFormatter::FORMAT_TREE );
-
-		return print "\n\n" . $outputCliFormatter->format( $report );
+		return print "\n\n" . $cliOutputFormatter->format( $report );
 	}
 
 	private function doRunImportBenchmarks( $jsonTestCaseFileHandler ) {

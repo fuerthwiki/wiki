@@ -2,8 +2,6 @@
 
 namespace SMW\DataValues\ValueParsers;
 
-use SMWPropertyValue as PropertyValue;
-use SMWDataValue as DataValue;
 use SMW\Localizer;
 
 /**
@@ -19,12 +17,12 @@ class PropertyValueParser implements ValueParser {
 	/**
 	 * @var array
 	 */
-	private $errors = array();
+	private $errors = [];
 
 	/**
 	 * @var array
 	 */
-	private $invalidCharacterList = array();
+	private $invalidCharacterList = [];
 
 	/**
 	 * @var boolean
@@ -103,7 +101,7 @@ class PropertyValueParser implements ValueParser {
 	 */
 	public function parse( $userValue ) {
 
-		$this->errors = array();
+		$this->errors = [];
 
 		// #1727 <Foo> or <Foo-<Bar> are not permitted but
 		// Foo-<Bar will be converted to Foo-
@@ -111,17 +109,17 @@ class PropertyValueParser implements ValueParser {
 			htmlspecialchars_decode( $userValue )
 		);
 
-		if ( !$this->doCheckValidCharacters( $userValue ) ) {
-			return array( null, null, null );
+		if ( !$this->hasValidCharacters( $userValue ) ) {
+			return [ null, null, null ];
 		}
 
 		return $this->getNormalizedValueFrom( $userValue );
 	}
 
-	private function doCheckValidCharacters( $value ) {
+	private function hasValidCharacters( $value ) {
 
 		if ( trim( $value ) === '' ) {
-			$this->errors[] = array( 'smw_emptystring' );
+			$this->errors[] = [ 'smw_emptystring' ];
 			return false;
 		}
 
@@ -134,19 +132,28 @@ class PropertyValueParser implements ValueParser {
 			}
 		}
 
-		// #1567, only on a query context so that |sort=# are allowed
+		// #1567, Only allowed in connection with a query context (e.g sort=#)
 		if ( $invalidCharacter === '' && strpos( $value, '#' ) !== false && !$this->isQueryContext ) {
 			$invalidCharacter = '#';
 		}
 
 		if ( $invalidCharacter !== '' ) {
-			$this->errors[] = array( 'smw-datavalue-property-invalid-character', $value, $invalidCharacter );
+
+			// Replace selected control chars otherwise the error display becomes
+			// unreadable
+			$invalidCharacter = str_replace(
+				[ "\r", "\n", ],
+				[ "CR", "LF" ],
+				$invalidCharacter
+			);
+
+			$this->errors[] = [ 'smw-datavalue-property-invalid-character', $value, $invalidCharacter ];
 			return false;
 		}
 
 		// #676, only on a query context allow Foo.Bar
 		if ( $invalidCharacter === '' && !$this->isQueryContext && strpos( $value, '.' ) !== false ) {
-			$this->errors[] = array( 'smw-datavalue-property-invalid-chain', $value );
+			$this->errors[] = [ 'smw-datavalue-property-invalid-chain', $value ];
 			return false;
 		}
 
@@ -176,7 +183,7 @@ class PropertyValueParser implements ValueParser {
 			$inverse = true;
 		}
 
-		return array( $propertyName, $capitalizedName, $inverse );
+		return [ $propertyName, $capitalizedName, $inverse ];
 	}
 
 	private function doNormalize( $text, $isCapitalLinks ) {

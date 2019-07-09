@@ -45,7 +45,7 @@ class Message {
 	/**
 	 * @var array
 	 */
-	private static $messageHandler = array();
+	private static $messageHandler = [];
 
 	/**
 	 * @since 2.4
@@ -111,13 +111,32 @@ class Message {
 			$type = self::TEXT;
 		}
 
+		if ( $message === [] ) {
+			return '';
+		}
+
 		$message = (array)$message;
-		$encode = array();
+		$encode = [];
 		$encode[] = $type;
 
-		// Normalize arguments like "<strong>Expression error: Unrecognized word "yyyy".</strong>"
 		foreach ( $message as $value ) {
-			$encode[] = strip_tags( htmlspecialchars_decode( $value, ENT_QUOTES ) );
+			// Check if the value is already encoded, and if decode to keep the
+			// structure intact
+			if ( substr( $value, 0, 1 ) === '[' && ( $dc = json_decode( $value, true ) ) && json_last_error() === JSON_ERROR_NONE ) {
+				$encode += $dc;
+			} else {
+				// Normalize arguments like "<strong>Expression error:
+				// Unrecognized word "yyyy".</strong>"
+				$value = strip_tags( htmlspecialchars_decode( $value, ENT_QUOTES ) );
+
+				// - Internally encoded to circumvent the strip_tags which would
+				//   remove <, > from values that represent a range
+				// - Encode `::` to prevent the annotation parser to pick the
+				//   message value
+				$value = str_replace( [ '%3C', '%3E', "::" ], [ '>', '<', "&#58;&#58;" ], $value );
+
+				$encode[] = $value;
+			}
 		}
 
 		return json_encode( $encode );
@@ -206,7 +225,7 @@ class Message {
 
 		$message = call_user_func_array(
 			$handler,
-			array( $parameters, $language )
+			[ $parameters, $language ]
 		);
 
 		self::getCache()->save( $hash, $message );

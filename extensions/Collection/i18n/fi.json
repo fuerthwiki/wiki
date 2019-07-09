@@ -11,7 +11,11 @@
 			"Tarmo",
 			"Zache",
 			"Syreeni",
-			"McSalama"
+			"McSalama",
+			"Macofe",
+			"Alluk.",
+			"Pyscowicz",
+			"Pahkiqaz"
 		]
 	},
 	"coll-desc": "[[Special:Book|Laadi kirjoja]].",
@@ -30,7 +34,7 @@
 	"coll-couldnotaddarticle_msg": "Wikisivua ei voitu lisätä.",
 	"coll-couldnotremovearticle_title": "Wikisivua ei voitu poistaa",
 	"coll-couldnotremovearticle_msg": "Wikisivua ei voitu poistaa.",
-	"coll-noscript_text": "<h1>Vaatii toimiakseen JavaScriptin</h1>\n<strong>Selaimesi ei tue JavaScriptiä tai JavaScript on poistettu käytöstä.\nTämä sivu ei toimi oikein, ellei JavaScript ole käytössä.</strong>",
+	"coll-noscript_text": "<h1>Vaatii toimiakseen JavaScriptin</h1>\n<strong>Selain ei tue JavaScriptiä tai JavaScript on poistettu käytöstä.\nTämä sivu ei toimi oikein, ellei JavaScript ole käytössä.</strong>",
 	"coll-savedbook_template": "tallennettu_kirja",
 	"coll-your_book": "Sinun kirjasi",
 	"coll-download_title": "Lataa",
@@ -87,7 +91,7 @@
 	"coll-rendering_page_info_text_article": "{{MediaWiki:Coll-helppage}}/Muotoillaan sivu -tiedote",
 	"coll-rendering_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/Muotoillaan kokoelma -tiedote",
 	"coll-rendering_finished_title": "Renderöinti valmis",
-	"coll-rendering_finished_text": "<strong>Tiedosto on generoitu.</strong>\n<strong>[$1 Lataa tiedosto]</strong> tietokoneellesi.\n\nHuomautuksia:\n* Etkö ole tyytyväinen lopputulokseen? Katso [[{{MediaWiki:Coll-helppage}}|kirjojen ohjesivulta]] mahdollisuuksista parantaa sitä.",
+	"coll-rendering_finished_text": "<strong>Tiedosto on generoitu.</strong>\n<strong>[$1 Lataa tiedosto]</strong> tietokoneellesi.",
 	"coll-finished_page_info_text_article": "{{MediaWiki:Coll-helppage}}/Muotoillaan sivu -tiedote",
 	"coll-finished_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/Muotoillaan kokoelma -tiedote",
 	"coll-rendering_failed_title": "Renderöinti epäonnistui",
@@ -129,7 +133,7 @@
 	"coll-load_local_book": "Napsauta OK jatkaaksesi kirjan $1 ($2 sivua) työstämistä. Napsauta Peruuta poistaaksesi sen ja aloittaaksesi uuden kirjan.",
 	"coll-format-rl": "e-kirja (PDF)",
 	"coll-format-epub": "e-kirja (EPUB)",
-	"coll-format-odf": "tekstinkäsittelyohjelma (OpenDocument)",
+	"coll-format-odf": "Tekstinkäsittelyohjelma (OpenDocument)",
 	"coll-format-zim": "Kiwix (OpenZIM)",
 	"coll-format-docbook": "DocBook",
 	"coll-format-okawix_zeno": "Okawix",
@@ -172,8 +176,15 @@
 	"coll-setting-papersize": "Paperin koko:",
 	"coll-setting-papersize-letter": "Kirje",
 	"coll-setting-toc": "Sisällytä sisällysluettelo",
+	"coll-setting-toc-yes": "Kyllä",
+	"coll-setting-toc-no": "Ei",
 	"coll-setting-columns": "Sarakkeita:",
 	"coll-attribution-anons": "Nimetön: $1",
 	"coll-article-attribution": "<b>$1</b> <i>Lähde:</i> $2 <i>Osallistujat:</i> $3",
-	"coll-image-attribution": "<b>$1</b> <i>Lähde:</i> $2 <i>Lisenssi:</i> $3 <i>Osallistujat:</i> $4 <i>Alkuperäinen esittäjä:</i> $5"
+	"coll-image-attribution": "<b>$1</b> <i>Lähde:</i> $2 <i>Lisenssi:</i> $3 <i>Osallistujat:</i> $4 <i>Alkuperäinen esittäjä:</i> $5",
+	"coll-warning-learn-more": "Lue lisää",
+	"coll-notice-download-pdf-title": "Lataa yksittäiset sivut",
+	"coll-images-title": "Kuvat",
+	"coll-images-source": "Lähde",
+	"coll-images-license": "Lisenssi"
 }

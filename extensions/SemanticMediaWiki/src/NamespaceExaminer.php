@@ -2,8 +2,8 @@
 
 namespace SMW;
 
-use MWNamespace;
 use InvalidArgumentException;
+use MWNamespace;
 
 /**
  * Examines if a specific namespace is enabled for the usage of the
@@ -20,7 +20,7 @@ class NamespaceExaminer {
 	private static $instance = null;
 
 	/** @var array */
-	private $registeredNamespaces = array();
+	private $registeredNamespaces = [];
 
 	/**
 	 * @since 1.9

@@ -16,12 +16,12 @@
 		"OpenStreetMap"
 	],
 	"homepage": "https://github.com/JeroenDeDauw/Maps",
-	"license": "GPL-2.0+",
+	"license": "GPL-2.0-or-later",
 	"authors": [
 		{
 			"name": "Jeroen De Dauw",
 			"email": "jeroendedauw@gmail.com",
-			"homepage": "http://jeroendedauw.com",
+			"homepage": "https://www.entropywins.wtf",
 			"role": "Creator and lead developer"
 		}
 	],
@@ -31,43 +31,32 @@
 		"source": "https://github.com/JeroenDeDauw/Maps"
 	},
 	"require": {
-		"php": ">=5.6",
+		"php": ">=7.1",
 		"composer/installers": "^1.0.1",
 		"mediawiki/validator": "~2.2",
-		"data-values/geo": "~2.0",
-		"jeroen/file-fetcher": "~3.1|~4.0",
-		"jeroen/simple-cache": "~2.0"
+		"mediawiki/parser-hooks": "~1.5",
+		"param-processor/param-processor": "~1.4.2",
+		"data-values/geo": "~4.0|~3.0",
+		"jeroen/file-fetcher": "~6.0|~5.0",
+		"jeroen/file-fetcher-cache": "~1.0",
+		"jeroen/simple-cache": "~2.0",
+		"jeroen/simple-geocoder": "~1.2"
 	},
 	"require-dev": {
-		"data-values/common": "~0.3.1",
-		"phpunit/phpunit": "~3.7"
+		"data-values/common": "~0.4.1"
 	},
 	"autoload": {
-		"files" : [
-			"Maps.php"
-		],
 		"psr-4": {
-			"Maps\\": "src/"
+			"Maps\\": "src/",
+			"Maps\\Tests\\": "tests/"
 		},
 		"classmap": [
-			"includes/",
-			"Maps.hooks.php",
-			"SemanticMaps/src/",
-			"SemanticMaps/SemanticMaps.hooks.php"
-		]
-	},
-	"autoload-dev": {
-		"psr-4": {
-			"Maps\\Tests\\TestDoubles\\": "tests/TestDoubles/"
-		},
-		"classmap": [
-			"tests/Unit/Elements/",
-			"tests/Integration/parserhooks/ParserHookTest.php"
+			"MapsRegistration.php"
 		]
 	},
 	"extra": {
 		"branch-alias": {
-			"dev-master": "4.3.x-dev"
+			"dev-master": "7.x-dev"
 		}
 	},
 	"replace": {

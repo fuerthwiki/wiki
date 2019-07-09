@@ -34,22 +34,6 @@ class MwCollaboratorFactoryTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
-	public function testCanConstructJobQueueLookup() {
-
-		$instance = new MwCollaboratorFactory(
-			$this->applicationFactory
-		);
-
-		$connection = $this->getMockBuilder( '\SMW\MediaWiki\Database' )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$this->assertInstanceOf(
-			'\SMW\MediaWiki\JobQueueLookup',
-			$instance->newJobQueueLookup( $connection )
-		);
-	}
-
 	public function testCanConstructMessageBuilder() {
 
 		$instance = new MwCollaboratorFactory(
@@ -158,17 +142,17 @@ class MwCollaboratorFactoryTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
-	public function testCanConstructLazyDBConnectionProvider() {
+	public function testCanConstructLoadBalancerConnectionProvider() {
 
 		$instance = new MwCollaboratorFactory( new ApplicationFactory() );
 
 		$this->assertInstanceOf(
-			'\SMW\MediaWiki\LazyDBConnectionProvider',
-			$instance->newLazyDBConnectionProvider( DB_SLAVE )
+			'\SMW\MediaWiki\Connection\LoadBalancerConnectionProvider',
+			$instance->newLoadBalancerConnectionProvider( DB_SLAVE )
 		);
 	}
 
-	public function testCanConstructDatabaseConnectionProvider() {
+	public function testCanConstructConnectionProvider() {
 
 		$settings = $this->getMockBuilder( '\SMW\Settings' )
 			->disableOriginalConstructor()
@@ -180,7 +164,7 @@ class MwCollaboratorFactoryTest extends \PHPUnit_Framework_TestCase {
 
 		$settings->expects( $this->atLeastOnce() )
 			->method( 'get' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
 		$this->applicationFactory->expects( $this->atLeastOnce() )
 			->method( 'getSettings' )
@@ -195,8 +179,8 @@ class MwCollaboratorFactoryTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$this->assertInstanceOf(
-			'\SMW\MediaWiki\DatabaseConnectionProvider',
-			$instance->newMediaWikiDatabaseConnectionProvider()
+			'\SMW\MediaWiki\Connection\ConnectionProvider',
+			$instance->newConnectionProvider()
 		);
 	}
 

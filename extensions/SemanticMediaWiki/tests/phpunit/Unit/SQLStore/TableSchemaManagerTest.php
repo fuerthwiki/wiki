@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\SQLStore;
 
+use SMW\SQLStore\TableBuilder\FieldType;
 use SMW\SQLStore\TableSchemaManager;
-use Onoi\MessageReporter\MessageReporterFactory;
 
 /**
  * @covers \SMW\SQLStore\TableSchemaManager
@@ -23,7 +23,7 @@ class TableSchemaManagerTest extends \PHPUnit_Framework_TestCase {
 			->getMock();
 
 		$this->assertInstanceOf(
-			'\SMW\SQLStore\TableSchemaManager',
+			TableSchemaManager::class,
 			new TableSchemaManager( $store )
 		);
 	}
@@ -40,7 +40,7 @@ class TableSchemaManagerTest extends \PHPUnit_Framework_TestCase {
 
 		$dataItemHandler->expects( $this->once() )
 			->method( 'getTableFields' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
 		$store = $this->getMockBuilder( '\SMW\SQLStore\SQLStore' )
 			->disableOriginalConstructor()
@@ -48,7 +48,7 @@ class TableSchemaManagerTest extends \PHPUnit_Framework_TestCase {
 
 		$store->expects( $this->once() )
 			->method( 'getPropertyTables' )
-			->will( $this->returnValue( array( $propertyTableDefinition ) ) );
+			->will( $this->returnValue( [ $propertyTableDefinition ] ) );
 
 		$store->expects( $this->once() )
 			->method( 'getDataItemHandlerForDIType' )
@@ -66,6 +66,49 @@ class TableSchemaManagerTest extends \PHPUnit_Framework_TestCase {
 		$this->assertInternalType(
 			'string',
 			$instance->getHash()
+		);
+	}
+
+	public function testFindTableDefinitionWithNoCaseFeature() {
+
+		$propertyTableDefinition = $this->getMockBuilder( '\SMW\SQLStore\PropertyTableDefinition' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$dataItemHandler = $this->getMockBuilder( '\SMW\SQLStore\EntityStore\DataItemHandler' )
+			->disableOriginalConstructor()
+			->getMockForAbstractClass();
+
+		$dataItemHandler->expects( $this->once() )
+			->method( 'getTableFields' )
+			->will( $this->returnValue( [] ) );
+
+		$store = $this->getMockBuilder( '\SMW\SQLStore\SQLStore' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$store->expects( $this->once() )
+			->method( 'getPropertyTables' )
+			->will( $this->returnValue( [ $propertyTableDefinition ] ) );
+
+		$store->expects( $this->once() )
+			->method( 'getDataItemHandlerForDIType' )
+			->will( $this->returnValue( $dataItemHandler ) );
+
+		$instance = new TableSchemaManager(
+			$store
+		);
+
+		$instance->setFeatureFlags(
+			SMW_FIELDT_CHAR_NOCASE
+		);
+
+		$table = $instance->findTable( \SMW\SQLStore\SQLStore::ID_TABLE );
+		$fields = $table->get( 'fields' );
+
+		$this->assertContains(
+			FieldType::TYPE_CHAR_NOCASE,
+			$fields['smw_sortkey']
 		);
 	}
 

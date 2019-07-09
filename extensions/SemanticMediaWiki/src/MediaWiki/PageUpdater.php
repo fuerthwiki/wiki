@@ -2,14 +2,12 @@
 
 namespace SMW\MediaWiki;
 
-use Title;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerAwareInterface;
-use SMW\Utils\Timer;
 use DeferrableUpdate;
 use DeferredpendingUpdates;
-use SMW\Updater\TransactionalDeferredCallableUpdate;
-use SMW\MediaWiki\Database;
+use Psr\Log\LoggerAwareTrait;
+use SMW\MediaWiki\Deferred\TransactionalCallableUpdate;
+use SMW\Utils\Timer;
+use Title;
 
 /**
  * @license GNU GPL v2+
@@ -17,12 +15,14 @@ use SMW\MediaWiki\Database;
  *
  * @author mwjames
  */
-class PageUpdater implements LoggerAwareInterface, DeferrableUpdate {
+class PageUpdater implements DeferrableUpdate {
+
+	use LoggerAwareTrait;
 
 	/**
-	 * @var TransactionalDeferredCallableUpdate
+	 * @var TransactionalCallableUpdate
 	 */
-	private $transactionalDeferredCallableUpdate;
+	private $transactionalCallableUpdate;
 
 	/**
 	 * @var Database
@@ -32,17 +32,17 @@ class PageUpdater implements LoggerAwareInterface, DeferrableUpdate {
 	/**
 	 * @var Title[]
 	 */
-	private $titles = array();
-
-	/**
-	 * LoggerInterface
-	 */
-	private $logger;
+	private $titles = [];
 
 	/**
 	 * @var string
 	 */
 	private $origin = '';
+
+	/**
+	 * @var string|null
+	 */
+	private $fingerprint = null;
 
 	/**
 	 * @var boolean
@@ -67,28 +67,17 @@ class PageUpdater implements LoggerAwareInterface, DeferrableUpdate {
 	/**
 	 * @var array
 	 */
-	private $pendingUpdates = array();
+	private $pendingUpdates = [];
 
 	/**
 	 * @since 2.5
 	 *
 	 * @param Database|null $connection
-	 * @param TransactionalDeferredCallableUpdate|null $transactionalDeferredCallableUpdate
+	 * @param TransactionalCallableUpdate|null $transactionalCallableUpdate
 	 */
-	public function __construct( Database $connection = null, TransactionalDeferredCallableUpdate $transactionalDeferredCallableUpdate = null ) {
+	public function __construct( Database $connection = null, TransactionalCallableUpdate $transactionalCallableUpdate = null ) {
 		$this->connection = $connection;
-		$this->transactionalDeferredCallableUpdate = $transactionalDeferredCallableUpdate;
-	}
-
-	/**
-	 * @see LoggerAwareInterface::setLogger
-	 *
-	 * @since 2.5
-	 *
-	 * @param LoggerInterface $logger
-	 */
-	public function setLogger( LoggerInterface $logger ) {
-		$this->logger = $logger;
+		$this->transactionalCallableUpdate = $transactionalCallableUpdate;
 	}
 
 	/**
@@ -98,6 +87,15 @@ class PageUpdater implements LoggerAwareInterface, DeferrableUpdate {
 	 */
 	public function setOrigin( $origin ) {
 		$this->origin = $origin;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string|null $fingerprint
+	 */
+	public function setFingerprint( $fingerprint = null ) {
+		$this->fingerprint = $fingerprint;
 	}
 
 	/**
@@ -164,7 +162,7 @@ class PageUpdater implements LoggerAwareInterface, DeferrableUpdate {
 	 * @since 2.1
 	 */
 	public function clear() {
-		$this->titles = array();
+		$this->titles = [];
 	}
 
 	/**
@@ -184,27 +182,31 @@ class PageUpdater implements LoggerAwareInterface, DeferrableUpdate {
 	 */
 	public function pushUpdate() {
 
-		if ( $this->transactionalDeferredCallableUpdate === null ) {
-			return $this->log( __METHOD__ . ' it is not possible to push updates as TransactionalDeferredCallableUpdate)' );
+		if ( $this->transactionalCallableUpdate === null ) {
+			return $this->log( __METHOD__ . ' it is not possible to push updates as DeferredTransactionalUpdate)' );
 		}
 
-		$this->transactionalDeferredCallableUpdate->setCallback( function(){
+		$this->transactionalCallableUpdate->setCallback( function(){
 			$this->doUpdate();
 		} );
 
 		if ( $this->onTransactionIdle ) {
-			$this->transactionalDeferredCallableUpdate->waitOnTransactionIdle();
+			$this->transactionalCallableUpdate->waitOnTransactionIdle();
 		}
 		if ( $this->isPending ) {
-			$this->transactionalDeferredCallableUpdate->markAsPending();
+			$this->transactionalCallableUpdate->markAsPending();
 		}
 
-		$this->transactionalDeferredCallableUpdate->setOrigin( array(
+		$this->transactionalCallableUpdate->setFingerprint(
+			$this->fingerprint
+		);
+
+		$this->transactionalCallableUpdate->setOrigin( [
 			__METHOD__,
 			$this->origin
-		) );
+		] );
 
-		$this->transactionalDeferredCallableUpdate->pushUpdate();
+		$this->transactionalCallableUpdate->pushUpdate();
 	}
 
 	/**
@@ -218,7 +220,7 @@ class PageUpdater implements LoggerAwareInterface, DeferrableUpdate {
 			call_user_func( [ $this, $update ] );
 		}
 
-		$this->pendingUpdates = array();
+		$this->pendingUpdates = [];
 	}
 
 	/**
@@ -283,6 +285,29 @@ class PageUpdater implements LoggerAwareInterface, DeferrableUpdate {
 
 		Timer::start( __METHOD__ );
 
+		// #3413
+		$byNamespace = [];
+
+		foreach ( $this->titles as $title ) {
+			$namespace = $title->getNamespace();
+			$pagename = $title->getDBkey();
+			$byNamespace[$namespace][] = $pagename;
+		}
+
+		$conds = [];
+
+		foreach ( $byNamespace as $namespaces => $pagenames ) {
+
+			$cond = [
+				'page_namespace' => $namespaces,
+				'page_title' => $pagenames,
+			];
+
+			$conds[] = $this->connection->makeList( $cond, LIST_AND );
+		}
+
+		$titleConds = $this->connection->makeList( $conds, LIST_OR );
+
 		// Required due to postgres and "Error: 22007 ERROR:  invalid input
 		// syntax for type timestamp with time zone: "20170408113703""
 		$now = $this->connection->timestamp();
@@ -290,7 +315,7 @@ class PageUpdater implements LoggerAwareInterface, DeferrableUpdate {
 			'page',
 			'page_id',
 			[
-				'page_title' => array_keys( $this->titles ),
+				$titleConds,
 				'page_touched < ' . $this->connection->addQuotes( $now )
 			],
 			__METHOD__
@@ -306,7 +331,7 @@ class PageUpdater implements LoggerAwareInterface, DeferrableUpdate {
 			$ids[] = $row->page_id;
 		}
 
-		if ( $ids === array() ) {
+		if ( $ids === [] ) {
 			return;
 		}
 
@@ -320,16 +345,13 @@ class PageUpdater implements LoggerAwareInterface, DeferrableUpdate {
 			__METHOD__
 		);
 
-		$this->log( __METHOD__ . ' (procTime in sec: ' . Timer::getElapsedTime( __METHOD__, 7 ) . ')' );
-	}
+		$context = [
+			'method' => __METHOD__,
+			'procTime' => Timer::getElapsedTime( __METHOD__, 7 ),
+			'role' => 'developer'
+		];
 
-	private function log( $message, $context = array() ) {
-
-		if ( $this->logger === null ) {
-			return;
-		}
-
-		$this->logger->info( $message, $context );
+		$this->logger->info( 'Page update, pool update (procTime in sec: {procTime})', $context );
 	}
 
 }

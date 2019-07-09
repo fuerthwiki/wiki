@@ -2,9 +2,9 @@
 
 namespace SMW\Tests\MediaWiki\Jobs;
 
-use SMW\Tests\TestEnvironment;
 use SMW\DIWikiPage;
 use SMW\MediaWiki\Jobs\PropertyStatisticsRebuildJob;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\MediaWiki\Jobs\PropertyStatisticsRebuildJob
@@ -22,10 +22,31 @@ class PropertyStatisticsRebuildJobTest extends \PHPUnit_Framework_TestCase {
 	protected function setUp() {
 		parent::setUp();
 
+		$row = new \stdClass;
+		$row->smw_title = 'Test';
+		$row->smw_id = 42;
+
 		$this->testEnvironment = new TestEnvironment();
 
+		$connection = $this->getMockBuilder( '\SMW\MediaWiki\Database' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$connection->expects( $this->any() )
+			->method( 'select' )
+			->will( $this->returnValue( new \FakeResultWrapper( [ $row ] ) ) );
+
 		$store = $this->getMockBuilder( '\SMW\SQLStore\SQLStore' )
-			->getMockForAbstractClass();
+			->disableOriginalConstructor()
+			->getMock();
+
+		$store->expects( $this->any() )
+			->method( 'getConnection' )
+			->will( $this->returnValue( $connection ) );
+
+		$store->expects( $this->any() )
+			->method( 'getPropertyTables' )
+			->will( $this->returnValue( [] ) );
 
 		$this->testEnvironment->registerObject( 'Store', $store );
 	}
@@ -66,9 +87,9 @@ class PropertyStatisticsRebuildJobTest extends \PHPUnit_Framework_TestCase {
 
 	public function parametersProvider() {
 
-		$provider[] = array(
-			array()
-		);
+		$provider[] = [
+			[]
+		];
 
 		return $provider;
 	}

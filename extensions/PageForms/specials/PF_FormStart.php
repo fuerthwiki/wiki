@@ -14,9 +14,6 @@
  */
 class PFFormStart extends SpecialPage {
 
-	/**
-	 * Constructor
-	 */
 	function __construct() {
 		parent::__construct( 'FormStart' );
 	}
@@ -56,7 +53,7 @@ class PFFormStart extends SpecialPage {
 		// Handle submission of this form.
 		$form_submitted = $req->getCheck( 'page_name' );
 		if ( $form_submitted ) {
-			$page_name = $req->getVal( 'page_name' );
+			$page_name = trim( $req->getVal( 'page_name' ) );
 			// This form can be used to create a sub-page for an
 			// existing page
 			if ( !is_null( $super_page ) && $super_page !== '' ) {
@@ -66,7 +63,7 @@ class PFFormStart extends SpecialPage {
 			if ( $page_name !== '' ) {
 				// Append the namespace prefix to the page name,
 				// if this namespace was not already entered.
-				if ( strpos( $page_name, $target_namespace . ':' ) === false && !is_null( $target_namespace ) ) {
+				if ( $target_namespace != '' && strpos( $page_name, $target_namespace . ':' ) === false ) {
 					$page_name = $target_namespace . ':' . $page_name;
 				}
 				// If there was no page title, it's probably an
@@ -125,9 +122,9 @@ END;
 		$fe = SpecialPageFactory::getPage( 'FormEdit' );
 		// Special handling for forms whose name contains a slash.
 		if ( strpos( $formName, '/' ) !== false ) {
-			return $fe->getTitle()->getLocalURL( array( 'form' => $formName, 'target' => $targetName ) );
+			return $fe->getPageTitle()->getLocalURL( array( 'form' => $formName, 'target' => $targetName ) );
 		}
-		return $fe->getTitle( "$formName/$targetName" )->getLocalURL();
+		return $fe->getPageTitle( "$formName/$targetName" )->getLocalURL();
 	}
 
 	function doRedirect( $form_name, $page_name, $params ) {

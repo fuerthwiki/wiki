@@ -1,24 +1,25 @@
 language: php
 
 php:
-  - 5.3
-  - 5.4
-  - 5.6
-  - 7
-  - hhvm
+  - 7.1
+  - 7.2
+  - 7.3
+  - master
 
-before_script: travis_retry composer install
+sudo: false
 
-script: composer ci
+install: travis_retry composer install
 
-after_script:
-  - phpunit --coverage-clover build/logs/clover.xml
-  - composer require satooshi/php-coveralls:dev-master
-  - php vendor/bin/coveralls -v
+script:
+  - composer validate --no-interaction
+  - make ci
 
-notifications:
-  email:
-    recipients:
-      - jeroendedauw@gmail.com
-    on_success: change
-    on_failure: always
+after_success:
+  - if [[ "`phpenv version-name`" != "7.3" ]]; then exit 0; fi
+  - vendor/bin/phpunit --coverage-clover coverage.clover
+  - wget https://scrutinizer-ci.com/ocular.phar
+  - php ocular.phar code-coverage:upload --format=php-clover coverage.clover
+
+cache:
+  directories:
+    - $HOME/.composer/cache

@@ -32,10 +32,14 @@ class DistinctEntityDataRebuilderTest extends \PHPUnit_Framework_TestCase {
 			->disableOriginalConstructor()
 			->getMockForAbstractClass();
 
-		$store->getOptions()->set( 'smwgSemanticsEnabled', true );
-		$store->getOptions()->set( 'smwgAutoRefreshSubject', true );
+		$store->setOption( 'smwgSemanticsEnabled', true );
+		$store->setOption( 'smwgAutoRefreshSubject', true );
 
 		$this->testEnvironment = new TestEnvironment();
+		$spyLogger = $this->testEnvironment->newSpyLogger();
+
+		$store->setLogger( $spyLogger );
+
 		$this->testEnvironment->registerObject( 'Store', $store );
 
 		$connection = $this->getMockBuilder( '\SMW\MediaWiki\Database' )
@@ -44,9 +48,9 @@ class DistinctEntityDataRebuilderTest extends \PHPUnit_Framework_TestCase {
 
 		$connection->expects( $this->any() )
 			->method( 'select' )
-			->will( $this->returnValue( array() ) );
+			->will( $this->returnValue( [] ) );
 
-		$this->connectionManager = $this->getMockBuilder( '\SMW\ConnectionManager' )
+		$this->connectionManager = $this->getMockBuilder( '\SMW\Connection\ConnectionManager' )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -75,13 +79,13 @@ class DistinctEntityDataRebuilderTest extends \PHPUnit_Framework_TestCase {
 			->disableOriginalConstructor()
 			->getMockForAbstractClass();
 
-		$titleCreator = $this->getMockBuilder( '\SMW\MediaWiki\TitleCreator' )
+		$titleFactory = $this->getMockBuilder( '\SMW\MediaWiki\TitleFactory' )
 			->disableOriginalConstructor()
 			->getMock();
 
 		$this->assertInstanceOf(
 			'\SMW\Maintenance\DistinctEntityDataRebuilder',
-			new DistinctEntityDataRebuilder( $store, $titleCreator )
+			new DistinctEntityDataRebuilder( $store, $titleFactory )
 		);
 	}
 
@@ -104,7 +108,7 @@ class DistinctEntityDataRebuilderTest extends \PHPUnit_Framework_TestCase {
 
 		$queryResult->expects( $this->once() )
 			->method( 'getResults' )
-			->will( $this->returnValue( array( $subject ) ) );
+			->will( $this->returnValue( [ $subject ] ) );
 
 		$store = $this->getMockBuilder( '\SMW\Store' )
 			->disableOriginalConstructor()
@@ -120,18 +124,18 @@ class DistinctEntityDataRebuilderTest extends \PHPUnit_Framework_TestCase {
 
 		$store->setConnectionManager( $this->connectionManager );
 
-		$titleCreator = $this->getMockBuilder( '\SMW\MediaWiki\TitleCreator' )
+		$titleFactory = $this->getMockBuilder( '\SMW\MediaWiki\TitleFactory' )
 			->disableOriginalConstructor()
 			->getMock();
 
 		$instance = new DistinctEntityDataRebuilder(
 			$store,
-			$titleCreator
+			$titleFactory
 		);
 
-		$instance->setOptions( new Options( array(
+		$instance->setOptions( new Options( [
 			'query' => '[[Category:Foo]]'
-		) ) );
+		] ) );
 
 		$this->assertTrue(
 			$instance->doRebuild()
@@ -154,7 +158,7 @@ class DistinctEntityDataRebuilderTest extends \PHPUnit_Framework_TestCase {
 				$this->anything(),
 				$this->anything(),
 				$this->anything() )
-			->will( $this->returnValue( array( $row ) ) );
+			->will( $this->returnValue( [ $row ] ) );
 
 		$store = $this->getMockBuilder( '\SMWSQLStore3' )
 			->disableOriginalConstructor()
@@ -164,18 +168,18 @@ class DistinctEntityDataRebuilderTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getConnection' )
 			->will( $this->returnValue( $database ) );
 
-		$titleCreator = $this->getMockBuilder( '\SMW\MediaWiki\TitleCreator' )
+		$titleFactory = $this->getMockBuilder( '\SMW\MediaWiki\TitleFactory' )
 			->disableOriginalConstructor()
 			->getMock();
 
 		$instance = new DistinctEntityDataRebuilder(
 			$store,
-			$titleCreator
+			$titleFactory
 		);
 
-		$instance->setOptions( new Options( array(
+		$instance->setOptions( new Options( [
 			'categories' => true
-		) ) );
+		] ) );
 
 		$this->assertTrue(
 			$instance->doRebuild()
@@ -196,10 +200,10 @@ class DistinctEntityDataRebuilderTest extends \PHPUnit_Framework_TestCase {
 			->method( 'select' )
 			->with( $this->anything(),
 				$this->anything(),
-				$this->equalTo( array( 'page_namespace' => SMW_NS_PROPERTY ) ),
+				$this->equalTo( [ 'page_namespace' => SMW_NS_PROPERTY ] ),
 				$this->anything(),
 				$this->anything() )
-			->will( $this->returnValue( array( $row ) ) );
+			->will( $this->returnValue( [ $row ] ) );
 
 		$store = $this->getMockBuilder( '\SMWSQLStore3' )
 			->disableOriginalConstructor()
@@ -209,18 +213,18 @@ class DistinctEntityDataRebuilderTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getConnection' )
 			->will( $this->returnValue( $database ) );
 
-		$titleCreator = $this->getMockBuilder( '\SMW\MediaWiki\TitleCreator' )
+		$titleFactory = $this->getMockBuilder( '\SMW\MediaWiki\TitleFactory' )
 			->disableOriginalConstructor()
 			->getMock();
 
 		$instance = new DistinctEntityDataRebuilder(
 			$store,
-			$titleCreator
+			$titleFactory
 		);
 
-		$instance->setOptions( new Options( array(
+		$instance->setOptions( new Options( [
 			'p' => true
-		) ) );
+		] ) );
 
 		$this->assertTrue(
 			$instance->doRebuild()
@@ -233,38 +237,38 @@ class DistinctEntityDataRebuilderTest extends \PHPUnit_Framework_TestCase {
 			->disableOriginalConstructor()
 			->getMockForAbstractClass();
 
-		$titleCreator = $this->getMockBuilder( '\SMW\MediaWiki\TitleCreator' )
+		$titleFactory = $this->getMockBuilder( '\SMW\MediaWiki\TitleFactory' )
 			->disableOriginalConstructor()
 			->getMock();
 
-		$titleCreator->expects( $this->at( 0 ) )
-			->method( 'createFromText' )
+		$titleFactory->expects( $this->at( 0 ) )
+			->method( 'newFromText' )
 			->with( $this->equalTo( 'Main page' ) )
 			->will( $this->returnValue( Title::newFromText( 'Main page' ) ) );
 
-		$titleCreator->expects( $this->at( 1 ) )
-			->method( 'createFromText' )
+		$titleFactory->expects( $this->at( 1 ) )
+			->method( 'newFromText' )
 			->with( $this->equalTo( 'Some other page' ) )
 			->will( $this->returnValue( Title::newFromText( 'Some other page' ) ) );
 
-		$titleCreator->expects( $this->at( 2 ) )
-			->method( 'createFromText' )
+		$titleFactory->expects( $this->at( 2 ) )
+			->method( 'newFromText' )
 			->with( $this->equalTo( 'Help:Main page' ) )
 			->will( $this->returnValue( Title::newFromText( 'Main page', NS_HELP ) ) );
 
-		$titleCreator->expects( $this->at( 3 ) )
-			->method( 'createFromText' )
+		$titleFactory->expects( $this->at( 3 ) )
+			->method( 'newFromText' )
 			->with( $this->equalTo( 'Main page' ) )
 			->will( $this->returnValue( Title::newFromText( 'Main page' ) ) );
 
 		$instance = new DistinctEntityDataRebuilder(
 			$store,
-			$titleCreator
+			$titleFactory
 		);
 
-		$instance->setOptions( new Options( array(
+		$instance->setOptions( new Options( [
 			'page'  => 'Main page|Some other page|Help:Main page|Main page'
-		) ) );
+		] ) );
 
 		$this->assertTrue(
 			$instance->doRebuild()

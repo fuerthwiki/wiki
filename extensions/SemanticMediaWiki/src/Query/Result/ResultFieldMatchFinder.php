@@ -2,18 +2,18 @@
 
 namespace SMW\Query\Result;
 
-use SMW\Query\PrintRequest;
 use SMW\DataValueFactory;
-use SMW\RequestOptions;
+use SMW\DataValues\MonolingualTextValue;
 use SMW\DIProperty;
 use SMW\DIWikiPage;
+use SMW\Parser\InTextAnnotationParser;
+use SMW\Query\PrintRequest;
+use SMW\Query\QueryToken;
+use SMW\RequestOptions;
 use SMW\Store;
 use SMWDataItem as DataItem;
-use SMWDIBoolean as DIBoolean;
 use SMWDIBlob as DIBlob;
-use SMW\DataValues\MonolingualTextValue;
-use SMW\Query\QueryToken;
-use SMW\InTextAnnotationParser;
+use SMWDIBoolean as DIBoolean;
 
 /**
  * Returns the result content (DI objects) for a single PrintRequest, representing
@@ -91,12 +91,12 @@ class ResultFieldMatchFinder {
 	 */
 	public function findAndMatch( DataItem $dataItem ) {
 
-		$content = array();
+		$content = [];
 
 		// Request the current element (page in result set).
 		// The limit is ignored here.
 		if ( $this->printRequest->isMode( PrintRequest::PRINT_THIS ) ) {
-			return array( $dataItem );
+			return [ $dataItem ];
 		}
 
 		// Request all direct categories of the current element
@@ -136,7 +136,7 @@ class ResultFieldMatchFinder {
 				}
 			}
 
-			return array( new DIBoolean( $found ) );
+			return [ new DIBoolean( $found ) ];
 		}
 
 		// Request all property values of a certain attribute of the current element.
@@ -168,6 +168,12 @@ class ResultFieldMatchFinder {
 
 			if ( $limit !== false ) {
 				$options->limit = trim( $limit );
+			}
+
+			// Expecting a natural sort behaviour (n-asc, n-desc)?
+			if ( strpos( $order, 'n-' ) !== false ) {
+				$order = str_replace( 'n-', '', $order );
+				$options->natural = true;
 			}
 
 			if ( ( $order == 'descending' ) || ( $order == 'reverse' ) || ( $order == 'desc' ) ) {
@@ -205,7 +211,7 @@ class ResultFieldMatchFinder {
 
 		$index = $this->printRequest->getParameter( 'index' );
 		$lang = $this->printRequest->getParameter( 'lang' );
-		$newcontent = array();
+		$newcontent = [];
 
 		// Replace content with specific content from a Container/MultiValue
 		foreach ( $content as $diContainer ) {
@@ -247,10 +253,10 @@ class ResultFieldMatchFinder {
 	private function getResultContent( DataItem $dataItem ) {
 
 		$dataValue = $this->printRequest->getData();
-		$dataItems = array( $dataItem );
+		$dataItems = [ $dataItem ];
 
 		if ( !$dataValue->isValid() ) {
-			return array();
+			return [];
 		}
 
 		// If it is a chain then try to find a connected DIWikiPage subject that
@@ -269,8 +275,8 @@ class ResultFieldMatchFinder {
 
 				// If the results return empty then it means that for this element
 				// the chain has no matchable items hence we stop
-				if ( $dataItems === array() ) {
-					return array();
+				if ( $dataItems === [] ) {
+					return [];
 				}
 			}
 
@@ -282,7 +288,7 @@ class ResultFieldMatchFinder {
 
 	private function doFetchPropertyValues( $dataItems, $dataValue ) {
 
-		$propertyValues = array();
+		$propertyValues = [];
 
 		foreach ( $dataItems as $dataItem ) {
 
@@ -295,6 +301,10 @@ class ResultFieldMatchFinder {
 				$dataValue->getDataItem(),
 				$this->getRequestOptions()
 			);
+
+			if ( $pv instanceof \Iterator ) {
+				$pv = iterator_to_array( $pv );
+			}
 
 			$propertyValues = array_merge( $propertyValues, $pv );
 			unset( $pv );
@@ -313,15 +323,21 @@ class ResultFieldMatchFinder {
 			return $dataItem;
 		}
 
+		$type = $this->printRequest->getTypeID();
+
 		// Avoid `_cod`, `_eid` or similar types that use the DIBlob as storage
 		// object
-		if ( $this->printRequest->getTypeID() !== '_txt' && strpos( $this->printRequest->getTypeID(), '_rec' ) === false ) {
+		if ( $type !== '_txt' && strpos( $type, '_rec' ) === false ) {
 			return $dataItem;
 		}
 
-		// Outputs marked with -ia (import annotation) are allowed to retain a
-		// possible [[ :: ]] annotation
-		if ( strpos( $this->printRequest->getOutputFormat(), '-ia' ) !== false ) {
+		$outputFormat = $this->printRequest->getOutputFormat();
+
+		// #2325
+		// Output format marked with -raw are allowed to retain a possible [[ :: ]]
+		// annotation
+		// '-ia' is deprecated use `-raw`
+		if ( strpos( $outputFormat, '-raw' ) !== false || strpos( $outputFormat, '-ia' ) !== false ) {
 			return $dataItem;
 		}
 
@@ -330,7 +346,7 @@ class ResultFieldMatchFinder {
 			$dataItem->getString()
 		);
 
-		// #...
+		// #2253
 		if ( $this->queryToken !== null ) {
 			$string = $this->queryToken->highlight( $string );
 		}

@@ -2,23 +2,19 @@
 
 namespace SMW\SQLStore\QueryEngine;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 use SMW\DIWikiPage;
 use SMW\Exception\PredefinedPropertyLabelMismatchException;
-use SMW\Query\DebugOutputFormatter as QueryDebugOutputFormatter;
-use SMW\Query\Language\Conjunction;
-use SMW\Query\Language\SomeProperty;
+use SMW\Query\DebugFormatter;
 use SMW\Query\Language\ThingDescription;
-use SMWDataItem as DataItem;
-use SMWPropertyValue as PropertyValue;
-use SMWQuery as Query;
-use SMWQueryResult as QueryResult;
-use SMWSql3SmwIds;
-use SMWSQLStore3 as SQLStore;
 use SMW\QueryEngine as QueryEngineInterface;
 use SMW\QueryFactory;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerAwareInterface;
+use SMWDataItem as DataItem;
+use SMWQuery as Query;
+use SMWQueryResult as QueryResult;
+use SMWSQLStore3 as SQLStore;
 
 /**
  * Class that implements query answering for SQLStore.
@@ -55,7 +51,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 	 *
 	 * @var QuerySegment[]
 	 */
-	private $querySegmentList = array();
+	private $querySegmentList = [];
 
 	/**
 	 * Array of sorting requests ("Property_name" => "ASC"/"DESC"). Used during
@@ -71,7 +67,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 	 *
 	 * @var string[]
 	 */
-	private $errors = array();
+	private $errors = [];
 
 	/**
 	 * @var QuerySegmentListBuildManager
@@ -87,11 +83,6 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 	 * @var EngineOptions
 	 */
 	private $engineOptions;
-
-	/**
-	 * @var OrderConditionsComplementor
-	 */
-	private $orderConditionsComplementor;
 
 	/**
 	 * @var QueryFactory
@@ -160,20 +151,20 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 		if ( ( !$this->engineOptions->get( 'smwgIgnoreQueryErrors' ) || $query->getDescription() instanceof ThingDescription ) &&
 		     $query->querymode != Query::MODE_DEBUG &&
 		     count( $query->getErrors() ) > 0 ) {
-			return $this->queryFactory->newQueryResult( $this->store, $query, array(), false );
+			return $this->queryFactory->newQueryResult( $this->store, $query, [], false );
 			// NOTE: we check this here to prevent unnecessary work, but we check
 			// it after query processing below again in case more errors occurred.
 		} elseif ( $query->querymode == Query::MODE_NONE || $query->getLimit() < 1 ) {
 			// don't query, but return something to printer
-			return $this->queryFactory->newQueryResult( $this->store, $query, array(), true );
+			return $this->queryFactory->newQueryResult( $this->store, $query, [], true );
 		}
 
 		$connection = $this->store->getConnection( 'mw.db.queryengine' );
 
 		$this->queryMode = $query->querymode;
-		$this->querySegmentList = array();
+		$this->querySegmentList = [];
 
-		$this->errors = array();
+		$this->errors = [];
 		QuerySegment::$qnum = 0;
 		$this->sortKeys = $query->sortkeys;
 
@@ -190,7 +181,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 				$query->querymode != Query::MODE_DEBUG &&
 				count( $this->errors ) > 0 ) {
 			$query->addErrors( $this->errors );
-			return $this->queryFactory->newQueryResult( $this->store, $query, array(), false );
+			return $this->queryFactory->newQueryResult( $this->store, $query, [], false );
 		}
 
 		// *** Now execute the computed query ***//
@@ -198,7 +189,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 		$this->querySegmentListProcessor->setQuerySegmentList( $this->querySegmentList );
 
 		// execute query tree, resolve all dependencies
-		$this->querySegmentListProcessor->doResolveQueryDependenciesById(
+		$this->querySegmentListProcessor->process(
 			$rootid
 		);
 
@@ -211,7 +202,10 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 		// SELECT DISTINCT and ORDER BY RANDOM causes an issue for postgres
 		// Disable RANDOM support for postgres
 		if ( $connection->isType( 'postgres' ) ) {
-			$this->engineOptions->set( 'smwgQRandSortingSupport', false );
+			$this->engineOptions->set(
+				'smwgQSortFeatures',
+				$this->engineOptions->get( 'smwgQSortFeatures' ) & ~SMW_QSORT_RANDOM
+			);
 		}
 
 		switch ( $query->querymode ) {
@@ -244,7 +238,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 	private function getDebugQueryResult( Query $query, $rootid ) {
 
 		$qobj = $this->querySegmentList[$rootid];
-		$entries = array();
+		$entries = [];
 
 		$sqlOptions = $this->getSQLOptions( $query, $rootid );
 
@@ -254,7 +248,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 		$this->doExecuteDebugQueryResult( $qobj, $sqlOptions, $entries );
 		$auxtables = '';
 
-		foreach ( $this->querySegmentListProcessor->getListOfResolvedQueries() as $table => $log ) {
+		foreach ( $this->querySegmentListProcessor->getExecutedQueries() as $table => $log ) {
 			$auxtables .= "<li>Temporary table $table";
 			foreach ( $log as $q ) {
 				$auxtables .= "<br />&#160;&#160;<tt>$q</tt>";
@@ -268,7 +262,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 			$entries['Auxilliary Tables'] = 'No auxilliary tables used.';
 		}
 
-		return QueryDebugOutputFormatter::getStringFrom( 'SQLStore', $entries, $query );
+		return DebugFormatter::getStringFrom( 'SQLStore', $entries, $query );
 	}
 
 	private function doExecuteDebugQueryResult( $qobj, $sqlOptions, &$entries ) {
@@ -282,6 +276,10 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 
 		$sortfields = implode( $qobj->sortfields, ',' );
 		$sortfields = $sortfields ? ', ' . $sortfields : '';
+
+		$format = DebugFormatter::getFormat(
+			$connection->getType()
+		);
 
 		$sql = "SELECT DISTINCT ".
 			"$qobj->alias.smw_id AS id," .
@@ -298,12 +296,12 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 			"OFFSET " . $sqlOptions['OFFSET'];
 
 		$res = $connection->query(
-			'EXPLAIN '. $sql,
+			"EXPLAIN $format $sql",
 			__METHOD__
 		);
 
-		$entries['SQL Explain'] = QueryDebugOutputFormatter::doFormatSQLExplainOutput( $connection->getType(), $res );
-		$entries['SQL Query'] = QueryDebugOutputFormatter::doFormatSQLStatement( $sql, $qobj->alias );
+		$entries['SQL Explain'] = DebugFormatter::prettifyExplain( $connection->getType(), $res );
+		$entries['SQL Query'] = DebugFormatter::prettifySql( $sql, $qobj->alias );
 
 		$connection->freeResult( $res );
 	}
@@ -322,7 +320,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 		$queryResult = $this->queryFactory->newQueryResult(
 			$this->store,
 			$query,
-			array(),
+			[],
 			false
 		);
 
@@ -336,7 +334,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 
 		$connection = $this->store->getConnection( 'mw.db.queryengine' );
 
-		$sql_options = array( 'LIMIT' => $query->getLimit() + 1, 'OFFSET' => $query->getOffset() );
+		$sql_options = [ 'LIMIT' => $query->getLimit() + 1, 'OFFSET' => $query->getOffset() ];
 
 		$res = $connection->select(
 			$connection->tableName( $qobj->joinTable ) . " AS $qobj->alias" . $qobj->from,
@@ -388,7 +386,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 			return $this->queryFactory->newQueryResult(
 				$this->store,
 				$query,
-				array(),
+				[],
 				false
 			);
 		}
@@ -414,10 +412,10 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 			$sql_options
 		);
 
-		$results = array();
-		$dataItemCache = array();
+		$results = [];
+		$dataItemCache = [];
 
-		$logToTable = array();
+		$logToTable = [];
 		$hasFurtherResults = false;
 
 		 // Number of fetched results ( != number of valid results in
@@ -435,13 +433,17 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 				// Catch exception for non-existing predefined properties that
 				// still registered within non-updated pages (@see bug 48711)
 				try {
-					$dataItem = $diHandler->dataItemFromDBKeys( array(
+					$dataItem = $diHandler->dataItemFromDBKeys( [
 						$row->t,
 						intval( $row->ns ),
 						$row->iw,
 						'',
 						$row->so
-					) );
+					] );
+					
+					// Register the ID in an event the post-proceesing
+					// fails (namespace no longer valid etc.)
+					$dataItem->setId( $row->id );
 				} catch ( PredefinedPropertyLabelMismatchException $e ) {
 					$logToTable[$row->t] = "issue creating a {$row->t} dataitem from a database row";
 					$this->log( __METHOD__ . ' ' . $e->getMessage() );
@@ -468,7 +470,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 			$count++;
 		}
 
-		if ( $logToTable !== array() ) {
+		if ( $logToTable !== [] ) {
 			$this->log( __METHOD__ . ' ' . implode( ',', $logToTable ) );
 		}
 
@@ -497,10 +499,10 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 		$qobj = $this->querySegmentList[$qid];
 
 		// Filter elements that should never appear in a result set
-		$extraWhereCondition = array(
+		$extraWhereCondition = [
 			'del'  => "$qobj->alias.smw_iw!=" . $connection->addQuotes( SMW_SQL3_SMWIW_OUTDATED ) . " AND $qobj->alias.smw_iw!=" . $connection->addQuotes( SMW_SQL3_SMWDELETEIW ),
 			'redi' => "$qobj->alias.smw_iw!=" . $connection->addQuotes( SMW_SQL3_SMWREDIIW )
-		);
+		];
 
 		if ( strpos( $qobj->where, SMW_SQL3_SMWIW_OUTDATED ) === false ) {
 			$qobj->where .= $qobj->where === '' ? $extraWhereCondition['del'] : " AND " . $extraWhereCondition['del'];
@@ -523,12 +525,12 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 	 */
 	private function getSQLOptions( Query $query, $rootId ) {
 
-		$result = array(
+		$result = [
 			'LIMIT' => $query->getLimit() + 5,
 			'OFFSET' => $query->getOffset()
-		);
+		];
 
-		if ( !$this->engineOptions->get( 'smwgQSortingSupport' ) ) {
+		if ( !$this->engineOptions->isFlagSet( 'smwgQSortFeatures', SMW_QSORT ) ) {
 			return $result;
 		}
 
@@ -542,8 +544,16 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 			}
 
 			if ( ( $order != 'RANDOM' ) && array_key_exists( $propkey, $qobj->sortfields ) ) { // Field was successfully added.
-				$result['ORDER BY'] = ( array_key_exists( 'ORDER BY', $result ) ? $result['ORDER BY'] . ', ' : '' ) . $qobj->sortfields[$propkey] . " $order ";
-			} elseif ( ( $order == 'RANDOM' ) && $this->engineOptions->get( 'smwgQRandSortingSupport' ) ) {
+
+				$list = $qobj->sortfields[$propkey];
+
+				// Contains a compound list of sortfields without order?
+				if ( strpos( $list, ',' ) !== false && strpos( $list, $order ) === false ) {
+					$list = str_replace( ',', " $order,", $list );
+				}
+
+				$result['ORDER BY'] = ( array_key_exists( 'ORDER BY', $result ) ? $result['ORDER BY'] . ', ' : '' ) . $list . " $order ";
+			} elseif ( ( $order == 'RANDOM' ) && $this->engineOptions->isFlagSet( 'smwgQSortFeatures', SMW_QSORT_RANDOM ) ) {
 				$result['ORDER BY'] = ( array_key_exists( 'ORDER BY', $result ) ? $result['ORDER BY'] . ', ' : '' ) . ' RAND() ';
 			}
 		}
@@ -551,7 +561,7 @@ class QueryEngine implements QueryEngineInterface, LoggerAwareInterface {
 		return $result;
 	}
 
-	private function log( $message, $context = array() ) {
+	private function log( $message, $context = [] ) {
 
 		if ( $this->logger === null ) {
 			return;

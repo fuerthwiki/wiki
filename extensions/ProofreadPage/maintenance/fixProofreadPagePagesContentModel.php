@@ -19,24 +19,28 @@
  * @ingroup ProofreadPage
  */
 
-if (!class_exists('LoggedUpdateMaintenance')) {
-	$basePath = getenv( 'MW_INSTALL_PATH' ) !== false ? getenv( 'MW_INSTALL_PATH' ) : __DIR__ . '/../../..';
+if ( !class_exists( 'LoggedUpdateMaintenance' ) ) {
+	$basePath = getenv( 'MW_INSTALL_PATH' ) !== false
+		? getenv( 'MW_INSTALL_PATH' )
+		: __DIR__ . '/../../..';
 	require_once $basePath . '/maintenance/Maintenance.php';
 }
 
- /**
-  * Set the content model type for Page: pages
-  */
+/**
+ * Set the content model type for Page: pages
+ */
 class FixProofreadPagePagesContentModel extends LoggedUpdateMaintenance {
 
 	public function __construct() {
 		parent::__construct();
 
 		$this->mDescription = 'Set the content model type for Page: pages';
+
+		$this->requireExtension( 'ProofreadPage' );
 	}
 
 	/**
-	 * @see LoggedUpdateMaintenance::doDBUpdates
+	 * @inheritDoc
 	 */
 	public function doDBUpdates() {
 		$db = wfGetDB( DB_MASTER );
@@ -47,13 +51,13 @@ class FixProofreadPagePagesContentModel extends LoggedUpdateMaintenance {
 
 		$db->update(
 			'page',
-			array(
+			[
 				'page_content_model' => CONTENT_MODEL_PROOFREAD_PAGE
-			),
-			array(
+			],
+			[
 				'page_namespace' => ProofreadPage::getPageNamespaceId(),
 				'page_content_model' => CONTENT_MODEL_WIKITEXT
-			),
+			],
 			__METHOD__
 		);
 
@@ -63,7 +67,7 @@ class FixProofreadPagePagesContentModel extends LoggedUpdateMaintenance {
 	}
 
 	/**
-	 * @see LoggedUpdateMaintenance::getUpdateKey
+	 * @inheritDoc
 	 */
 	public function getUpdateKey() {
 		return 'FixPagePagesContentModel';
@@ -72,4 +76,4 @@ class FixProofreadPagePagesContentModel extends LoggedUpdateMaintenance {
 }
 
 $maintClass = 'FixProofreadPagePagesContentModel';
-require_once( RUN_MAINTENANCE_IF_MAIN );
+require_once RUN_MAINTENANCE_IF_MAIN;

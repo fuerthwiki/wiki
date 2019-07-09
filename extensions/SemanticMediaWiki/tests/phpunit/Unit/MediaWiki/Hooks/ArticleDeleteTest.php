@@ -2,10 +2,10 @@
 
 namespace SMW\Tests\MediaWiki\Hooks;
 
+use SMW\DIProperty;
 use SMW\DIWikiPage;
 use SMW\MediaWiki\Hooks\ArticleDelete;
 use SMW\Tests\TestEnvironment;
-use SMW\DIProperty;
 
 /**
  * @covers \SMW\MediaWiki\Hooks\ArticleDelete
@@ -19,21 +19,28 @@ use SMW\DIProperty;
 class ArticleDeleteTest extends \PHPUnit_Framework_TestCase {
 
 	private $testEnvironment;
+	private $jobFactory;
 
 	protected function setUp() {
 		parent::setUp();
 
-		$this->testEnvironment = new TestEnvironment();
-
-		$this->testEnvironment->addConfiguration(
-			'smwgEnableUpdateJobs',
-			false
+		$this->testEnvironment = new TestEnvironment(
+			[
+				'smwgEnableUpdateJobs' => false,
+				'smwgEnabledDeferredUpdate' => false
+			]
 		);
 
-		$this->testEnvironment->addConfiguration(
-			'smwgEnabledDeferredUpdate',
-			false
-		);
+		$this->jobFactory = $this->getMockBuilder( '\SMW\MediaWiki\JobFactory' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$jobQueue = $this->getMockBuilder( '\SMW\MediaWiki\JobQueue' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->testEnvironment->registerObject( 'JobFactory', $this->jobFactory );
+		$this->testEnvironment->registerObject( 'JobQueue', $jobQueue );
 	}
 
 	protected function tearDown() {
@@ -43,28 +50,56 @@ class ArticleDeleteTest extends \PHPUnit_Framework_TestCase {
 
 	public function testCanConstruct() {
 
-		$instance = new ArticleDelete();
+		$store = $this->getMockBuilder( '\SMW\Store' )
+			->disableOriginalConstructor()
+			->getMockForAbstractClass();
+
+		$instance = new ArticleDelete( $store );
 
 		$this->assertInstanceOf(
-			'\SMW\MediaWiki\Hooks\ArticleDelete',
+			ArticleDelete::class,
 			$instance
 		);
 	}
 
-	public function testActOn() {
+	public function testProcess() {
+
+		$idTable = $this->getMockBuilder( '\SMWSql3SmwIds' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$updateDispatcherJob = $this->getMockBuilder( '\SMW\MediaWiki\Jobs\UpdateDispatcherJob' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$parserCachePurgeJob = $this->getMockBuilder( '\SMW\MediaWiki\Jobs\NullJob' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->jobFactory->expects( $this->atLeastOnce() )
+			->method( 'newUpdateDispatcherJob' )
+			->will( $this->returnValue( $updateDispatcherJob ) );
+
+		$this->jobFactory->expects( $this->atLeastOnce() )
+			->method( 'newParserCachePurgeJob' )
+			->will( $this->returnValue( $parserCachePurgeJob ) );
 
 		$subject = DIWikiPage::newFromText( __METHOD__ );
 
-		$store = $this->getMockBuilder( '\SMW\Store' )
+		$store = $this->getMockBuilder( '\SMW\SQLStore\SQLStore' )
 			->disableOriginalConstructor()
-			->getMockForAbstractClass();
+			->getMock();
 
 		$store->expects( $this->atLeastOnce() )
 			->method( 'deleteSubject' );
 
 		$store->expects( $this->atLeastOnce() )
 			->method( 'getInProperties' )
-			->will( $this->returnValue( array( new DIProperty( 'Foo' ) ) ) );
+			->will( $this->returnValue( [ new DIProperty( 'Foo' ) ] ) );
+
+		$store->expects( $this->atLeastOnce() )
+			->method( 'getObjectIds' )
+			->will( $this->returnValue( $idTable ) );
 
 		$wikiPage = $this->getMockBuilder( '\WikiPage' )
 			->disableOriginalConstructor()
@@ -74,9 +109,9 @@ class ArticleDeleteTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getTitle' )
 			->will( $this->returnValue( $subject->getTitle() ) );
 
-		$this->testEnvironment->registerObject( 'Store', $store );
-
-		$instance = new ArticleDelete();
+		$instance = new ArticleDelete(
+			$store
+		);
 
 		$this->assertTrue(
 			$instance->process( $wikiPage )

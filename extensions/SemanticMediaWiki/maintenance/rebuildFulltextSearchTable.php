@@ -6,6 +6,7 @@ use Onoi\MessageReporter\MessageReporterFactory;
 use SMW\SQLStore\QueryEngine\FulltextSearchTableFactory;
 use SMW\ApplicationFactory;
 use SMWDataItem as DataItem;
+use SMW\Setup;
 
 $basePath = getenv( 'MW_INSTALL_PATH' ) !== false ? getenv( 'MW_INSTALL_PATH' ) : __DIR__ . '/../../..';
 
@@ -30,13 +31,29 @@ class RebuildFulltextSearchTable extends \Maintenance {
 		parent::__construct();
 	}
 
+
+	/**
+	 * @see Maintenance::addDefaultParams
+	 *
+	 * @since 2.5
+	 */
+	protected function addDefaultParams() {
+
+		parent::addDefaultParams();
+	}
+
 	/**
 	 * @see Maintenance::execute
 	 */
 	public function execute() {
 
-		if ( !defined( 'SMW_VERSION' ) || !$GLOBALS['smwgSemanticsEnabled'] ) {
-			$this->output( "You need to have SMW enabled in order to use this maintenance script!\n\n" );
+		if ( !Setup::isEnabled() ) {
+			$this->reportMessage( "\nYou need to have SMW enabled in order to run the maintenance script!\n" );
+			exit;
+		}
+
+		if ( !Setup::isValid( true ) ) {
+			$this->reportMessage( "\nYou need to run `update.php` or `setupStore.php` first before continuing\nwith any maintenance tasks!\n" );
 			exit;
 		}
 
@@ -75,7 +92,7 @@ class RebuildFulltextSearchTable extends \Maintenance {
 
 		if ( !$this->hasOption( 'quick' ) ) {
 			$this->reportMessage( "\n" . 'Abort the rebuild with control-c in the next five seconds ...  ' );
-			wfCountDown( 5 );
+			swfCountDown( 5 );
 		}
 
 		$maintenanceHelper = $maintenanceFactory->newMaintenanceHelper();
@@ -84,15 +101,14 @@ class RebuildFulltextSearchTable extends \Maintenance {
 		// Need to instantiate an extra object here since we cannot make this class itself
 		// into a MessageReporter since the maintenance script does not load the interface in time.
 		$reporter = MessageReporterFactory::getInstance()->newObservableMessageReporter();
-		$reporter->registerReporterCallback( array( $this, 'reportMessage' ) );
+		$reporter->registerReporterCallback( [ $this, 'reportMessage' ] );
 
 		$searchTableRebuilder->setMessageReporter( $reporter );
 		$result = $searchTableRebuilder->rebuild();
 
 		if ( $result && $this->hasOption( 'report-runtime' ) ) {
-			$this->reportMessage(
-				"\n" . $maintenanceHelper->getFormattedRuntimeValues() . "\n"
-			);
+			$this->reportMessage( "\n" . "Runtime report ..." . "\n" );
+			$this->reportMessage( $maintenanceHelper->getFormattedRuntimeValues( '   ...' ) . "\n" );
 		}
 
 		if ( $this->hasOption( 'with-maintenance-log' ) ) {
@@ -106,22 +122,20 @@ class RebuildFulltextSearchTable extends \Maintenance {
 
 	private function reportConfiguration( $searchTableRebuilder, $textSanitizer ) {
 
-		$this->reportMessage(
-			"\n## Configuration\n\n"
-		);
+		$this->reportMessage( "\nConfiguration ..." );
 
 		foreach ( $textSanitizer->getVersions() as $key => $value ) {
-			$this->reportMessage( "\r". sprintf( "%-35s%s", "- {$key}", $value )  . "\n" );
+			$this->reportMessage( "\n" . sprintf( "%-36s%s", "   ... {$key}", $value ) );
 		}
 
 		$searchTable = $searchTableRebuilder->getSearchTable();
-		$indexableDataTypes = array();
+		$indexableDataTypes = [];
 
-		$dataTypes = array(
+		$dataTypes = [
 			DataItem::TYPE_BLOB => 'BLOB',
 			DataItem::TYPE_URI  => 'URI',
 			DataItem::TYPE_WIKIPAGE => 'WIKIPAGE'
-		);
+		];
 
 		foreach ( $dataTypes as $key => $value ) {
 			if ( $searchTable->isValidByType( $key ) ) {
@@ -129,26 +143,21 @@ class RebuildFulltextSearchTable extends \Maintenance {
 			}
 		}
 
-		$this->reportMessage(
-			"\r". sprintf( "%-35s%s", "- DataTypes (Indexable)", implode( ', ', $indexableDataTypes ) )  . "\n"
-		);
-
-		$this->reportMessage(
-			"\nThe following properties are exempted from the indexing process.\n"
-		);
+		$this->reportMessage( "\n" . sprintf( "%-36s%s", "   ... DataTypes (indexable)", implode( ', ', $indexableDataTypes ) ) );
+		$this->reportMessage( "\n\nExempted properties (not indexable) ..." );
 
 		$exemptionList = '';
 
 		foreach ( $searchTable->getPropertyExemptionList() as $prop ) {
 			$exemptionList .= ( $exemptionList === '' ? '' : ', ' ) . $prop;
 
-			if ( strlen( $exemptionList ) > 60 ) {
-				$this->reportMessage( "\n- " . $exemptionList );
+			if ( strlen( $exemptionList ) > 50 ) {
+				$this->reportMessage( "\n   ... " . $exemptionList );
 				$exemptionList = '';
 			}
 		}
 
-		$this->reportMessage( "\n- " . $exemptionList . "\n" );
+		$this->reportMessage( "\n   ... " . $exemptionList . "\n" );
 	}
 
 	/**

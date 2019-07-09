@@ -4,15 +4,15 @@
 			"Joetaras"
 		]
 	},
+	"action-authorprotect": "protette da le none autore",
 	"authorprotect": "Protegge 'a pàgene da ce no jè autore",
 	"authorprotect-desc": "Permette a l'autore d'a pògene de proteggerle da otre utinde",
-	"authorprotect-notauthor": "Non ge sì l'autore de sta pàgene.",
+	"authorprotect-notauthor": "{{GENDER:$1|Tu}} non ge sì l'{{GENDER:$1|autore}} de sta pàgene.",
 	"authorprotect-confirm": "Cange le levèlle de protezione",
 	"authorprotect-edit": "Restringe le cangiaminde a l'auture",
 	"authorprotect-move": "Restringe le spustaminde a le auture",
 	"authorprotect-intro": "Ause stu module pe bloccà sta pàgene da chidde ca no sò  l'autore.",
-	"authorprotect-success": "Protezione riuscite!",
-	"authorprotect-failure": "Protezione none riuscite.",
+	"authorprotect-success": "Protezione 'mbostate!",
 	"protect-level-author": "Protette da le none autore",
 	"restriction-level-author": "Protette da l'autore",
 	"right-authorprotect": "protette le pàggene autorizzate",

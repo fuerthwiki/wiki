@@ -2,10 +2,10 @@
 
 namespace SMW\Tests\Query\Result;
 
-use SMW\Query\Result\ResultFieldMatchFinder;
 use SMW\DataItemFactory;
 use SMW\DataValueFactory;
 use SMW\Query\PrintRequest;
+use SMW\Query\Result\ResultFieldMatchFinder;
 
 /**
  * @covers SMW\Query\Result\ResultFieldMatchFinder
@@ -91,7 +91,7 @@ class ResultFieldMatchFinderTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$this->assertEquals(
-			array( $dataItem ),
+			[ $dataItem ],
 			$instance->findAndMatch( $dataItem )
 		);
 	}
@@ -110,7 +110,7 @@ class ResultFieldMatchFinderTest extends \PHPUnit_Framework_TestCase {
 			->with(
 				$this->equalTo( $dataItem ),
 				$this->equalTo( $this->dataItemFactory->newDIProperty( '_INST' ) ) )
-			->will( $this->returnValue( array( $expected ) ) );
+			->will( $this->returnValue( [ $expected ] ) );
 
 		$printRequest = $this->getMockBuilder( '\SMW\Query\PrintRequest' )
 			->disableOriginalConstructor()
@@ -127,7 +127,7 @@ class ResultFieldMatchFinderTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$this->assertEquals(
-			array( $expected ),
+			[ $expected ],
 			$instance->findAndMatch( $dataItem )
 		);
 	}
@@ -146,7 +146,7 @@ class ResultFieldMatchFinderTest extends \PHPUnit_Framework_TestCase {
 			->with(
 				$this->equalTo( $dataItem ),
 				$this->equalTo( $this->dataItemFactory->newDIProperty( '_INST' ) ) )
-			->will( $this->returnValue( array( $expected ) ) );
+			->will( $this->returnValue( [ $expected ] ) );
 
 		$printRequest = $this->getMockBuilder( '\SMW\Query\PrintRequest' )
 			->disableOriginalConstructor()
@@ -167,7 +167,7 @@ class ResultFieldMatchFinderTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$this->assertEquals(
-			array( $this->dataItemFactory->newDIBoolean( true ) ),
+			[ $this->dataItemFactory->newDIBoolean( true ) ],
 			$instance->findAndMatch( $dataItem )
 		);
 	}
@@ -186,7 +186,7 @@ class ResultFieldMatchFinderTest extends \PHPUnit_Framework_TestCase {
 			->with(
 				$this->equalTo( $dataItem ),
 				$this->equalTo( $this->dataItemFactory->newDIProperty( 'Prop' ) ) )
-			->will( $this->returnValue( array( $expected ) ) );
+			->will( $this->returnValue( [ $expected ] ) );
 
 		$printRequest = $this->getMockBuilder( '\SMW\Query\PrintRequest' )
 			->disableOriginalConstructor()
@@ -211,7 +211,161 @@ class ResultFieldMatchFinderTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$this->assertEquals(
-			array( $expected ),
+			[ $expected ],
+			$instance->findAndMatch( $dataItem )
+		);
+	}
+
+	public function testFindAndMatchWithIteratorAsValueResultOnPRINT_PROP() {
+
+		$dataItem = $this->dataItemFactory->newDIWikiPage( 'Bar' );
+		$expected = $this->dataItemFactory->newDIWikiPage( __METHOD__ );
+
+		$store = $this->getMockBuilder( '\SMW\Store' )
+			->disableOriginalConstructor()
+			->getMockForAbstractClass();
+
+		// #2541, return an iterator
+		$store->expects( $this->once() )
+			->method( 'getPropertyValues' )
+			->with(
+				$this->equalTo( $dataItem ),
+				$this->equalTo( $this->dataItemFactory->newDIProperty( 'Prop' ) ) )
+			->will( $this->returnValue( new \ArrayIterator( [ $expected ] ) ) );
+
+		$printRequest = $this->getMockBuilder( '\SMW\Query\PrintRequest' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$printRequest->expects( $this->at( 3 ) )
+			->method( 'isMode' )
+			->with($this->equalTo( PrintRequest::PRINT_PROP ) )
+			->will( $this->returnValue( true ) );
+
+		$printRequest->expects( $this->any() )
+			->method( 'getParameter' )
+			->will( $this->returnValue( false ) );
+
+		$printRequest->expects( $this->once() )
+			->method( 'getData' )
+			->will( $this->returnValue(
+				$this->dataValueFactory->newPropertyValueByLabel( 'Prop' ) ) );
+
+		$instance = new ResultFieldMatchFinder(
+			$store,
+			$printRequest
+		);
+
+		$this->assertEquals(
+			[ $expected ],
+			$instance->findAndMatch( $dataItem )
+		);
+	}
+
+	public function testFindAndMatchWithBlobValueResultAndRemovedLink() {
+
+		$dataItem = $this->dataItemFactory->newDIWikiPage( 'Bar' );
+		$text = $this->dataItemFactory->newDIBlob( '[[Foo::bar]]' );
+		$expected = $this->dataItemFactory->newDIBlob( 'bar' );
+
+		$propertyValue = $this->dataValueFactory->newPropertyValueByLabel( 'Prop' );
+
+		$store = $this->getMockBuilder( '\SMW\Store' )
+			->disableOriginalConstructor()
+			->getMockForAbstractClass();
+
+		// #2541, return an iterator
+		$store->expects( $this->once() )
+			->method( 'getPropertyValues' )
+			->with(
+				$this->equalTo( $dataItem ),
+				$this->equalTo( $this->dataItemFactory->newDIProperty( 'Prop' ) ) )
+			->will( $this->returnValue( new \ArrayIterator( [ $text ] ) ) );
+
+		$printRequest = $this->getMockBuilder( '\SMW\Query\PrintRequest' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$printRequest->expects( $this->at( 3 ) )
+			->method( 'isMode' )
+			->with($this->equalTo( PrintRequest::PRINT_PROP ) )
+			->will( $this->returnValue( true ) );
+
+		$printRequest->expects( $this->any() )
+			->method( 'getTypeID' )
+			->will( $this->returnValue( '_txt' ) );
+
+		$printRequest->expects( $this->any() )
+			->method( 'getParameter' )
+			->will( $this->returnValue( false ) );
+
+		$printRequest->expects( $this->once() )
+			->method( 'getData' )
+			->will( $this->returnValue( $propertyValue ) );
+
+		$instance = new ResultFieldMatchFinder(
+			$store,
+			$printRequest
+		);
+
+		$this->assertEquals(
+			[ $expected ],
+			$instance->findAndMatch( $dataItem )
+		);
+	}
+
+	public function testFindAndMatchWithBlobValueResultAndRetainedLink() {
+
+		$dataItem = $this->dataItemFactory->newDIWikiPage( 'Bar' );
+		$text = $this->dataItemFactory->newDIBlob( '[[Foo::bar]]' );
+		$expected = $this->dataItemFactory->newDIBlob( '[[Foo::bar]]' );
+
+		$propertyValue = $this->dataValueFactory->newPropertyValueByLabel( 'Prop' );
+
+		$store = $this->getMockBuilder( '\SMW\Store' )
+			->disableOriginalConstructor()
+			->getMockForAbstractClass();
+
+		// #2541, return an iterator
+		$store->expects( $this->once() )
+			->method( 'getPropertyValues' )
+			->with(
+				$this->equalTo( $dataItem ),
+				$this->equalTo( $this->dataItemFactory->newDIProperty( 'Prop' ) ) )
+			->will( $this->returnValue( new \ArrayIterator( [ $text ] ) ) );
+
+		$printRequest = $this->getMockBuilder( '\SMW\Query\PrintRequest' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$printRequest->expects( $this->at( 3 ) )
+			->method( 'isMode' )
+			->with($this->equalTo( PrintRequest::PRINT_PROP ) )
+			->will( $this->returnValue( true ) );
+
+		$printRequest->expects( $this->any() )
+			->method( 'getOutputFormat' )
+			->will( $this->returnValue( '-raw' ) );
+
+		$printRequest->expects( $this->any() )
+			->method( 'getTypeID' )
+			->will( $this->returnValue( '_txt' ) );
+
+		$printRequest->expects( $this->any() )
+			->method( 'getParameter' )
+			->will( $this->returnValue( false ) );
+
+		$printRequest->expects( $this->once() )
+			->method( 'getData' )
+			->will( $this->returnValue( $propertyValue ) );
+
+		$instance = new ResultFieldMatchFinder(
+			$store,
+			$printRequest
+		);
+
+		$this->assertEquals(
+			[ $expected ],
 			$instance->findAndMatch( $dataItem )
 		);
 	}

@@ -2,6 +2,7 @@
 
 namespace ValueValidators\Tests;
 
+use PHPUnit\Framework\TestCase;
 use ValueValidators\DimensionValidator;
 
 /**
@@ -10,17 +11,17 @@ use ValueValidators\DimensionValidator;
  * @group ValueValidators
  * @group DataValueExtensions
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0-or-later
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
-class DimensionValidatorTest extends \PHPUnit_Framework_TestCase {
+class DimensionValidatorTest extends TestCase {
 
 	/**
 	 * @var DimensionValidator
 	 */
 	private $validator;
 
-	public function setUp() {
+	protected function setUp() {
 		$this->validator = new DimensionValidator();
 	}
 
@@ -48,6 +49,10 @@ class DimensionValidatorTest extends \PHPUnit_Framework_TestCase {
 
 	public function testUsingDefaultSettings_NoUnitIsAllowed() {
 		$this->assertIsValid( '100' );
+	}
+
+	public function testUsingDefaultSettings_trailingNewlineIsInvalid() {
+		$this->assertIsNotValid( "100\n" );
 	}
 
 	public function testGivenUpperBound_valueUnderIsValid() {

@@ -4,13 +4,12 @@ namespace SMW\MediaWiki\Hooks;
 
 use SMW\ApplicationFactory;
 use SMW\DIWikiPage;
-use SMW\SemanticData;
 use SMW\EventHandler;
-use Wikipage;
-use Title;
 use SMW\MediaWiki\Jobs\UpdateDispatcherJob;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerAwareInterface;
+use SMW\SemanticData;
+use SMW\Store;
+use Title;
+use Wikipage;
 
 /**
  * @see https://www.mediawiki.org/wiki/Manual:Hooks/ArticleDelete
@@ -21,6 +20,20 @@ use Psr\Log\LoggerAwareInterface;
  * @author mwjames
  */
 class ArticleDelete extends HookHandler {
+
+	/**
+	 * @var
+	 */
+	private $store;
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param Store $store
+	 */
+	public function __construct( Store $store ) {
+		$this->store = $store;
+	}
 
 	/**
 	 * @since 2.0
@@ -49,8 +62,6 @@ class ArticleDelete extends HookHandler {
 	public function doDelete( Title $title ) {
 
 		$applicationFactory = ApplicationFactory::getInstance();
-
-		$store = $applicationFactory->getStore();
 		$subject = DIWikiPage::newFromTitle( $title );
 
 		$semanticDataSerializer = $applicationFactory->newSerializerFactory()->newSemanticDataSerializer();
@@ -63,7 +74,7 @@ class ArticleDelete extends HookHandler {
 			$subject
 		);
 
-		$properties = $store->getInProperties( $subject );
+		$properties = $this->store->getInProperties( $subject );
 
 		foreach ( $properties as $property ) {
 			// Avoid doing $propertySubjects = $store->getPropertySubjects( $property, $subject );
@@ -78,12 +89,37 @@ class ArticleDelete extends HookHandler {
 			$semanticData
 		);
 
+		$parameters['origin'] = 'ArticleDelete';
+
+		// Fetch the ID before the delete process marks it as outdated to help
+		// run a dispatch process on secondary tables
+		$parameters['_id'] = $this->store->getObjectIds()->getId(
+			$subject
+		);
+
 		// Restricted to the available SemanticData
 		$parameters[UpdateDispatcherJob::RESTRICTED_DISPATCH_POOL] = true;
 
-		$jobFactory->newUpdateDispatcherJob( $title, $parameters )->insert();
+		$updateDispatcherJob = $jobFactory->newUpdateDispatcherJob( $title, $parameters );
+		$updateDispatcherJob->insert();
 
-		$store->deleteSubject( $title );
+		$parserCachePurgeJob = $jobFactory->newParserCachePurgeJob(
+			$title,
+			[
+				'idlist' => [
+					$parameters['_id']
+				],
+				'origin' => 'ArticleDelete',
+
+				// Insert will only be done for when the links store is active
+				// otherwise the job wouldn't have any work to do
+				'is.enabled' => $this->getOption( 'smwgEnabledQueryDependencyLinksStore' )
+			]
+		);
+
+		$parserCachePurgeJob->insert();
+
+		$this->store->deleteSubject( $title );
 
 		$eventHandler = EventHandler::getInstance();
 		$dispatchContext = $eventHandler->newDispatchContext();

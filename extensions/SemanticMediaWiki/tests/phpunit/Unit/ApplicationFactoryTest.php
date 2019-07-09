@@ -48,7 +48,7 @@ class ApplicationFactoryTest extends \PHPUnit_Framework_TestCase {
 	public function testCanConstructJobFactory() {
 
 		$this->assertInstanceOf(
-			'\SMW\MediaWiki\Jobs\JobFactory',
+			'\SMW\MediaWiki\JobFactory',
 			$this->applicationFactory->newJobFactory()
 		);
 	}
@@ -89,11 +89,19 @@ class ApplicationFactoryTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
-	public function testCanConstructTitleCreator() {
+	public function testGetConnectionManager() {
 
 		$this->assertInstanceOf(
-			'\SMW\MediaWiki\TitleCreator',
-			$this->applicationFactory->newTitleCreator()
+			'\SMW\Connection\ConnectionManager',
+			$this->applicationFactory->getConnectionManager()
+		);
+	}
+
+	public function testCanConstructTitleFactory() {
+
+		$this->assertInstanceOf(
+			'\SMW\MediaWiki\TitleFactory',
+			$this->applicationFactory->newTitleFactory()
 		);
 	}
 
@@ -120,7 +128,7 @@ class ApplicationFactoryTest extends \PHPUnit_Framework_TestCase {
 			->getMock();
 
 		$this->assertInstanceOf(
-			'\SMW\InTextAnnotationParser',
+			'\SMW\Parser\InTextAnnotationParser',
 			$this->applicationFactory->newInTextAnnotationParser( $parserData )
 		);
 	}
@@ -153,15 +161,15 @@ class ApplicationFactoryTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
-	public function testCanConstructStoreUpdater() {
+	public function testCanConstructDataUpdater() {
 
 		$semanticData = $this->getMockBuilder( '\SMW\SemanticData' )
 			->disableOriginalConstructor()
 			->getMock();
 
 		$this->assertInstanceOf(
-			'\SMW\StoreUpdater',
-			$this->applicationFactory->newStoreUpdater( $semanticData )
+			'\SMW\DataUpdater',
+			$this->applicationFactory->newDataUpdater( $semanticData )
 		);
 	}
 
@@ -213,11 +221,11 @@ class ApplicationFactoryTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
-	public function testCanConstructPropertyHierarchyLookup() {
+	public function testCanConstructHierarchyLookup() {
 
 		$this->assertInstanceOf(
-			'\SMW\PropertyHierarchyLookup',
-			$this->applicationFactory->newPropertyHierarchyLookup()
+			'\SMW\HierarchyLookup',
+			$this->applicationFactory->newHierarchyLookup()
 		);
 	}
 
@@ -252,16 +260,32 @@ class ApplicationFactoryTest extends \PHPUnit_Framework_TestCase {
 		};
 
 		$this->assertInstanceOf(
-			'\SMW\Updater\DeferredCallableUpdate',
+			'\SMW\MediaWiki\Deferred\CallableUpdate',
 			$this->applicationFactory->newDeferredCallableUpdate( $callback )
 		);
 	}
 
-	public function testCanConstructTransactionalDeferredCallableUpdate() {
+	public function testCanConstructDeferredTransactionalCallableUpdate() {
 
 		$this->assertInstanceOf(
-			'\SMW\Updater\TransactionalDeferredCallableUpdate',
-			$this->applicationFactory->newTransactionalDeferredCallableUpdate( null )
+			'\SMW\MediaWiki\Deferred\TransactionalCallableUpdate',
+			$this->applicationFactory->newDeferredTransactionalCallableUpdate( null )
+		);
+	}
+
+	public function testCanConstructMediaWikiLogger() {
+
+		$this->assertInstanceOf(
+			'\Psr\Log\LoggerInterface',
+			$this->applicationFactory->getMediaWikiLogger()
+		);
+	}
+
+	public function testCanConstructJobQueue() {
+
+		$this->assertInstanceOf(
+			'\SMW\MediaWiki\JobQueue',
+			$this->applicationFactory->getJobQueue()
 		);
 	}
 
@@ -274,29 +298,29 @@ class ApplicationFactoryTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertInstanceOf(
 			$expected,
-			call_user_func_array( array( $this->applicationFactory, 'create' ), $arguments )
+			call_user_func_array( [ $this->applicationFactory, 'create' ], $arguments )
 		);
 	}
 
 	public function callbackContainerProvider() {
 
-		$provider[] = array(
+		$provider[] = [
 			'CachedQueryResultPrefetcher',
-			array(),
+			[],
 			'\SMW\Query\Result\CachedQueryResultPrefetcher'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'FactboxFactory',
-			array(),
+			[],
 			'SMW\Factbox\FactboxFactory'
-		);
+		];
 
-		$provider[] = array(
+		$provider[] = [
 			'PropertyAnnotatorFactory',
-			array(),
+			[],
 			'SMW\PropertyAnnotatorFactory'
-		);
+		];
 
 		return $provider;
 	}

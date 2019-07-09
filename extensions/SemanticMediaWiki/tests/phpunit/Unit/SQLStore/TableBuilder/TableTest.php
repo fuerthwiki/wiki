@@ -3,6 +3,7 @@
 namespace SMW\Tests\SQLStore\TableBuilder;
 
 use SMW\SQLStore\TableBuilder\Table;
+use SMW\Tests\PHPUnitCompat;
 
 /**
  * @covers \SMW\SQLStore\TableBuilder\Table
@@ -15,10 +16,12 @@ use SMW\SQLStore\TableBuilder\Table;
  */
 class TableTest extends \PHPUnit_Framework_TestCase {
 
+	use PHPUnitCompat;
+
 	public function testCanConstruct() {
 
 		$this->assertInstanceOf(
-			'\SMW\SQLStore\TableBuilder\Table',
+			Table::class,
 			new Table( 'Foo' )
 		);
 	}
@@ -29,15 +32,15 @@ class TableTest extends \PHPUnit_Framework_TestCase {
 
 		$instance->addColumn( 'b', 'integer' );
 
-		$expected = array(
-			'fields' => array(
+		$expected = [
+			'fields' => [
 				 'b' => 'integer'
-			)
-		);
+			]
+		];
 
 		$this->assertEquals(
 			$expected,
-			$instance->getConfiguration()
+			$instance->getAttributes()
 		);
 	}
 
@@ -47,15 +50,15 @@ class TableTest extends \PHPUnit_Framework_TestCase {
 
 		$instance->addIndex( 'bar' );
 
-		$expected = array(
-			'indicies' => array(
+		$expected = [
+			'indices' => [
 				'bar'
-			)
-		);
+			]
+		];
 
 		$this->assertEquals(
 			$expected,
-			$instance->getConfiguration()
+			$instance->getAttributes()
 		);
 
 		$this->assertInternalType(
@@ -68,17 +71,17 @@ class TableTest extends \PHPUnit_Framework_TestCase {
 
 		$instance = new Table( 'Foo' );
 
-		$instance->addIndexWithKey( 'bar', array( 'foobar' ) );
+		$instance->addIndex( [ 'foobar' ], 'bar' );
 
-		$expected = array(
-			'indicies' => array(
-				'bar' => array( 'foobar' )
-			)
-		);
+		$expected = [
+			'indices' => [
+				'bar' => [ 'foobar' ]
+			]
+		];
 
 		$this->assertEquals(
 			$expected,
-			$instance->getConfiguration()
+			$instance->getAttributes()
 		);
 	}
 
@@ -86,24 +89,57 @@ class TableTest extends \PHPUnit_Framework_TestCase {
 
 		$instance = new Table( 'Foo' );
 
-		$instance->addOption( 'bar', array( 'foobar' ) );
+		$instance->addOption( 'bar', [ 'foobar' ] );
 
-		$expected = array(
-			'bar' => array( 'foobar' )
-		);
+		$expected = [
+			'bar' => [ 'foobar' ]
+		];
 
 		$this->assertEquals(
 			$expected,
-			$instance->getConfiguration()
+			$instance->getAttributes()
+		);
+
+		$this->assertEquals(
+			[ 'foobar' ],
+			$instance->get( 'bar' )
 		);
 	}
 
-	public function testAddOptionWithInvalidKeyThrowsException() {
+	public function testGetOnUnregsiteredKeyThrowsException() {
 
 		$instance = new Table( 'Foo' );
 
 		$this->setExpectedException( 'RuntimeException' );
-		$instance->addOption( 'fields', array( 'foobar' ) );
+		$instance->get( 'bar' );
+	}
+
+	/**
+	 * @dataProvider invalidOptionsProvider
+	 */
+	public function testAddOptionOnReservedOptionKeyThrowsException( $key ) {
+
+		$instance = new Table( 'Foo' );
+
+		$this->setExpectedException( 'RuntimeException' );
+		$instance->addOption( $key, [] );
+	}
+
+	public function invalidOptionsProvider() {
+
+		$provider[] = [
+			'fields'
+		];
+
+		$provider[] = [
+			'indices'
+		];
+
+		$provider[] = [
+			'defaults'
+		];
+
+		return $provider;
 	}
 
 }

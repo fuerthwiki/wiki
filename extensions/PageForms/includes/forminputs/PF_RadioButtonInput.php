@@ -12,7 +12,7 @@ class PFRadioButtonInput extends PFEnumInput {
 		return 'radiobutton';
 	}
 
-	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, $other_args ) {
+	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, array $other_args ) {
 		global $wgPageFormsTabIndex, $wgPageFormsFieldNum, $wgPageFormsShowOnSelect;
 
 		// Standardize $cur_value
@@ -60,7 +60,6 @@ class PFRadioButtonInput extends PFEnumInput {
 		if ( array_key_exists( 'class', $other_args ) ) {
 			$itemClass .= ' ' . $other_args['class'];
 		}
-		$itemAttrs = array( 'class' => $itemClass );
 
 		foreach ( $possible_values as $possible_value ) {
 			$wgPageFormsTabIndex++;
@@ -94,6 +93,7 @@ class PFRadioButtonInput extends PFEnumInput {
 				$label = $possible_value;
 			}
 
+			$itemAttrs = array( 'class' => $itemClass, 'for' => $input_id );
 			$text .= "\t" . Html::rawElement( 'label', $itemAttrs,
 				// Using Xml::radio() here because Html::input()
 				// unfortunately doesn't include the "value="

@@ -6,18 +6,19 @@
 			"Luckas",
 			"Malafaya",
 			"555",
-			"Vitorvicentevalente"
+			"Vitorvicentevalente",
+			"Fúlvio"
 		]
 	},
+	"action-authorprotect": "proteger contra não autores",
 	"authorprotect": "Proteger a página de edições por utilizadores que não são autores",
 	"authorprotect-desc": "Permite ao autor de uma página protegê-la de outros utilizadores",
-	"authorprotect-notauthor": "Não é o autor desta página",
+	"authorprotect-notauthor": "Não é {{GENDER:$1|o autor|a autora}} desta página.",
 	"authorprotect-confirm": "Alterar níveis de proteção",
 	"authorprotect-edit": "Restringir edição a autores",
 	"authorprotect-move": "Restringir a movimentação da página a autores",
 	"authorprotect-intro": "Use este formulário para bloquear a página contra edições por utilizadores que não são autores",
-	"authorprotect-success": "Proteção ocorreu com sucesso!",
-	"authorprotect-failure": "A proteção falhou",
+	"authorprotect-success": "Proteção definida!",
 	"protect-level-author": "Proteger de edições por utilizadores que não são autores",
 	"restriction-level-author": "Protegida pelo autor",
 	"right-authorprotect": "Proteger páginas com autor",

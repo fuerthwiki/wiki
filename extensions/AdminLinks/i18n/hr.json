@@ -1,19 +1,21 @@
 {
 	"@metadata": {
 		"authors": [
-			"Ex13"
+			"Ex13",
+			"Bugoslav"
 		]
 	},
 	"adminlinks": "Administratorske poveznice",
 	"adminlinks-desc": "Dodaje [[Special:AdminLinks|posebnu stranicu]] koja sadrži korisne poveznice za administratore",
 	"adminlinks_documentation": "$1 dokumentacija",
 	"adminlinks_general": "Općenito",
-	"adminlinks_editsidebar": "Uredi izbornik sastrane",
+	"adminlinks_editsidebar": "Uredi izbornik sa strane",
 	"adminlinks_editcss": "Uredi CSS datoteku",
 	"adminlinks_editmainpagename": "Uredi ime glavne stranice",
 	"adminlinks_users": "Suradnici",
 	"adminlinks_createuser": "Stvori suradnika",
 	"adminlinks_browsesearch": "Pregledavanje i pretraživanje",
 	"adminlinks_importexport": "Uvoz i izvoz",
+	"adminlinks_pagenotfound": "Pretragom nije bilo moguće pronaći posebnu stranicu s nazivom: $1.",
 	"right-adminlinks": "Pogledajte poveznicu na [[Special:AdminLinks|administratorske poveznice]]"
 }

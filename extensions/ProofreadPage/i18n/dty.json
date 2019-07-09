@@ -3,16 +3,21 @@
 		"authors": [
 			"रमेश सिंह बोहरा",
 			"जनक राज भट्ट",
-			"राम प्रसाद जोशी"
+			"राम प्रसाद जोशी",
+			"Nirajan pant"
 		]
 	},
+	"nstab-page": "पन्ना",
+	"nstab-index": "अनुक्रम",
+	"tooltip-ca-nstab-page": "किताप पन्‍ना तकः",
+	"tooltip-ca-nstab-index": "किताप अनुक्रम तकः",
 	"indexpages": "सूचकांक पानाको सूची",
 	"pageswithoutscans": "स्क्यान बिनाईका पाना",
 	"proofreadpage_image": "चित्र",
 	"proofreadpage_index": "अनुक्रम",
 	"proofreadpage_index_expected": "त्रुटि: सूचकांकको अपेक्षा",
 	"proofreadpage_nosuch_index": "त्रुटि : यस्तो कोई सूचकांक नाई",
-	"proofreadpage_badpage": "गलत फरम्याट",
+	"proofreadpage_nosuch_file": "त्रुटीः इसो कोइ फाइल आथिन",
 	"proofreadpage_nologin": "प्रवेश (लग ईन) नगर्याको",
 	"proofreadpage_nextpage": "अर्को पानो",
 	"proofreadpage_prevpage": "पैल्लीको पानो",
@@ -21,16 +26,21 @@
 	"proofreadpage_quality2_category": "परिसान भयो",
 	"proofreadpage_quality3_category": "प्रुफरिड",
 	"proofreadpage_quality4_category": "प्रमाणित अद्दु",
-	"proofreadpage_quality1_message": "ये पृष्ठमी थपघट गर्न सकिन्या छैन |",
+	"proofreadpage_quality1_message": "एइ पन्नाऽ प्रूफपठन नाइ होइर्‍यो",
 	"proofreadpage_specialpage_label_key": "खोज",
 	"proofreadpage_specialpage_label_sortascending": "आरोहण क्रममी मिलाउन्या",
 	"proofreadpage_page_status": "पानाको स्थिती",
 	"proofreadpage_js_attributes": "लेखक शीर्षक वर्ष प्रकाशक",
 	"proofreadpage_index_attributes": "लेखक\nशीर्षक\nवर्ष|प्रकाशन वर्ष\nप्रकाशक\nस्रोत\nचित्र|मुखपृष्ठ चित्र\nपानाहरू||२०\nटिप्पणी||१०",
-	"proofreadpage_pages": "{{PLURAL:$1|पाना|पानाहरू}}",
+	"proofreadpage_pages": "$2 {{PLURAL:$1|पान्नो|पन्नाअन}}",
 	"proofreadpage_source": "स्रोत",
 	"proofreadpage-group-zoom": "जूम",
 	"proofreadpage-group-other": "और",
 	"proofreadpage-button-reset-zoom-label": "मूल आकार",
-	"content-model-proofread-page": "पानो:पानो"
+	"content-model-proofread-page": "पानो:पानो",
+	"proofreadpage-visualeditor-node-pages-inspector-tooltip": "पन्‍नान",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-yes": "हाँ",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "नाइँ",
+	"proofreadpage-visualeditor-node-pagequality-inspector-title": "प्रूफरीडिङ गुणस्तर",
+	"proofreadpage-visualeditor-node-pagequality-inspector-tooltip": "प्रूफरीडिङ गुणस्तर"
 }

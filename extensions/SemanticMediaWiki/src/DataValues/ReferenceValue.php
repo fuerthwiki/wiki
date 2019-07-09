@@ -3,15 +3,15 @@
 namespace SMW\DataValues;
 
 use SMW\ApplicationFactory;
+use SMW\DataModel\ContainerSemanticData;
 use SMW\DataValueFactory;
 use SMW\DataValues\ValueFormatters\DataValueFormatter;
 use SMW\DIProperty;
 use SMW\DIWikiPage;
 use SMW\Message;
-use SMW\DataModel\ContainerSemanticData;
 use SMWDataItem as DataItem;
-use SMWDataValue as DataValue;
 use SMWDIContainer as DIContainer;
+use SMWDITime as DITime;
 
 /**
  * ReferenceValue allows to define additional DV to describe the state of a
@@ -160,7 +160,7 @@ class ReferenceValue extends AbstractMultiValue {
 			$this->properties = $this->getFieldProperties( $this->getProperty() );
 
 			if ( count( $this->properties ) == 0 ) {
-				$this->addErrorMsg( array( 'smw-datavalue-reference-invalid-fields-definition' ), Message::PARSE );
+				$this->addErrorMsg( [ 'smw-datavalue-reference-invalid-fields-definition' ], Message::PARSE );
 			}
 		}
 
@@ -185,12 +185,12 @@ class ReferenceValue extends AbstractMultiValue {
 	protected function parseUserValue( $value ) {
 
 		if ( $value === '' ) {
-			$this->addErrorMsg( array( 'smw_novalues' ) );
+			$this->addErrorMsg( [ 'smw_novalues' ] );
 			return;
 		}
 
 		$containerSemanticData = $this->newContainerSemanticData( $value );
-		$sortKeys = array();
+		$sortKeys = [];
 
 		$values = $this->getValuesFromString( $value );
 		$index = 0; // index in value array
@@ -200,7 +200,7 @@ class ReferenceValue extends AbstractMultiValue {
 
 		foreach ( $this->getPropertyDataItems() as $property ) {
 
-			if ( !array_key_exists( $index, $values ) || $this->getErrors() !== array() ) {
+			if ( !array_key_exists( $index, $values ) || $this->getErrors() !== [] ) {
 				break; // stop if there are no values left
 			}
 
@@ -212,12 +212,23 @@ class ReferenceValue extends AbstractMultiValue {
 					$property,
 					$values[$index],
 					false,
-					$this->getContextPage()
+					$containerSemanticData->getSubject()
 				);
 
 				if ( $dataValue->isValid() ) { // valid DV: keep
-					$containerSemanticData->addPropertyObjectValue( $property, $dataValue->getDataItem() );
-					$sortKeys[] = $dataValue->getDataItem()->getSortKey();
+					$dataItem = $dataValue->getDataItem();
+
+					$containerSemanticData->addPropertyObjectValue(
+						$property,
+						$dataItem
+					);
+
+					// Chronological order determined first
+					if ( $dataItem instanceof DITime ) {
+						array_unshift( $sortKeys, $dataItem->getSortKey() );
+					} else {
+						$sortKeys[] = $dataItem->getSortKey();
+					}
 
 					$index++;
 					$empty = false;
@@ -231,15 +242,14 @@ class ReferenceValue extends AbstractMultiValue {
 			++$propertyIndex;
 		}
 
-		if ( $empty && $this->getErrors() === array()  ) {
-			$this->addErrorMsg( array( 'smw_novalues' ) );
+		if ( $empty && $this->getErrors() === []  ) {
+			$this->addErrorMsg( [ 'smw_novalues' ] );
 		}
 
-		$this->m_dataitem = new DIContainer( $containerSemanticData );
+		// Remember the data to extend the sortkey
+		$containerSemanticData->setExtensionData( 'sort.data', implode( ';', $sortKeys ) );
 
-		// Composite sortkey is to ensure that Store::getPropertyValues can
-		// apply sorting during value selection
-		$this->m_dataitem->setSortKey( implode( ';', $sortKeys ) );
+		$this->m_dataitem = new DIContainer( $containerSemanticData );
 	}
 
 	/**

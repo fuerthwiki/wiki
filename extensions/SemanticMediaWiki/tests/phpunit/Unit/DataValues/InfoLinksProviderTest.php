@@ -5,11 +5,10 @@ namespace SMW\Tests\DataValues;
 use SMW\DataItemFactory;
 use SMW\DataValueFactory;
 use SMW\DataValues\InfoLinksProvider;
+use SMW\DataValues\StringValue;
 use SMW\Message;
 use SMW\Tests\TestEnvironment;
 use SMWNumberValue as NumberValue;
-use SMWStringValue as StringValue;
-use SMWTimeValue as TimeValue;
 
 /**
  * @covers \SMW\DataValues\InfoLinksProvider
@@ -25,7 +24,7 @@ class InfoLinksProviderTest extends \PHPUnit_Framework_TestCase {
 	private $testEnvironment;
 	private $dataItemFactory;
 	private $dataValueServiceFactory;
-	private $cachedPropertyValuesPrefetcher;
+	private $propertySpecificationLookup;
 	private $dataValueFactory;
 
 	protected function setUp() {
@@ -47,11 +46,11 @@ class InfoLinksProviderTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getConstraintValueValidator' )
 			->will( $this->returnValue( $constraintValueValidator ) );
 
-		$this->cachedPropertyValuesPrefetcher = $this->getMockBuilder( '\SMW\CachedPropertyValuesPrefetcher' )
+		$this->propertySpecificationLookup = $this->getMockBuilder( '\SMW\PropertySpecificationLookup' )
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->testEnvironment->registerObject( 'CachedPropertyValuesPrefetcher', $this->cachedPropertyValuesPrefetcher );
+		$this->testEnvironment->registerObject( 'PropertySpecificationLookup', $this->propertySpecificationLookup );
 	}
 
 	protected function tearDown() {
@@ -66,16 +65,16 @@ class InfoLinksProviderTest extends \PHPUnit_Framework_TestCase {
 			->getMockForAbstractClass();
 
 		$this->assertInstanceOf(
-			'\SMW\DataValues\InfoLinksProvider',
-			new InfoLinksProvider( $dataValue )
+			InfoLinksProvider::class,
+			new InfoLinksProvider( $dataValue, $this->propertySpecificationLookup )
 		);
 	}
 
 	public function testGetInfolinkTextOnNumberValue() {
 
-		$this->cachedPropertyValuesPrefetcher->expects( $this->atLeastOnce() )
-			->method( 'getPropertyValues' )
-			->will( $this->returnValue( array() ) );
+		$this->propertySpecificationLookup->expects( $this->atLeastOnce() )
+			->method( 'getSpecification' )
+			->will( $this->returnValue( [] ) );
 
 		$numberValue = $this->dataValueFactory->newDataValueByType( NumberValue::TYPE_ID );
 
@@ -88,7 +87,7 @@ class InfoLinksProviderTest extends \PHPUnit_Framework_TestCase {
 
 		$numberValue->setUserValue( '1000.42' );
 
-		$instance = new InfoLinksProvider( $numberValue );
+		$instance = new InfoLinksProvider( $numberValue, $this->propertySpecificationLookup );
 
 		$this->dataValueServiceFactory->expects( $this->any() )
 			->method( 'newInfoLinksProvider' )
@@ -107,9 +106,9 @@ class InfoLinksProviderTest extends \PHPUnit_Framework_TestCase {
 
 	public function testGetInfolinkTextOnStringValue() {
 
-		$this->cachedPropertyValuesPrefetcher->expects( $this->atLeastOnce() )
-			->method( 'getPropertyValues' )
-			->will( $this->returnValue( array() ) );
+		$this->propertySpecificationLookup->expects( $this->atLeastOnce() )
+			->method( 'getSpecification' )
+			->will( $this->returnValue( [] ) );
 
 		$stringValue = $this->dataValueFactory->newDataValueByType( StringValue::TYPE_ID );
 
@@ -122,7 +121,7 @@ class InfoLinksProviderTest extends \PHPUnit_Framework_TestCase {
 
 		$stringValue->setUserValue( 'Text with :: content' );
 
-		$instance = new InfoLinksProvider( $stringValue );
+		$instance = new InfoLinksProvider( $stringValue, $this->propertySpecificationLookup );
 
 		$this->dataValueServiceFactory->expects( $this->any() )
 			->method( 'newInfoLinksProvider' )
@@ -135,6 +134,30 @@ class InfoLinksProviderTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertContains(
 			'/:Foo/Text-20with-20-2D3A-2D3A-20content">+</a></span>',
+			$instance->getInfolinkText( SMW_OUTPUT_HTML )
+		);
+	}
+
+	public function testGetInfolinkTextOnSobValue() {
+
+		$stringValidator = $this->testEnvironment->newValidatorFactory()->newStringValidator();
+
+		$sobValue = $this->dataValueFactory->newDataValueByType( '__sob' );
+		$sobValue->setUserValue( 'Text with :: content' );
+
+		$instance = new InfoLinksProvider( $sobValue, $this->propertySpecificationLookup );
+
+		$this->dataValueServiceFactory->expects( $this->any() )
+			->method( 'newInfoLinksProvider' )
+			->will( $this->returnValue( $instance ) );
+
+		$stringValidator->assertThatStringContains(
+			'<span class="smwbrowse">[[.*/:Text-20with-20::-20content|+]]</span>',
+			$instance->getInfolinkText( SMW_OUTPUT_WIKI )
+		);
+
+		$stringValidator->assertThatStringContains(
+			'<span class="smwbrowse"><a .*/:Text-20with-20::-20content" title=".*/:Text-20with-20::-20content">+</a></span>',
 			$instance->getInfolinkText( SMW_OUTPUT_HTML )
 		);
 	}
@@ -160,7 +183,7 @@ class InfoLinksProviderTest extends \PHPUnit_Framework_TestCase {
 			$this->dataItemFactory->newDITime( 1, 1970, 12, 12 )
 		);
 
-		$instance = new InfoLinksProvider( $timeValue );
+		$instance = new InfoLinksProvider( $timeValue, $this->propertySpecificationLookup );
 
 		$this->dataValueServiceFactory->expects( $this->any() )
 			->method( 'newInfoLinksProvider' )
@@ -181,16 +204,16 @@ class InfoLinksProviderTest extends \PHPUnit_Framework_TestCase {
 
 		$service = 'testGetInfolinkTextOnStringValueWithServiceLinks';
 
-		$this->cachedPropertyValuesPrefetcher->expects( $this->atLeastOnce() )
-			->method( 'getPropertyValues' )
-			->will( $this->returnValue( array(
-				$this->dataItemFactory->newDIBlob( $service ) ) ) );
+		$this->propertySpecificationLookup->expects( $this->atLeastOnce() )
+			->method( 'getSpecification' )
+			->will( $this->returnValue( [
+				$this->dataItemFactory->newDIBlob( $service ) ] ) );
 
 		// Manipulating the Message cache is a hack!!
-		$parameters = array(
+		$parameters = [
 			"smw_service_" . $service,
 			'Bar'
-		);
+		];
 
 		Message::getCache()->save(
 			Message::getHash( $parameters, Message::TEXT, Message::CONTENT_LANGUAGE ),
@@ -208,19 +231,19 @@ class InfoLinksProviderTest extends \PHPUnit_Framework_TestCase {
 
 		$stringValue->setUserValue( 'Bar' );
 
-		$instance = new InfoLinksProvider( $stringValue );
+		$instance = new InfoLinksProvider( $stringValue, $this->propertySpecificationLookup );
 
 		$this->dataValueServiceFactory->expects( $this->any() )
 			->method( 'newInfoLinksProvider' )
 			->will( $this->returnValue( $instance ) );
 
 		$this->assertContains(
-			'<div class="smwttcontent">[SERVICELINK-B SERVICELINK-A]</div>',
+			'<span class="smwttcontent">[SERVICELINK-B SERVICELINK-A]</span>',
 			$instance->getInfolinkText( SMW_OUTPUT_WIKI )
 		);
 
 		$this->assertContains(
-			'<div class="smwttcontent"><a href="SERVICELINK-B">SERVICELINK-A</a></div>',
+			'<span class="smwttcontent"><a href="SERVICELINK-B">SERVICELINK-A</a></span>',
 			$instance->getInfolinkText( SMW_OUTPUT_HTML )
 		);
 	}

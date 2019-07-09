@@ -2,9 +2,7 @@
 
 namespace SMW\Tests;
 
-use SMW\ApplicationFactory;
 use SMW\Tests\Utils\UtilityFactory;
-use SMW\Message;
 use Title;
 
 /**
@@ -44,7 +42,12 @@ abstract class JsonTestCaseScriptRunner extends MwDBaseUnitTestCase {
 	/**
 	 * @var array
 	 */
-	private $itemsMarkedForDeletion = array();
+	private $itemsMarkedForDeletion = [];
+
+	/**
+	 * @var array
+	 */
+	private $configValueCallback = [];
 
 	/**
 	 * @var boolean
@@ -77,7 +80,9 @@ abstract class JsonTestCaseScriptRunner extends MwDBaseUnitTestCase {
 		);
 
 		if ( $this->getStore() instanceof \SMWSparqlStore ) {
-			$this->connectorId = strtolower( $GLOBALS['smwgSparqlDatabaseConnector'] );
+			$this->connectorId = strtolower( $GLOBALS['smwgSparqlRepositoryConnector'] );
+		} elseif ( $this->getStore() instanceof \SMW\Elastic\ElasticStore ) {
+			$this->connectorId = 'elastic';
 		} else {
 			$this->connectorId = strtolower( $this->getDBConnection()->getType() );
 		}
@@ -114,7 +119,58 @@ abstract class JsonTestCaseScriptRunner extends MwDBaseUnitTestCase {
 	 * @return array
 	 */
 	protected function getAllowedTestCaseFiles() {
-		return array();
+		return [];
+	}
+
+	/**
+	 * Selected list of settings (internal or MediaWiki related) that are
+	 * permissible for the time of the test run to be manipulated.
+	 *
+	 * For a configuration that requires special treatment (i.e. where a simple
+	 * assignment isn't sufficient), a callback can be assigned to a settings
+	 * key in order to sort out required manipulation (constants etc.).
+	 *
+	 * @return array
+	 */
+	protected function getPermittedSettings() {
+
+		// Ensure that the context is set for a selected language
+		// and dependent objects are reset
+		$this->registerConfigValueCallback( 'wgContLang', function( $val ) {
+			\RequestContext::getMain()->setLanguage( $val );
+			\SMW\Localizer::getInstance()->clear();
+			$lang = \Language::factory( $val );
+
+			// https://github.com/wikimedia/mediawiki/commit/49ce67be93dfbb40d036703dad2278ea9843f1ad
+			$this->testEnvironment->redefineMediaWikiService( 'ContentLanguage', function () use ( $lang ) {
+				return $lang;
+			} );
+
+			return $lang;
+		} );
+
+		$this->registerConfigValueCallback( 'wgLang', function( $val ) {
+			\RequestContext::getMain()->setLanguage( $val );
+			\SMW\Localizer::getInstance()->clear();
+			return \Language::factory( $val );
+		} );
+
+		return [];
+	}
+
+	/**
+	 * @param string $key
+	 * @param Closure $callback
+	 */
+	protected function registerConfigValueCallback( $key, \Closure $callback ) {
+		$this->configValueCallback[$key] = $callback;
+	}
+
+	/**
+	 * @return callable|null
+	 */
+	protected function getConfigValueCallback( $key ) {
+		return isset( $this->configValueCallback[$key] ) ? $this->configValueCallback[$key] : null;
 	}
 
 	/**
@@ -127,12 +183,12 @@ abstract class JsonTestCaseScriptRunner extends MwDBaseUnitTestCase {
 	 *
 	 * @return boolean
 	 */
-	protected function canExecuteTestCasesFor( $file ) {
+	protected function canTestCaseFile( $file ) {
 
 		// Filter specific files on-the-fly
 		$allowedTestCaseFiles = $this->getAllowedTestCaseFiles();
 
-		if ( $allowedTestCaseFiles === array() ) {
+		if ( $allowedTestCaseFiles === [] ) {
 			return true;
 		}
 
@@ -147,12 +203,11 @@ abstract class JsonTestCaseScriptRunner extends MwDBaseUnitTestCase {
 	}
 
 	/**
-	 * @test
 	 * @dataProvider jsonFileProvider
 	 */
-	public function executeTestCases( $file ) {
+	public function testCaseFile( $file ) {
 
-		if ( !$this->canExecuteTestCasesFor( $file ) ) {
+		if ( !$this->canTestCaseFile( $file ) ) {
 			$this->markTestSkipped( $file . ' excluded from the test run' );
 		}
 
@@ -165,7 +220,7 @@ abstract class JsonTestCaseScriptRunner extends MwDBaseUnitTestCase {
 	 */
 	public function jsonFileProvider() {
 
-		$provider = array();
+		$provider = [];
 
 		$bulkFileProvider = UtilityFactory::getInstance()->newBulkFileProvider(
 			$this->getTestCaseLocation()
@@ -174,7 +229,7 @@ abstract class JsonTestCaseScriptRunner extends MwDBaseUnitTestCase {
 		$bulkFileProvider->searchByFileExtension( $this->searchByFileExtension );
 
 		foreach ( $bulkFileProvider->getFiles() as $file ) {
-			$provider[basename( $file )] = array( $file );
+			$provider[basename( $file )] = [ $file ];
 		}
 
 		return $provider;
@@ -191,6 +246,15 @@ abstract class JsonTestCaseScriptRunner extends MwDBaseUnitTestCase {
 	}
 
 	/**
+	 * @since 3.0
+	 *
+	 * @return []
+	 */
+	protected function getDependencyDefinitions() {
+		return [];
+	}
+
+	/**
 	 * @since 2.2
 	 *
 	 * @param JsonTestCaseFileHandler $jsonTestCaseFileHandler
@@ -199,6 +263,10 @@ abstract class JsonTestCaseScriptRunner extends MwDBaseUnitTestCase {
 
 		if ( $jsonTestCaseFileHandler->isIncomplete() ) {
 			$this->markTestIncomplete( $jsonTestCaseFileHandler->getReasonForSkip() );
+		}
+
+		if ( !$jsonTestCaseFileHandler->hasAllRequirements( $this->getDependencyDefinitions() ) ) {
+			$this->markTestSkipped( $jsonTestCaseFileHandler->getReasonForSkip() );
 		}
 
 		if ( $jsonTestCaseFileHandler->requiredToSkipForJsonVersion( $this->getRequiredJsonTestCaseMinVersion() ) ) {
@@ -213,7 +281,7 @@ abstract class JsonTestCaseScriptRunner extends MwDBaseUnitTestCase {
 			$this->markTestSkipped( $jsonTestCaseFileHandler->getReasonForSkip() );
 		}
 
-		if ( $this->getStore() instanceof \SMWSparqlStore && $jsonTestCaseFileHandler->requiredToSkipForConnector( $GLOBALS['smwgSparqlDatabaseConnector'] ) ) {
+		if ( $jsonTestCaseFileHandler->requiredToSkipForConnector( $this->connectorId ) ) {
 			$this->markTestSkipped( $jsonTestCaseFileHandler->getReasonForSkip() );
 		}
 	}

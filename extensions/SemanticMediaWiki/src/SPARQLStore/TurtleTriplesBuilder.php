@@ -2,14 +2,14 @@
 
 namespace SMW\SPARQLStore;
 
-use SMW\DIWikiPage;
+use Onoi\Cache\Cache;
 use SMW\ApplicationFactory;
+use SMW\DIWikiPage;
 use SMW\Exporter\Element;
 use SMW\Exporter\Element\ExpElement;
 use SMW\Exporter\Element\ExpNsResource;
 use SMW\Exporter\Element\ExpResource;
 use SMW\SemanticData;
-use Onoi\Cache\Cache;
 use SMWExpData as ExpData;
 use SMWExporter as Exporter;
 use SMWTurtleSerializer as TurtleSerializer;
@@ -46,7 +46,7 @@ class TurtleTriplesBuilder {
 	/**
 	 * @var array
 	 */
-	private $prefixes = array();
+	private $prefixes = [];
 
 	/**
 	 * @var boolean
@@ -92,7 +92,7 @@ class TurtleTriplesBuilder {
 
 		$this->hasTriplesForUpdate = false;
 		$this->triples  = '';
-		$this->prefixes = array();
+		$this->prefixes = [];
 
 		$this->doSerialize( $semanticData );
 	}
@@ -126,7 +126,7 @@ class TurtleTriplesBuilder {
 	 */
 	public function getChunkedTriples() {
 
-		$chunkedTriples = array();
+		$chunkedTriples = [];
 
 		if ( $this->triples === null ) {
 			return $chunkedTriples;
@@ -204,7 +204,7 @@ class TurtleTriplesBuilder {
 	 */
 	private function prepareUpdateExpData( SemanticData $semanticData ) {
 
-		$result = array();
+		$result = [];
 
 		$expData = Exporter::getInstance()->makeExportData( $semanticData );
 		$newExpData = $this->expandUpdateExpData( $expData, $result, false );

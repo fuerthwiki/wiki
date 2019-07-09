@@ -7,7 +7,6 @@ It is part of the [DataValues set of libraries](https://github.com/DataValues).
 [![Build Status](https://secure.travis-ci.org/DataValues/Validators.png?branch=master)](http://travis-ci.org/DataValues/Validators)
 [![Code Coverage](https://scrutinizer-ci.com/g/DataValues/Validators/badges/coverage.png?s=677e53b2fab73a0bfad4aabe3f229f2f9d287a00)](https://scrutinizer-ci.com/g/DataValues/Validators/)
 [![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/DataValues/Validators/badges/quality-score.png?s=6e5e7ac8557b7177926e89e39387e73f0bf87fe3)](https://scrutinizer-ci.com/g/DataValues/Validators/)
-[![Dependency Status](https://www.versioneye.com/php/data-values:validators/badge.png)](https://www.versioneye.com/php/data-values:validators)
 
 On [Packagist](https://packagist.org/packages/data-values/validators):
 [![Latest Stable Version](https://poser.pugx.org/data-values/validators/version.png)](https://packagist.org/packages/data-values/validators)
@@ -44,14 +43,19 @@ via TravisCI, as a TravisCI configuration file is also provided in the root dire
 
 ## Authors
 
-DataValues Validators has been written by the Wikidata team, as [Wikimedia Germany]
-(https://wikimedia.de) employees for the [Wikidata project](https://wikidata.org/).
+DataValues Validators has been written by the Wikidata team, as [Wikimedia Germany](https://wikimedia.de)
+employees for the [Wikidata project](https://wikidata.org/).
 
-It is based upon and contains a lot of code written by [Jeroen De Dauw]
-(https://github.com/JeroenDeDauw) for the [Maps](https://github.com/JeroenDeDauw/Maps) and
+It is based upon and contains a lot of code written by [Jeroen De Dauw](https://github.com/JeroenDeDauw)
+for the [Maps](https://github.com/JeroenDeDauw/Maps) and
 [Semantic MediaWiki](https://semantic-mediawiki.org/) projects.
 
 ## Release notes
+
+### 0.1.3 (2018-08-02)
+
+* Made component installable with DataValues 2.x
+* Removed MediaWiki integration
 
 ### 0.1.2 (2014-10-09)
 
@@ -62,7 +66,7 @@ It is based upon and contains a lot of code written by [Jeroen De Dauw]
 * Changed autoloading from PSR-0 to PSR-4
 * Added tests for DimensionValidator
 
-### 0.1 (2013-11-17)
+### 0.1.0 (2013-11-17)
 
 Initial release with these features:
 

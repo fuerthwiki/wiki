@@ -3,10 +3,10 @@
 namespace SMW;
 
 use Html;
+use SMW\DataValues\ValueFormatters\DataValueFormatter;
+use SMW\Exception\PropertyNotFoundException;
 use SMWDIError;
 use SMWTypesValue;
-use SMW\DataValues\ValueFormatters\DataValueFormatter;
-use SMW\Exception\PropertyNotFoundExeption;
 
 /**
  * Query class that provides content for the Special:Properties page
@@ -66,12 +66,12 @@ class PropertiesQueryPage extends QueryPage {
 	function getPageHeader() {
 		return Html::rawElement(
 			'p',
-			array( 'class' => 'smw-sp-properties-docu' ),
+			[ 'class' => 'smw-sp-properties-docu' ],
 			$this->msg( 'smw-sp-properties-docu' )->parse()
 		) . $this->getSearchForm( $this->getRequest()->getVal( 'property' ), $this->getCacheInfo() ) .
 		Html::element(
 			'h2',
-			array(),
+			[],
 			$this->msg( 'smw-sp-properties-header-label' )->text()
 		);
 	}
@@ -93,7 +93,7 @@ class PropertiesQueryPage extends QueryPage {
 	 * @param Skin $skin provided by MediaWiki, not needed here
 	 * @param mixed $result
 	 * @return String
-	 * @throws PropertyNotFoundExeption if the result was not of a supported type
+	 * @throws PropertyNotFoundException if the result was not of a supported type
 	 */
 	function formatResult( $skin, $result ) {
 
@@ -104,11 +104,11 @@ class PropertiesQueryPage extends QueryPage {
 		} elseif ( $dataItem instanceof SMWDIError ) {
 			return $this->getMessageFormatter()->clear()
 				->setType( 'warning' )
-				->addFromArray( array( $dataItem->getErrors(), 'ID: ' . ( isset( $dataItem->id ) ? $dataItem->id : 'N/A' ) ) )
+				->addFromArray( [ $dataItem->getErrors(), 'ID: ' . ( isset( $dataItem->id ) ? $dataItem->id : 'N/A' ) ] )
 				->getHtml();
 		}
 
-		throw new PropertyNotFoundExeption( 'PropertiesQueryPage expects results that are properties or errors.' );
+		throw new PropertyNotFoundException( 'PropertiesQueryPage expects results that are properties or errors.' );
 	}
 
 	/**
@@ -140,7 +140,7 @@ class PropertiesQueryPage extends QueryPage {
 				$typestring = '';
 				$proplink = $property->getLabel();
 				$this->getMessageFormatter()
-					->addFromArray( array( 'ID: ' . ( isset( $property->id ) ? $property->id : 'N/A' ) ) )
+					->addFromArray( [ 'ID: ' . ( isset( $property->id ) ? $property->id : 'N/A' ) ] )
 					->addFromKey( 'smw_notitle', $proplink );
 			} else {
 				list( $typestring, $proplink ) = $this->getUserDefinedPropertyInfo( $title, $property, $useCount );
@@ -202,7 +202,7 @@ class PropertiesQueryPage extends QueryPage {
 		$typestring = SMWTypesValue::newFromTypeId( $this->settings->get( 'smwgPDefaultType' ) )->getLongHTMLText( $this->getLinker() );
 
 		$label = htmlspecialchars( $property->getLabel() );
-		$linkAttributes = array();
+		$linkAttributes = [];
 
 		if ( isset( $property->id ) ) {
 			$linkAttributes['title'] = 'ID: ' . $property->id;
@@ -223,14 +223,14 @@ class PropertiesQueryPage extends QueryPage {
 		$typeProperty = new DIProperty( '_TYPE' );
 		$types = $this->store->getPropertyValues( $property->getDiWikiPage(), $typeProperty );
 
-		if ( count( $types ) >= 1 ) {
+		if ( is_array( $types ) && count( $types ) >= 1 ) {
 			$typeDataValue = DataValueFactory::getInstance()->newDataValueByItem( current( $types ), $typeProperty );
 			$typestring = $typeDataValue->getLongHTMLText( $this->getLinker() );
 		} else {
 			$this->getMessageFormatter()->addFromKey( 'smw_propertylackstype', $typestring );
 		}
 
-		return array( $typestring, $proplink );
+		return [ $typestring, $proplink ];
 	}
 
 	/**
@@ -246,19 +246,19 @@ class PropertiesQueryPage extends QueryPage {
 
 		$dataValue = DataValueFactory::getInstance()->newDataValueByItem( $property, null );
 
-		$dataValue->setLinkAttributes( array(
+		$dataValue->setLinkAttributes( [
 			'title' => 'ID: ' . ( isset( $property->id ) ? $property->id : 'N/A' ) . ' (' . $property->getKey() . ')'
-		) );
+		] );
 
 		$label = $dataValue->getFormattedLabel(
 			DataValueFormatter::HTML_SHORT,
 			$this->getLinker()
 		);
 
-		return array(
+		return [
 			SMWTypesValue::newFromTypeId( $property->findPropertyTypeID() )->getLongHTMLText( $this->getLinker() ),
 			$label
-		);
+		];
 	}
 
 	/**

@@ -1,12 +1,12 @@
 <?php
 
-namespace Maps\Tests\Elements;
+namespace Maps\Tests\Unit\Elements;
 
 use DataValues\Geo\Values\LatLongValue;
 use Maps\Elements\Rectangle;
 
 /**
- * @covers Maps\Elements\Rectangle
+ * @covers \Maps\Elements\Rectangle
  *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
@@ -43,8 +43,6 @@ class RectangleTest extends BaseElementTest {
 
 	/**
 	 * @dataProvider instanceProvider
-	 * @param Rectangle $rectangle
-	 * @param array $arguments
 	 */
 	public function testGetCorners( Rectangle $rectangle, array $arguments ) {
 		$this->assertTrue( $rectangle->getRectangleNorthEast()->equals( $arguments[0] ) );
@@ -53,10 +51,8 @@ class RectangleTest extends BaseElementTest {
 
 	/**
 	 * @dataProvider instanceProvider
-	 * @param Rectangle $rectangle
-	 * @param array $arguments
 	 */
-	public function testSetCorners( Rectangle $rectangle, array $arguments ) {
+	public function testSetCorners( Rectangle $rectangle ) {
 		$coordinates = [
 			new LatLongValue( 42, 42 ),
 			new LatLongValue( 0, 0 )

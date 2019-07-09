@@ -87,6 +87,20 @@ class PropertyAnnotatorFactoryTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
+	public function testNewTranslationPropertyAnnotator() {
+
+		$propertyAnnotator = $this->getMockBuilder( '\SMW\PropertyAnnotator' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$instance = new PropertyAnnotatorFactory();
+
+		$this->assertInstanceOf(
+			'\SMW\PropertyAnnotators\TranslationPropertyAnnotator',
+			$instance->newTranslationPropertyAnnotator( $propertyAnnotator, [] )
+		);
+	}
+
 	public function testNewCategoryPropertyAnnotator() {
 
 		$propertyAnnotator = $this->getMockBuilder( '\SMW\PropertyAnnotator' )
@@ -97,7 +111,7 @@ class PropertyAnnotatorFactoryTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertInstanceOf(
 			'\SMW\PropertyAnnotators\CategoryPropertyAnnotator',
-			$instance->newCategoryPropertyAnnotator( $propertyAnnotator, array() )
+			$instance->newCategoryPropertyAnnotator( $propertyAnnotator, [] )
 		);
 	}
 
@@ -112,6 +126,20 @@ class PropertyAnnotatorFactoryTest extends \PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf(
 			'\SMW\PropertyAnnotators\MandatoryTypePropertyAnnotator',
 			$instance->newMandatoryTypePropertyAnnotator( $propertyAnnotator )
+		);
+	}
+
+	public function testCanConstructSchemaPropertyAnnotator() {
+
+		$propertyAnnotator = $this->getMockBuilder( '\SMW\PropertyAnnotator' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$instance = new PropertyAnnotatorFactory();
+
+		$this->assertInstanceOf(
+			'\SMW\PropertyAnnotators\SchemaPropertyAnnotator',
+			$instance->newSchemaPropertyAnnotator( $propertyAnnotator )
 		);
 	}
 

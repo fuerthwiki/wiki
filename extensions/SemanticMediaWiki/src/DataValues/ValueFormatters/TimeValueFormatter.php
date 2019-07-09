@@ -3,7 +3,7 @@
 namespace SMW\DataValues\ValueFormatters;
 
 use RuntimeException;
-use SMW\IntlTimeFormatter;
+use SMW\DataValues\Time\IntlTimeFormatter;
 use SMW\Localizer;
 use SMWDataValue as DataValue;
 use SMWDITime as DITime;
@@ -174,7 +174,7 @@ class TimeValueFormatter extends DataValueFormatter {
 	public function getCaptionFromDataItem( DITime $dataItem ) {
 
 		// If the language code is empty then the content language code is used
-		$extraneousLanguage = Localizer::getInstance()->getExtraneousLanguage(
+		$lang = Localizer::getInstance()->getLang(
 			Localizer::getInstance()->getContentLanguage()
 		);
 
@@ -192,7 +192,7 @@ class TimeValueFormatter extends DataValueFormatter {
 		}
 
 		if ( $dataItem->getPrecision() >= DITime::PREC_YM ) {
-			$result = $extraneousLanguage->getMonthLabel( $dataItem->getMonth() ) . " " . $result;
+			$result = $lang->getMonthLabel( $dataItem->getMonth() ) . " " . $result;
 		}
 
 		if ( $dataItem->getPrecision() >= DITime::PREC_YMD ) {
@@ -292,9 +292,15 @@ class TimeValueFormatter extends DataValueFormatter {
 
 		$outputFormat = $this->dataValue->getOutputFormat();
 		$formatFlag = IntlTimeFormatter::LOCL_DEFAULT;
+		$hasTimeCorrection = false;
+
+		if ( strpos( $outputFormat, 'TO' ) !== false ) {
+			$formatFlag = IntlTimeFormatter::LOCL_TIMEOFFSET;
+			$outputFormat = str_replace( '#TO', '', $outputFormat );
+		}
 
 		if ( strpos( $outputFormat, 'TZ' ) !== false ) {
-			$formatFlag = IntlTimeFormatter::LOCL_TIMEZONE;
+			$formatFlag = $formatFlag | IntlTimeFormatter::LOCL_TIMEZONE;
 			$outputFormat = str_replace( '#TZ', '', $outputFormat );
 		}
 
@@ -313,7 +319,9 @@ class TimeValueFormatter extends DataValueFormatter {
 		// string (2147483647-01-01 00:00:0.0000000) at position 17 (0): Double
 		// time specification" for an annotation like [[Date::Jan 10000000000]]
 		try {
-			$localizedFormat = $intlTimeFormatter->getLocalizedFormat( $formatFlag ) . $this->hintCalendarModel( $dataItem );
+			$localizedFormat = $intlTimeFormatter->getLocalizedFormat( $formatFlag ) .
+				$this->hintTimeCorrection( $intlTimeFormatter->hasLocalTimeCorrection() ) .
+				$this->hintCalendarModel( $dataItem );
 		} catch ( \Exception $e ) {
 			$localizedFormat = $this->getISO8601Date();
 		}
@@ -323,7 +331,7 @@ class TimeValueFormatter extends DataValueFormatter {
 
 	/**
 	 * Compute a suitable string to display this date, taking into account the
-	 * output format and the preferrable calendar models for the data.
+	 * output format and the preferable calendar models for the data.
 	 *
 	 * @note MediaWiki's date functions are not applicable for the range
 	 * of historic dates we support.
@@ -373,10 +381,19 @@ class TimeValueFormatter extends DataValueFormatter {
 		return $this->getCaptionFromDataItem( $dataItem );
 	}
 
+	private function hintTimeCorrection( $hasTimeCorrection ) {
+
+		if ( $hasTimeCorrection ) {
+			return '&nbsp;' . \Html::rawElement( 'sup', [ 'title' => 'ISO: ' . $this->getISO8601Date() ], 'ᴸ' );
+		}
+
+		return '';
+	}
+
 	private function hintCalendarModel( $dataItem ) {
 
 		if ( $this->dataValue->isEnabledFeature( SMW_DV_TIMEV_CM ) && $dataItem->getCalendarModel() !== DITime::CM_GREGORIAN ) {
-			return ' ' . \Html::rawElement( 'sup', array(), $dataItem->getCalendarModelLiteral() );
+			return ' ' . \Html::rawElement( 'sup', [], $dataItem->getCalendarModelLiteral() );
 		}
 
 		return '';

@@ -23,12 +23,12 @@ class CodeStringValueFormatter extends StringValueFormatter {
 	}
 
 	/**
-	 * @see StringValueFormatter::doFormatFinalOutputFor
+	 * @see StringValueFormatter::doFormat
 	 */
-	protected function doFormatFinalOutputFor( $type, $linker ) {
+	protected function doFormat( $dataValue, $type, $linker ) {
 
 		$abbreviate = $type === self::WIKI_LONG || $type === self::HTML_LONG;
-		$text = $this->dataValue->getDataItem()->getString();
+		$text = $dataValue->getDataItem()->getString();
 
 		// Escape and wrap values of type Code. The result is escaped to be
 		// HTML-safe (it will also work in wiki context). The result will
@@ -37,12 +37,12 @@ class CodeStringValueFormatter extends StringValueFormatter {
 		Outputs::requireResource( 'ext.smw.style' );
 
 		if ( $this->isJson( $text ) ) {
-			$result = self::formatAsPrettyJson( $text );
+			$result = self::asJson( $text );
 		} else {
 			// This disables all active wiki and HTML markup:
 			$result = str_replace(
-				array( '<', '>', ' ', '[', '{', '=', "'", ':', "\n" ),
-				array( '&lt;', '&gt;', '&#160;', '&#91;', '&#x007B;', '&#x003D;', '&#x0027;', '&#58;', "<br />" ),
+				[ '<code>', '</code>', '<nowiki>', '</nowiki>', '<', '>', ' ', '[', '{', '=', "'", ':', "\n", '&#x005B;' ],
+				[ '', '', '', '', '&lt;', '&gt;', '&#160;', '&#91;', '&#x007B;', '&#x003D;', '&#x0027;', '&#58;', "<br />", '&#91;' ],
 				$text
 			);
 		}
@@ -61,8 +61,13 @@ class CodeStringValueFormatter extends StringValueFormatter {
 	 *
 	 * @return string
 	 */
-	public static function formatAsPrettyJson( $string ) {
-		return defined( 'JSON_PRETTY_PRINT' ) ? json_encode( json_decode( $string ), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) : $string;
+	public static function asJson( $string, $flag = 0 ) {
+
+		if ( $flag > 0 ) {
+			return json_encode( json_decode( $string ), $flag );
+		}
+
+		return json_encode( json_decode( $string ), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 	}
 
 	private function isJson( $string ) {

@@ -88,8 +88,6 @@ final class Param implements IParam {
 	protected $defaulted = false;
 
 	/**
-	 * The definition of the parameter.
-	 *
 	 * @since 1.0
 	 *
 	 * @var ParamDefinition
@@ -166,6 +164,7 @@ final class Param implements IParam {
 				$this->value = trim( $this->value );
 			}
 		}
+
 
 		if ( $this->definition->isList() ) {
 			$this->value = explode( $this->definition->getDelimiter(), $this->value );
@@ -349,7 +348,9 @@ final class Param implements IParam {
 		}
 		else {
 			$validator = $this->definition->getValueValidator();
-			$validator->setOptions( $this->definition->getOptions() ); // TODO
+			if ( method_exists( $validator, 'setOptions' ) ) {
+				$validator->setOptions( $this->definition->getOptions() );
+			}
 			$validationResult = $validator->validate( $value );
 
 			if ( !$validationResult->isValid() ) {
@@ -366,9 +367,21 @@ final class Param implements IParam {
 	 * @since 1.0
 	 */
 	protected function setToDefaultIfNeeded() {
-		if ( $this->errors !== [] && !$this->hasFatalError() ) {
+		if ( $this->shouldSetToDefault() ) {
 			$this->setToDefault();
 		}
+	}
+
+	private function shouldSetToDefault(): bool {
+		if ( $this->hasFatalError() ) {
+			return false;
+		}
+
+		if ( $this->definition->isList() ) {
+			return $this->errors !== [] && $this->value === [];
+		}
+
+		return $this->errors !== [];
 	}
 
 	/**
@@ -434,9 +447,7 @@ final class Param implements IParam {
 	}
 
 	/**
-	 * Returns false when there are no fatal errors or an ProcessingError when one is found.
-	 *
-	 * @return mixed false or ProcessingError
+	 * @return boolean
 	 */
 	public function hasFatalError() {
 		foreach ( $this->errors as $error ) {
@@ -497,7 +508,7 @@ final class Param implements IParam {
 	 *
 	 * @since 1.0
 	 *
-	 * @return array
+	 * @return string[]
 	 */
 	public function getAliases() {
 		return $this->definition->getAliases();

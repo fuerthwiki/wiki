@@ -4,6 +4,7 @@ namespace MediaWiki\Session;
 
 use Psr\Log\LogLevel;
 use MediaWikiTestCase;
+use Wikimedia\TestingAccessWrapper;
 
 /**
  * @group Session
@@ -21,16 +22,16 @@ class PHPSessionHandlerTest extends MediaWikiTestCase {
 			}
 			return false;
 		} );
-		$reset[] = new \ScopedCallback( 'restore_error_handler' );
+		$reset[] = new \Wikimedia\ScopedCallback( 'restore_error_handler' );
 
 		$rProp = new \ReflectionProperty( PHPSessionHandler::class, 'instance' );
 		$rProp->setAccessible( true );
 		if ( $rProp->getValue() ) {
-			$old = \TestingAccessWrapper::newFromObject( $rProp->getValue() );
+			$old = TestingAccessWrapper::newFromObject( $rProp->getValue() );
 			$oldManager = $old->manager;
 			$oldStore = $old->store;
 			$oldLogger = $old->logger;
-			$reset[] = new \ScopedCallback(
+			$reset[] = new \Wikimedia\ScopedCallback(
 				[ PHPSessionHandler::class, 'install' ],
 				[ $oldManager, $oldStore, $oldLogger ]
 			);
@@ -40,7 +41,7 @@ class PHPSessionHandlerTest extends MediaWikiTestCase {
 	}
 
 	public function testEnableFlags() {
-		$handler = \TestingAccessWrapper::newFromObject(
+		$handler = TestingAccessWrapper::newFromObject(
 			$this->getMockBuilder( PHPSessionHandler::class )
 				->setMethods( null )
 				->disableOriginalConstructor()
@@ -49,7 +50,7 @@ class PHPSessionHandlerTest extends MediaWikiTestCase {
 
 		$rProp = new \ReflectionProperty( PHPSessionHandler::class, 'instance' );
 		$rProp->setAccessible( true );
-		$reset = new \ScopedCallback( [ $rProp, 'setValue' ], [ $rProp->getValue() ] );
+		$reset = new \Wikimedia\ScopedCallback( [ $rProp, 'setValue' ], [ $rProp->getValue() ] );
 		$rProp->setValue( $handler );
 
 		$handler->setEnableFlags( 'enable' );
@@ -93,7 +94,7 @@ class PHPSessionHandlerTest extends MediaWikiTestCase {
 		$this->assertFalse( wfIniGetBool( 'session.use_trans_sid' ) );
 
 		$this->assertNotNull( $rProp->getValue() );
-		$priv = \TestingAccessWrapper::newFromObject( $rProp->getValue() );
+		$priv = TestingAccessWrapper::newFromObject( $rProp->getValue() );
 		$this->assertSame( $manager, $priv->manager );
 		$this->assertSame( $store, $priv->store );
 		$this->assertSame( $logger, $priv->logger );
@@ -108,7 +109,7 @@ class PHPSessionHandlerTest extends MediaWikiTestCase {
 		$reset[] = $this->getResetter( $rProp );
 
 		$this->setMwGlobals( [
-			'wgSessionProviders' => [ [ 'class' => 'DummySessionProvider' ] ],
+			'wgSessionProviders' => [ [ 'class' => \DummySessionProvider::class ] ],
 			'wgObjectCacheSessionExpiry' => 2,
 		] );
 
@@ -122,16 +123,16 @@ class PHPSessionHandlerTest extends MediaWikiTestCase {
 			'logger' => $logger,
 		] );
 		PHPSessionHandler::install( $manager );
-		$wrap = \TestingAccessWrapper::newFromObject( $rProp->getValue() );
-		$reset[] = new \ScopedCallback(
+		$wrap = TestingAccessWrapper::newFromObject( $rProp->getValue() );
+		$reset[] = new \Wikimedia\ScopedCallback(
 			[ $wrap, 'setEnableFlags' ],
 			[ $wrap->enable ? $wrap->warn ? 'warn' : 'enable' : 'disable' ]
 		);
 		$wrap->setEnableFlags( 'warn' );
 
-		\MediaWiki\suppressWarnings();
+		\Wikimedia\suppressWarnings();
 		ini_set( 'session.serialize_handler', $handler );
-		\MediaWiki\restoreWarnings();
+		\Wikimedia\restoreWarnings();
 		if ( ini_get( 'session.serialize_handler' ) !== $handler ) {
 			$this->markTestSkipped( "Cannot set session.serialize_handler to \"$handler\"" );
 		}
@@ -323,10 +324,10 @@ class PHPSessionHandlerTest extends MediaWikiTestCase {
 			->setMethods( null )
 			->disableOriginalConstructor()
 			->getMock();
-		\TestingAccessWrapper::newFromObject( $handler )->setEnableFlags( 'disable' );
+		TestingAccessWrapper::newFromObject( $handler )->setEnableFlags( 'disable' );
 		$oldValue = $rProp->getValue();
 		$rProp->setValue( $handler );
-		$reset = new \ScopedCallback( [ $rProp, 'setValue' ], [ $oldValue ] );
+		$reset = new \Wikimedia\ScopedCallback( [ $rProp, 'setValue' ], [ $oldValue ] );
 
 		call_user_func_array( [ $handler, $method ], $args );
 	}
@@ -350,7 +351,7 @@ class PHPSessionHandlerTest extends MediaWikiTestCase {
 			->setMethods( null )
 			->disableOriginalConstructor()
 			->getMock();
-		\TestingAccessWrapper::newFromObject( $handler )->setEnableFlags( 'enable' );
+		TestingAccessWrapper::newFromObject( $handler )->setEnableFlags( 'enable' );
 
 		call_user_func_array( [ $handler, $method ], $args );
 	}

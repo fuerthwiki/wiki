@@ -6,6 +6,10 @@
 			"GeekEmad"
 		]
 	},
+	"nstab-page": "پاجة",
+	"nstab-index": "فهرس",
+	"tooltip-ca-nstab-page": "شوف الباجة تاع الكتاب",
+	"tooltip-ca-nstab-index": "شوف الفهرس تاع الكتاب",
 	"indexpages": "ليستة تاع باجات تاع الفهراس",
 	"pageswithoutscans": "صفحات بلا نسخة مصوّرة",
 	"proofreadpage_desc": "يخلّي تكون مقارنة ساهلة تاع النصّ معا التصويرة الرقميّة المصداريّة.",
@@ -14,13 +18,9 @@
 	"proofreadpage_index_expected": "غلطه:الفهرست ما كانش",
 	"proofreadpage_nosuch_index": "غلطه:حتا فهرست ما جا",
 	"proofreadpage_nosuch_file": "غلطه : حتا فيشيي (ملف) ما انصاب",
-	"proofreadpage_badpage": "فورمه مغلوطه",
-	"proofreadpage_badpagetext": "فورمت الباجي الي بغيت تسجلها ماشي صحيح",
-	"proofreadpage_indexdupe": "وصيل مدوبلي",
 	"proofreadpage_indexdupetext": "الباجات ما يمكنهمش يتليستاو كثر من مرة في باجت الفهرست",
 	"proofreadpage_nologin": "ماشي مسجّل الدخول",
 	"proofreadpage_nologintext": "لازم تكون [[Special:UserLogin|مسجل الدخله]] لتعدّل حالة تصحيح الباجات.",
-	"proofreadpage_notallowed": "التغيير ماش مسموح",
 	"proofreadpage_notallowedtext": "ممنوع عليك  باش تغير حالت  تصحيح هذه الباجه.",
 	"proofreadpage_dataconfig_badformatted": "علة في ضبط المعلومات",
 	"proofreadpage_dataconfig_badformattedtext": "الباحه[[Mediawiki:Proofreadpage index data config]]  ماشي في JSON مهيأه مليح.",
@@ -82,7 +82,14 @@
 	"apihelp-query+proofread-description": "Returns information about the current proofread status of the given pages.",
 	"apihelp-query+proofread-example-1": "Return proofread status for pages in namespace 250",
 	"apihelp-query+proofreadinfo-description": "Return information about configuration of ProofreadPage extension.",
-	"apihelp-query+proofreadinfo-param-prop": "Which proofread properties to get:\n;namespaces:Information about Page and Index namespaces.\n;qualitylevels:List of proofread quality levels.",
+	"apihelp-query+proofreadinfo-param-prop": "واش هيّا الدالايل تاع التصحاح الّي مطلوبة:\n;namespaces:معلومات على وساسع السميّة \"{{ns:Page}}\" و \"{{ns:Index}}\".\n;qualitylevels:ليسنة تاع نيفوّات الجودة تاع دلايل` التصحاح.",
 	"apihelp-query+proofreadinfo-example-1": "Return default information",
-	"apihelp-query+proofreadinfo-example-3": "Return namespace information"
+	"apihelp-query+proofreadinfo-example-3": "Return namespace information",
+	"proofreadpage-visualeditor-node-pages-inspector-title": "اختيار الپاجة",
+	"proofreadpage-visualeditor-node-pages-inspector-tooltip": "الپاجات",
+	"proofreadpage-visualeditor-node-pages-inspector-description": "تسياع تاع $1",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-yes": "نعم",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "لا",
+	"proofreadpage-visualeditor-node-pagequality-inspector-title": "الجودة تاع التحقاق (المعاودة تاع القراية)",
+	"proofreadpage-visualeditor-node-pagequality-inspector-tooltip": "الجودة تاع التحقاق (المعاودة تاع القراية)"
 }

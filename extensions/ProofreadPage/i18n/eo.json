@@ -16,13 +16,9 @@
 	"proofreadpage_index_expected": "Eraro: indekso atentita",
 	"proofreadpage_nosuch_index": "Eraro: nenia indekso",
 	"proofreadpage_nosuch_file": "Eraro: nenia dosiero",
-	"proofreadpage_badpage": "Malbona Formato",
-	"proofreadpage_badpagetext": "La formato de la paĝo kiun vi provis konservi estas malĝusta.",
-	"proofreadpage_indexdupe": "Duplikata ligilo",
 	"proofreadpage_indexdupetext": "Paĝoj ne povas esti listigataj pli ol unu fojo sur indekspaĝo.",
 	"proofreadpage_nologin": "Ne ensalutita",
 	"proofreadpage_nologintext": "Vi devas [[Special:UserLogin|ensaluti]] por modifi la provlegan statuson de paĝojn.",
-	"proofreadpage_notallowed": "Ŝanĝo ne permesiĝis",
 	"proofreadpage_notallowedtext": "Vi ne estas permesata ŝanĝi la pruvlegadan statuson de ĉi tiu paĝo.",
 	"proofreadpage_dataconfig_badformatted": "Insekto en datumoj agordo",
 	"proofreadpage_dataconfig_badformattedtext": "La paĝo [[Mediawiki:Proofreadpage index data config]] ne estas en ĝust-formata JSON.",
@@ -87,7 +83,11 @@
 	"apihelp-query+proofreadinfo-param-prop": "Kiujn provlegajn ecojn ricevi:\n;namespaces:Informo pri la nomspacoj \"{{ns:Page}}\" kaj \"{{ns:Index}}\".\n;qualitylevels:Listo de niveloj de provlega kvalito.",
 	"apihelp-query+proofreadinfo-example-1": "Redonas defaŭltan informon",
 	"apihelp-query+proofreadinfo-example-3": "Redonas informon pri nomspaco",
+	"proofreadpage-visualeditor-node-pages-inspector-title": "Paĝ-elekto",
 	"proofreadpage-visualeditor-node-pages-inspector-tooltip": "Paĝoj",
+	"proofreadpage-visualeditor-node-pages-inspector-description": "Transkludo de $1",
 	"proofreadpage-visualeditor-node-pages-inspector-indexselector-yes": "Jes",
-	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "Ne"
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "Ne",
+	"proofreadpage-visualeditor-node-pagequality-inspector-title": "Kvalito de provlegado",
+	"proofreadpage-visualeditor-node-pagequality-inspector-tooltip": "Kvalito de provlegado"
 }

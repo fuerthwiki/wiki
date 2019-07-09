@@ -14,7 +14,6 @@
 	"authorprotect-move": "Restricționează mutarea la autori",
 	"authorprotect-intro": "Utilizați acest formular pentru a proteja această pagină de non-autori",
 	"authorprotect-success": "Protejare cu succes!",
-	"authorprotect-failure": "Protejare fără succes",
 	"protect-level-author": "Protejare de non-autori",
 	"restriction-level-author": "Autor-protejat",
 	"right-authorprotect": "Protejează pagini de autor",

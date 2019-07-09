@@ -44,33 +44,11 @@ export class Filtered {
 		this.target = target;
 	}
 
-	/**
-	 *
-	 */
 	public run() {
-		this.showStartupMessage();
-		this.startDeferred();
-	}
 
-	/**
-	 *
-	 */
-	private showStartupMessage() {
-		// this.target.text( "Loading..." );
-		// TODO: Use spinner from srf.util
-	}
-
-	/**
-	 *
-	 */
-	private startDeferred() {
-		setTimeout( this.start(), 0 );
-	}
-
-	private start() {
 		let controller = new Controller( this.target, this.config.data, this.config.printrequests );
 
-		this.attachFilters( controller, this.target.find( 'div.filtered-filters' ) );
+		this.attachFilters( controller, this.target.children( 'div.filtered-filters' ) );
 		this.attachViewSelector( controller, this.target.find( 'div.filtered-views-selectors-container' ) );
 		this.attachViews( controller, this.target.find( 'div.filtered-views-container' ) );
 
@@ -96,7 +74,6 @@ export class Filtered {
 						//  target: JQuery, printrequest: string,
 						// controller: Controller, options?: Options
 						let filter: Filter = new this.filterTypes[ pr.filters[ filterid ].type ]( filterid, filtersContainer.children( '#' + filterid ), prId, controller, pr.filters[ filterid ] );
-						filter.init();
 
 						controller.attachFilter( filter );
 

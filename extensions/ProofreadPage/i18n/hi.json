@@ -7,9 +7,14 @@
 			"Siddhartha Ghai",
 			"రహ్మానుద్దీన్",
 			"जनक राज भट्ट",
-			"Sfic"
+			"Sfic",
+			"Jayprakash12345"
 		]
 	},
+	"nstab-page": "पृष्ठ",
+	"nstab-index": "अनुक्रम",
+	"tooltip-ca-nstab-page": "पुस्तक का पृष्ठ देखें",
+	"tooltip-ca-nstab-index": "पुस्तक का अनुक्रम देखें",
 	"indexpages": "सूचकांक पृष्ठों की सूची",
 	"pageswithoutscans": "स्कैन के बिना पन्ने",
 	"proofreadpage_desc": "मूल पाठ और सद्य पाठ में फर्क आसानी से दर्शाती हैं",
@@ -17,14 +22,10 @@
 	"proofreadpage_index": "अनुक्रम",
 	"proofreadpage_index_expected": "त्रुटि: सूचकांक की उम्मीद",
 	"proofreadpage_nosuch_index": "त्रुटि : ऐसा कोई सूचकांक",
-	"proofreadpage_nosuch_file": "त्रुटि: ऐसा कोई फ़ाइल",
-	"proofreadpage_badpage": "गलत फ़ारमैट",
-	"proofreadpage_badpagetext": "जिस प्रारूप में अप इस पृष्ठ को सहेज रहे हैं, वह गलत है।",
-	"proofreadpage_indexdupe": "नकली लिंक",
+	"proofreadpage_nosuch_file": "त्रुटि: ऐसा कोई फ़ाइल नहीं",
 	"proofreadpage_indexdupetext": "एक बार से अधिक पृष्ठ मुख्य पृष्ठ पर नहीं रखे जाते हैं।",
 	"proofreadpage_nologin": "लॉग इन नहीं किया है",
 	"proofreadpage_nologintext": "आपको पृष्ठों की स्थिति बदलने हेतु [[Special:UserLogin|खाते में प्रवेश]] करना होगा।",
-	"proofreadpage_notallowed": "परिवर्तन की अनुमति नहीं",
 	"proofreadpage_notallowedtext": "पृष्ठ की स्थिति बदलने का आपको अधिकार नहीं है।",
 	"proofreadpage_dataconfig_badformatted": "डेटा विन्यास में बग",
 	"proofreadpage_dataconfig_badformattedtext": "[[Mediawiki:Proofreadpage index data config]] का पृष्ठ में ठीक से JSON का उपयोग नहीं किया गया है।",
@@ -82,7 +83,8 @@
 	"proofreadpage-indexoai-error-schemanotfound-text": "$1 नहीं मिला।",
 	"proofreadpage-disambiguationspage": "Template:बहुवि",
 	"proofreadpage-indexquality-alt": "$1 सत्यापित {{PLURAL:$1|पृष्ठ}}, $2 केवल शोधकपृष्ठ {{PLURAL:$2|पृष्ठ}} और $3 गैर शोधक {{PLURAL:$3|पृष्ठ}}",
-	"content-model-proofread-page": "पृष्ठ:पृष्ठ",
+	"content-model-proofread-page": "पुस्तक पृष्ठ",
+	"content-model-proofread-index": "पुस्तक सामग्री",
 	"apihelp-query+proofread-description": "दिये गए पृष्ठ के वर्तमान स्थिति की जानकारी दिखाएँ।",
 	"apihelp-query+proofread-example-1": "नामस्थान 250 के पृष्ठों की स्थिति दिखाएँ।",
 	"apihelp-query+proofreadinfo-description": "शोधक पृष्ठ एक्सटैन्शन की व्यवस्था की जानकारी दिखाएँ।",
@@ -93,5 +95,7 @@
 	"proofreadpage-visualeditor-node-pages-inspector-tooltip": "पृष्ठ",
 	"proofreadpage-visualeditor-node-pages-inspector-description": "$1 का मूल",
 	"proofreadpage-visualeditor-node-pages-inspector-indexselector-yes": "हाँ",
-	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "नहीं"
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "नहीं",
+	"proofreadpage-visualeditor-node-pagequality-inspector-title": "पढ़ने की गुणवत्ता",
+	"proofreadpage-visualeditor-node-pagequality-inspector-tooltip": "पढ़ने की गुणवत्ता"
 }

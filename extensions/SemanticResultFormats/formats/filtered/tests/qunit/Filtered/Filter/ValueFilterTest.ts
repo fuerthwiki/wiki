@@ -50,22 +50,31 @@ export class ValueFilterTest extends QUnitTest {
 		f.init();
 
 		// Assert
-		assert.strictEqual( target.find( '.filtered-collapsible' ).length, 1, 'Added container for collapsable content.' );
+		assert.strictEqual( target.find( '.filtered-filter-container' ).length, 1, 'Added container for collapsable content.' );
 		assert.strictEqual( target.find( '.filtered-value-andor' ).length, 1, 'Added container for and/or switch.' );
 
-		// Assert: One input added per value
-		for ( let value of options.values ) {
-			assert.strictEqual( target.find( "input[value=\"" + value + "\"]" ).length, 1, "Added input for value \"" + value + "\"." );
-		}
+		let done = assert.async();
+		setTimeout( () => {
+			// Assert: One input added per value
+			for ( let value of options.values ) {
+				assert.strictEqual( target.find( "input[value=\"" + value + "\"]" ).length, 1, "Added option for value \"" + value + "\"." );
+			}
+			done();
+		}, 100);
 	};
 
 	public testUseOr( assert: QUnitAssert ) {
 
 		// Setup
 		let controller = new Controller( $(), {}, {} );
-		controller.onFilterUpdated = function ( filterId ) {
+		controller.onFilterUpdated = function ( filterId ): JQueryPromise< void > {
 			// Assert
 			assert.ok( true, 'Filter updated.' );
+
+			let d: JQueryDeferred< void > = jQuery.Deferred();
+			d.resolve();
+
+			return d.promise();
 		};
 
 		let f = new ValueFilter( 'foo', $(), 'fooPR', controller, {} );

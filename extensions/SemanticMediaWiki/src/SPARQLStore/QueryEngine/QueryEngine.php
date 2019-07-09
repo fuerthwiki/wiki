@@ -4,15 +4,15 @@ namespace SMW\SPARQLStore\QueryEngine;
 
 use RuntimeException;
 use SMW\Exporter\Element;
-use SMW\Query\DebugOutputFormatter as QueryDebugOutputFormatter;
+use SMW\Query\DebugFormatter;
 use SMW\Query\Language\ThingDescription;
+use SMW\QueryEngine as QueryEngineInterface;
 use SMW\SPARQLStore\QueryEngine\Condition\Condition;
 use SMW\SPARQLStore\QueryEngine\Condition\FalseCondition;
 use SMW\SPARQLStore\QueryEngine\Condition\SingletonCondition;
 use SMW\SPARQLStore\RepositoryConnection;
 use SMWQuery as Query;
 use SMWQueryResult as QueryResult;
-use SMW\QueryEngine as QueryEngineInterface;
 
 /**
  * Class mapping SMWQuery objects to SPARQL, and for controlling the execution
@@ -37,9 +37,9 @@ class QueryEngine implements QueryEngineInterface {
 	private $connection;
 
 	/**
-	 * @var CompoundConditionBuilder
+	 * @var ConditionBuilder
 	 */
-	private $compoundConditionBuilder;
+	private $conditionBuilder;
 
 	/**
 	 * @var QueryResultFactory
@@ -54,21 +54,21 @@ class QueryEngine implements QueryEngineInterface {
 	/**
 	 * @var array
 	 */
-	private $sortKeys = array();
+	private $sortKeys = [];
 
 	/**
 	 * @since  2.0
 	 *
 	 * @param RepositoryConnection $connection
-	 * @param CompoundConditionBuilder $compoundConditionBuilder
+	 * @param ConditionBuilder $conditionBuilder
 	 * @param QueryResultFactory $queryResultFactory
 	 * @param EngineOptions|null $EngineOptions
 	 */
 	// @codingStandardsIgnoreStart phpcs, ignore --sniffs=Generic.Files.LineLength
-	public function __construct( RepositoryConnection $connection, CompoundConditionBuilder $compoundConditionBuilder, QueryResultFactory $queryResultFactory, EngineOptions $engineOptions = null ) {
+	public function __construct( RepositoryConnection $connection, ConditionBuilder $conditionBuilder, QueryResultFactory $queryResultFactory, EngineOptions $engineOptions = null ) {
 	// @codingStandardsIgnoreEnd
 		$this->connection = $connection;
-		$this->compoundConditionBuilder = $compoundConditionBuilder;
+		$this->conditionBuilder = $conditionBuilder;
 		$this->queryResultFactory = $queryResultFactory;
 		$this->engineOptions = $engineOptions;
 
@@ -76,7 +76,7 @@ class QueryEngine implements QueryEngineInterface {
 			$this->engineOptions = new EngineOptions();
 		}
 
-		$this->compoundConditionBuilder->setResultVariable( self::RESULT_VARIABLE );
+		$this->conditionBuilder->setResultVariable( self::RESULT_VARIABLE );
 	}
 
 	/**
@@ -99,14 +99,14 @@ class QueryEngine implements QueryEngineInterface {
 		}
 
 		$this->sortKeys = $query->sortkeys;
-		$this->compoundConditionBuilder->setSortKeys( $this->sortKeys );
+		$this->conditionBuilder->setSortKeys( $this->sortKeys );
 
-		$compoundCondition = $this->compoundConditionBuilder->getConditionFrom(
+		$compoundCondition = $this->conditionBuilder->getConditionFrom(
 			$query->getDescription()
 		);
 
 		$query->addErrors(
-			$this->compoundConditionBuilder->getErrors()
+			$this->conditionBuilder->getErrors()
 		);
 
 		if ( $query->querymode == Query::MODE_DEBUG ) {
@@ -124,7 +124,7 @@ class QueryEngine implements QueryEngineInterface {
 			if ( $compoundCondition->condition === '' ) { // all URIs exist, no querying
 				return 1;
 			} else {
-				$condition = $this->compoundConditionBuilder->convertConditionToString( $compoundCondition );
+				$condition = $this->conditionBuilder->convertConditionToString( $compoundCondition );
 				$namespaces = $compoundCondition->namespaces;
 				$askQueryResult = $this->connection->ask( $condition, $namespaces );
 
@@ -134,9 +134,9 @@ class QueryEngine implements QueryEngineInterface {
 			return 0;
 		}
 
-		$condition = $this->compoundConditionBuilder->convertConditionToString( $compoundCondition );
+		$condition = $this->conditionBuilder->convertConditionToString( $compoundCondition );
 		$namespaces = $compoundCondition->namespaces;
-		$this->sortKeys = $this->compoundConditionBuilder->getSortKeys();
+		$this->sortKeys = $this->conditionBuilder->getSortKeys();
 
 		$options = $this->getOptions( $query, $compoundCondition );
 		$options['DISTINCT'] = true;
@@ -157,22 +157,22 @@ class QueryEngine implements QueryEngineInterface {
 			$matchElement = $compoundCondition->matchElement;
 
 			if ( $compoundCondition->condition === '' ) { // all URIs exist, no querying
-				$results = array( array ( $matchElement ) );
+				$results = [  [ $matchElement ] ];
 			} else {
-				$condition = $this->compoundConditionBuilder->convertConditionToString( $compoundCondition );
+				$condition = $this->conditionBuilder->convertConditionToString( $compoundCondition );
 				$namespaces = $compoundCondition->namespaces;
 				$askQueryResult = $this->connection->ask( $condition, $namespaces );
-				$results = $askQueryResult->isBooleanTrue() ? array( array ( $matchElement ) ) : array();
+				$results = $askQueryResult->isBooleanTrue() ? [  [ $matchElement ] ] : [];
 			}
 
-			$repositoryResult = new RepositoryResult( array( self::RESULT_VARIABLE => 0 ), $results );
+			$repositoryResult = new RepositoryResult( [ self::RESULT_VARIABLE => 0 ], $results );
 
 		} elseif ( $compoundCondition instanceof FalseCondition ) {
-			$repositoryResult = new RepositoryResult( array( self::RESULT_VARIABLE => 0 ), array() );
+			$repositoryResult = new RepositoryResult( [ self::RESULT_VARIABLE => 0 ], [] );
 		} else {
-			$condition = $this->compoundConditionBuilder->convertConditionToString( $compoundCondition );
+			$condition = $this->conditionBuilder->convertConditionToString( $compoundCondition );
 			$namespaces = $compoundCondition->namespaces;
-			$this->sortKeys = $this->compoundConditionBuilder->getSortKeys();
+			$this->sortKeys = $this->conditionBuilder->getSortKeys();
 
 			$options = $this->getOptions( $query, $compoundCondition );
 			$options['DISTINCT'] = true;
@@ -190,22 +190,22 @@ class QueryEngine implements QueryEngineInterface {
 
 	private function getDebugQueryResult( Query $query, Condition $compoundCondition ) {
 
-		$entries = array();
+		$entries = [];
 
 		if ( $this->isSingletonConditionWithElementMatch( $compoundCondition ) ) {
 			if ( $compoundCondition->condition === '' ) { // all URIs exist, no querying
 				$sparql = 'None (no conditions).';
 			} else {
-				$condition = $this->compoundConditionBuilder->convertConditionToString( $compoundCondition );
+				$condition = $this->conditionBuilder->convertConditionToString( $compoundCondition );
 				$namespaces = $compoundCondition->namespaces;
 				$sparql = $this->connection->getSparqlForAsk( $condition, $namespaces );
 			}
 		} elseif ( $compoundCondition instanceof FalseCondition ) {
 			$sparql = 'None (conditions can not be satisfied by anything).';
 		} else {
-			$condition = $this->compoundConditionBuilder->convertConditionToString( $compoundCondition );
+			$condition = $this->conditionBuilder->convertConditionToString( $compoundCondition );
 			$namespaces = $compoundCondition->namespaces;
-			$this->sortKeys = $this->compoundConditionBuilder->getSortKeys();
+			$this->sortKeys = $this->conditionBuilder->getSortKeys();
 
 			$options = $this->getOptions( $query, $compoundCondition );
 			$options['DISTINCT'] = true;
@@ -218,9 +218,9 @@ class QueryEngine implements QueryEngineInterface {
 			);
 		}
 
-		$entries['SPARQL Query'] = QueryDebugOutputFormatter::doFormatSPARQLStatement( $sparql );
+		$entries['SPARQL Query'] = DebugFormatter::prettifySparql( $sparql );
 
-		return QueryDebugOutputFormatter::getStringFrom( 'SPARQLStore', $entries, $query );
+		return DebugFormatter::getStringFrom( 'SPARQLStore', $entries, $query );
 	}
 
 	private function isSingletonConditionWithElementMatch( $condition ) {
@@ -237,13 +237,13 @@ class QueryEngine implements QueryEngineInterface {
 	 */
 	protected function getOptions( Query $query, Condition $compoundCondition ) {
 
-		$options = array(
+		$options = [
 			'LIMIT' => $query->getLimit() + 1,
 			'OFFSET' => $query->getOffset()
-		);
+		];
 
 		// Build ORDER BY options using discovered sorting fields.
-		if ( !$this->engineOptions->get( 'smwgQSortingSupport' ) || !is_array( $this->sortKeys ) ) {
+		if ( !$this->engineOptions->isFlagSet( 'smwgQSortFeatures', SMW_QSORT ) || !is_array( $this->sortKeys ) ) {
 			return $options;
 		}
 
@@ -257,7 +257,7 @@ class QueryEngine implements QueryEngineInterface {
 
 			if ( ( $order != 'RANDOM' ) && array_key_exists( $propkey, $compoundCondition->orderVariables ) ) {
 				$orderByString .= "$order(?" . $compoundCondition->orderVariables[$propkey] . ") ";
-			} elseif ( ( $order == 'RANDOM' ) && $this->engineOptions->get( 'smwgQRandSortingSupport' ) ) {
+			} elseif ( ( $order == 'RANDOM' ) && $this->engineOptions->isFlagSet( 'smwgQSortFeatures', SMW_QSORT_RANDOM ) ) {
 				// not supported in SPARQL; might be possible via function calls in some stores
 			}
 		}

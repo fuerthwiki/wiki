@@ -51,7 +51,7 @@
 			"subject": "Example/F0105/Q.1.1",
 			"assert-output": {
 				"to-contain": [
-					"title=\"3.861&amp;#160;sq mi 10,000&amp;#160;m²\"><span class=\"smwtext\">10&#160;km²</span><div class=\"smwttcontent\">3.861&#160;sq mi <br />10,000&#160;m² <br /></div>"
+					"title=\"3.861 sq mi 10,000 m²\"><span class=\"smwtext\">10&#160;km²</span><span class=\"smwttcontent\">3.861&#160;sq mi <br />10,000&#160;m² <br /></span>"
 				]
 			}
 		},
@@ -61,7 +61,7 @@
 			"subject": "Example/F0105/Q.1.2",
 			"assert-output": {
 				"to-contain": [
-					"title=\"3.861&amp;#160;sq mi 10,000&amp;#160;m²\"><span class=\"smwtext\">10&#160;km²</span><div class=\"smwttcontent\">3.861&#160;sq mi <br />10,000&#160;m² <br /></div>"
+					"title=\"3.861 sq mi 10,000 m²\"><span class=\"smwtext\">10&#160;km²</span><span class=\"smwttcontent\">3.861&#160;sq mi <br />10,000&#160;m² <br /></span>"
 				]
 			}
 		},
@@ -71,7 +71,7 @@
 			"subject": "Example/F0105/Q.1.3",
 			"assert-output": {
 				"to-contain": [
-					"title=\"3.861&amp;#160;sq mi 10,000&amp;#160;m²\"><span class=\"smwtext\">10&#160;km²</span><div class=\"smwttcontent\">3.861&#160;sq mi <br />10,000&#160;m² <br /></div>"
+					"title=\"3.861 sq mi 10,000 m²\"><span class=\"smwtext\">10&#160;km²</span><span class=\"smwttcontent\">3.861&#160;sq mi <br />10,000&#160;m² <br /></span>"
 				]
 			}
 		},
@@ -81,7 +81,7 @@
 			"subject": "Example/F0105/Q.2.1",
 			"assert-output": {
 				"to-contain": [
-					"title=\"Example/F0105/2\">Example/F0105/2</a> (Has text Test <li>Item</li>)"
+					"title=\"Example/F0105/2\">Example/F0105/2</a></span></span> (<span class=\"smw-field\"><span class=\"smw-field-label\">Has text</span>: <span class=\"smw-value\">Test <li>Item</li></span></span>)"
 				]
 			}
 		},
@@ -91,7 +91,7 @@
 			"subject": "Example/F0105/Q.2.2",
 			"assert-output": {
 				"to-contain": [
-					"title=\"Example/F0105/2\">Example/F0105/2</a> (Has text Test &lt;li&gt;Item&lt;/li&gt;)</li>"
+					"title=\"Example/F0105/2\">Example/F0105/2</a></span></span> (<span class=\"smw-field\"><span class=\"smw-field-label\">Has text</span>: <span class=\"smw-value\">Test &lt;li&gt;Item&lt;/li&gt;</span></span>)</li>"
 				]
 			}
 		},
@@ -101,7 +101,7 @@
 			"subject": "Example/F0105/Q.2.3",
 			"assert-output": {
 				"to-contain": [
-					"title=\"Example/F0105/2\">Example/F0105/2</a> (Has text Test &lt;li&gt;Item&lt;/li&gt;)</li>"
+					"title=\"Example/F0105/2\">Example/F0105/2</a></span></span> (<span class=\"smw-field\"><span class=\"smw-field-label\">Has text</span>: <span class=\"smw-value\">Test &lt;li&gt;Item&lt;/li&gt;</span></span>)</li>"
 				]
 			}
 		}

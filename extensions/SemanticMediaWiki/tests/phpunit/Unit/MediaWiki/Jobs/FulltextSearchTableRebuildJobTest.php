@@ -2,9 +2,9 @@
 
 namespace SMW\Tests\MediaWiki\Jobs;
 
-use SMW\Tests\TestEnvironment;
 use SMW\DIWikiPage;
 use SMW\MediaWiki\Jobs\FulltextSearchTableRebuildJob;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\MediaWiki\Jobs\FulltextSearchTableRebuildJob
@@ -66,17 +66,17 @@ class FulltextSearchTableRebuildJobTest extends \PHPUnit_Framework_TestCase {
 
 	public function parametersProvider() {
 
-		$provider[] = array(
-			array()
-		);
+		$provider[] = [
+			[]
+		];
 
-		$provider[] = array(
-			array( 'table' => 'Foo' )
-		);
+		$provider[] = [
+			[ 'table' => 'Foo' ]
+		];
 
-		$provider[] = array(
-			array( 'mode' => 'full' )
-		);
+		$provider[] = [
+			[ 'mode' => 'full' ]
+		];
 
 		return $provider;
 	}

@@ -5,8 +5,8 @@
 			"Pikne"
 		]
 	},
-	"authorprotect-notauthor": "Sa ei ole selle lehekülje autor",
+	"authorprotect-notauthor": "{{GENDER:$1|Sa}} ei ole selle lehekülje autor.",
 	"authorprotect-confirm": "Muuda kaitse taset",
-	"authorprotect-success": "Kaitse edukas!",
+	"authorprotect-success": "Kaitse seatud!",
 	"restriction-level-author": "Autori kaitse all"
 }

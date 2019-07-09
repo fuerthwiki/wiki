@@ -1,5 +1,7 @@
 <?php
 
+declare( strict_types = 1 );
+
 namespace DataValues\Geo\Parsers;
 
 use ValueParsers\ParseException;
@@ -7,13 +9,13 @@ use ValueParsers\ParseException;
 /**
  * @since 0.1
  *
- * @license GPL-2.0+
+ * @license GPL-2.0-or-later
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  * @author H. Snater < mediawiki@snater.com >
  */
 class FloatCoordinateParser extends LatLongParserBase {
 
-	const FORMAT_NAME = 'float-coordinate';
+	public const FORMAT_NAME = 'float-coordinate';
 
 	/**
 	 * @see LatLongParserBase::getParsedCoordinate
@@ -22,7 +24,7 @@ class FloatCoordinateParser extends LatLongParserBase {
 	 *
 	 * @return float
 	 */
-	protected function getParsedCoordinate( $coordinateSegment ) {
+	protected function getParsedCoordinate( string $coordinateSegment ): float {
 		return (float)$this->resolveDirection( str_replace( ' ', '', $coordinateSegment ) );
 	}
 
@@ -33,7 +35,7 @@ class FloatCoordinateParser extends LatLongParserBase {
 	 *
 	 * @return bool
 	 */
-	protected function areValidCoordinates( array $normalizedCoordinateSegments ) {
+	protected function areValidCoordinates( array $normalizedCoordinateSegments ): bool {
 		// TODO: Implement localized decimal separator.
 		$baseRegExp = '\d{1,3}(\.\d{1,20})?';
 
@@ -87,7 +89,7 @@ class FloatCoordinateParser extends LatLongParserBase {
 	 * @throws ParseException if unable to split input string into two segments
 	 * @return string[]
 	 */
-	protected function splitString( $normalizedCoordinateString ) {
+	protected function splitString( string $normalizedCoordinateString ): array {
 		$separator = $this->getOption( self::OPT_SEPARATOR_SYMBOL );
 
 		$normalizedCoordinateSegments = explode( $separator, $normalizedCoordinateString );

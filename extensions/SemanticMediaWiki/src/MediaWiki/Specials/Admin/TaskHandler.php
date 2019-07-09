@@ -2,8 +2,9 @@
 
 namespace SMW\MediaWiki\Specials\Admin;
 
-use WebRequest;
 use SMW\Message;
+use SMW\Store;
+use WebRequest;
 
 /**
  * @license GNU GPL v2+
@@ -14,9 +15,28 @@ use SMW\Message;
 abstract class TaskHandler {
 
 	/**
+	 * Identifies an individual section to where the task is associated with.
+	 */
+	const SECTION_SUPPLEMENT = 'section.supplement';
+	const SECTION_SCHEMA = 'section.schema';
+	const SECTION_DATAREPAIR = 'section.datarepair';
+	const SECTION_DEPRECATION ='section.deprecation';
+	const SECTION_SUPPORT ='section.support';
+
+	/**
 	 * @var integer
 	 */
 	private $enabledFeatures = 0;
+
+	/**
+	 * @var Store
+	 */
+	private $store;
+
+	/**
+	 * @var boolean
+	 */
+	protected $isApiTask = false;
 
 	/**
 	 * @since 2.5
@@ -26,7 +46,7 @@ abstract class TaskHandler {
 	 * @return boolean
 	 */
 	public function isEnabledFeature( $feature ) {
-		return ( $this->enabledFeatures & $feature ) != 0;
+		return ( ( (int)$this->enabledFeatures & $feature ) == $feature );
 	}
 
 	/**
@@ -36,6 +56,51 @@ abstract class TaskHandler {
 	 */
 	public function setEnabledFeatures( $enabledFeatures ) {
 		$this->enabledFeatures = $enabledFeatures;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param Store $store
+	 */
+	public function setStore( Store $store ) {
+		$this->store = $store;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @return Store
+	 */
+	public function getStore() {
+		return $this->store;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @return string
+	 */
+	public function getSection() {
+		return '';
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @return boolean
+	 */
+	public function isApiTask() {
+		return false;
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @return boolean
+	 */
+	public function hasAction() {
+		return false;
 	}
 
 	/**
@@ -59,7 +124,7 @@ abstract class TaskHandler {
 	 */
 	abstract public function handleRequest( WebRequest $webRequest );
 
-	protected function getMessageAsString( $key, $type = Message::TEXT ) {
+	protected function msg( $key, $type = Message::TEXT ) {
 		return Message::get( $key, $type, Message::USER_LANGUAGE );
 	}
 

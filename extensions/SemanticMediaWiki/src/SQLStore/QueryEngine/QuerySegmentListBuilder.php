@@ -4,11 +4,11 @@ namespace SMW\SQLStore\QueryEngine;
 
 use InvalidArgumentException;
 use OutOfBoundsException;
-use SMW\Utils\CircularReferenceGuard;
-use SMW\Query\Language\Description;
-use SMW\Query\Language\Conjuncton;
-use SMW\Store;
 use SMW\Message;
+use SMW\Query\Language\Conjuncton;
+use SMW\Query\Language\Description;
+use SMW\Store;
+use SMW\Utils\CircularReferenceGuard;
 
 /**
  * @license GNU GPL v2+
@@ -40,7 +40,7 @@ class QuerySegmentListBuilder {
 	 *
 	 * @var QuerySegment[]
 	 */
-	private $querySegments = array();
+	private $querySegments = [];
 
 	/**
 	 * Array of sorting requests ("Property_name" => "ASC"/"DESC"). Used during query
@@ -49,12 +49,12 @@ class QuerySegmentListBuilder {
 	 *
 	 * @var string[]
 	 */
-	private $sortKeys = array();
+	private $sortKeys = [];
 
 	/**
 	 * @var string[]
 	 */
-	private $errors = array();
+	private $errors = [];
 
 	/**
 	 * @var integer
@@ -260,7 +260,7 @@ class QuerySegmentListBuilder {
 
 	private function findDuplicates( $fingerprint ) {
 
-		if ( $this->errors !== array() || $this->isFilterDuplicates === false ) {
+		if ( $this->errors !== [] || $this->isFilterDuplicates === false ) {
 			return false;
 		}
 

@@ -9,7 +9,7 @@ use Exception;
  *
  * @since 0.1
  *
- * @licence GNU GPL v2+
+ * @license GPL-2.0-or-later
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class DimensionValidator extends ValueValidatorObject {
@@ -126,7 +126,7 @@ class DimensionValidator extends ValueValidatorObject {
 			return;
 		}
 
-		if ( !preg_match( '/^\d+(\.\d+)?(' . implode( '|', $this->allowedUnits ) . ')$/', $value ) ) {
+		if ( !preg_match( '/^\d+(\.\d+)?(' . implode( '|', $this->allowedUnits ) . ')\z/', $value ) ) {
 			$this->addErrorMessage( 'Not a valid dimension value' );
 			return;
 		}
@@ -134,13 +134,12 @@ class DimensionValidator extends ValueValidatorObject {
 		if ( strpos( $value, '%' ) !== false ) {
 			$upperBound = $this->maxPercentage;
 			$lowerBound = $this->minPercentage;
-		}
-		else {
+		} else {
 			$upperBound = $this->upperBound;
 			$lowerBound = $this->lowerBound;
 		}
 
-		$value = (float)preg_replace( '/[^0-9]/', '', $value );
+		$value = (float)preg_replace( '/\D+/', '', $value );
 
 		$rangeValidator = new RangeValidator();
 		$rangeValidator->setRange( $lowerBound, $upperBound );

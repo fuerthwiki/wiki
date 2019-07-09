@@ -2,9 +2,9 @@
 
 namespace SMW\MediaWiki\Hooks;
 
+use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerAwareInterface;
-use SMW\ApplicationFactory;
+use SMW\Options;
 
 /**
  * @license GNU GPL v2+
@@ -12,56 +12,64 @@ use SMW\ApplicationFactory;
  *
  * @author mwjames
  */
-class HookHandler implements LoggerAwareInterface {
+class HookHandler {
+
+	use LoggerAwareTrait;
 
 	/**
-	 * @var DataItemFactory
+	 * @var Options
 	 */
-	protected $dataItemFactory;
+	private $options;
 
 	/**
-	 * @var DataValueFactory
-	 */
-	protected $dataValueFactory;
-
-	/**
-	 * @var LoggerInterface
-	 */
-	protected $logger;
-
-	/**
-	 * @since  2.5
-	 *
-	 * @param ApplicationFactory|null $applicationFactory
-	 */
-	public function __construct( $applicationFactory = null ) {
-
-		if ( $applicationFactory === null ) {
-			$applicationFactory = ApplicationFactory::getInstance();
-		}
-
-		$this->dataItemFactory = $applicationFactory->getDataItemFactory();
-		$this->dataValueFactory = $applicationFactory->getDataValueFactory();
-	}
-
-	/**
-	 * @see LoggerAwareInterface::setLogger
-	 *
 	 * @since 2.5
-	 *
-	 * @param LoggerInterface $logger
 	 */
-	public function setLogger( LoggerInterface $logger ) {
-		$this->logger = $logger;
+	public function __construct() {
+		$this->options = new Options();
 	}
 
-	protected function log( $message, $context = array() ) {
+	/**
+	 * @since 3.0
+	 *
+	 * @param array $options
+	 */
+	public function setOptions( array $options ) {
+		$this->options = new Options( $options );
+	}
 
-		if ( $this->logger === null ) {
-			return;
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $key
+	 * @param mixed $default
+	 *
+	 * @return mixed
+	 */
+	public function getOption( $key, $default = null ) {
+
+		if ( $this->options === null ) {
+			$this->setOptions( [] );
 		}
 
-		$this->logger->info( $message, $context );
+		return $this->options->safeGet( $key, $default );
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param string $key
+	 * @param mixed $flag
+	 *
+	 * @return boolean
+	 */
+	public function isFlagSet( $key, $flag ) {
+		return $this->options->isFlagSet( $key, $flag );
+	}
+
+	protected function log( $message, $context = [] ) {
+		if ( $this->logger instanceof LoggerInterface ) {
+			$this->logger->info( $message, $context );
+		}
 	}
 
 }

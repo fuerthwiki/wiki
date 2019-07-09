@@ -24,7 +24,7 @@ class QueryComparator {
 	/**
 	 * @var array
 	 */
-	private $reverseCache = array();
+	private $reverseCache = [];
 
 	/**
 	 * @since 2.3
@@ -61,7 +61,7 @@ class QueryComparator {
 	}
 
 	/**
-	 * Gets an array with all suported comparator strings.
+	 * Gets an array with all supported comparator strings.
 	 * The string for SMW_CMP_EQ, which is an empty string, is not in this list.
 	 *
 	 * @since 1.5.3
@@ -140,7 +140,7 @@ class QueryComparator {
 	 */
 	public function getStringForComparator( $comparator ) {
 
-		if ( $this->reverseCache === array() ) {
+		if ( $this->reverseCache === [] ) {
 			$this->reverseCache = array_flip( $this->comparators );
 		}
 
@@ -155,8 +155,14 @@ class QueryComparator {
 
 	private function getEnabledComparators( $comparatorList, $strictComparators ) {
 
-		// Note: Comparators that contain other comparators at the beginning of the string need to be at beginning of the array.
-		$comparators = array(
+		// Note: Comparators that contain other comparators at the beginning of
+		// the string need to be at beginning of the array.
+		$comparators = [
+			'like:' => SMW_CMP_PRIM_LIKE,
+			'nlike:' => SMW_CMP_PRIM_NLKE,
+			'in:' => SMW_CMP_IN,
+			'not:' => SMW_CMP_NOT,
+			'phrase:' => SMW_CMP_PHRASE,
 			'!~' => SMW_CMP_NLKE,
 			'<<' => SMW_CMP_LESS,
 			'>>' => SMW_CMP_GRTR,
@@ -166,7 +172,7 @@ class QueryComparator {
 			'≥' => SMW_CMP_GEQ,
 			'!' => SMW_CMP_NEQ,
 			'~' => SMW_CMP_LIKE,
-		);
+		];
 
 		if ( strpos( $comparatorList, '|' ) === false ) {
 			return $comparators;

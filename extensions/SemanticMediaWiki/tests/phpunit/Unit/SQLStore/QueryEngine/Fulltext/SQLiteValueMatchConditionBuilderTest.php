@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\SQLStore\QueryEngine\Fulltext;
 
-use SMW\SQLStore\QueryEngine\Fulltext\SQLiteValueMatchConditionBuilder;
 use SMW\DataItemFactory;
+use SMW\SQLStore\QueryEngine\Fulltext\SQLiteValueMatchConditionBuilder;
 
 /**
  * @covers \SMW\SQLStore\QueryEngine\Fulltext\SQLiteValueMatchConditionBuilder
@@ -126,13 +126,15 @@ class SQLiteValueMatchConditionBuilderTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getDataItem' )
 			->will( $this->returnValue( $this->dataItemFactory->newDIBlob( 'Bar' ) ) );
 
-		$description->expects( $this->once() )
+		$description->expects( $this->atLeastOnce() )
 			->method( 'getComparator' )
 			->will( $this->returnValue( SMW_CMP_LIKE ) );
 
 		$this->assertTrue(
 			$instance->canApplyFulltextSearchMatchCondition( $description )
 		);
+
+		$instance->getWhereCondition( $description );
 	}
 
 	public function testGetWhereConditionWithPropertyOnTempTable() {
@@ -222,11 +224,11 @@ class SQLiteValueMatchConditionBuilderTest extends \PHPUnit_Framework_TestCase {
 
 	public function searchTermProvider() {
 
-		$provider[] = array(
+		$provider[] = [
 			'foooo',
 			'barColumn',
 			"barColumn MATCH foooo"
-		);
+		];
 
 		return $provider;
 	}

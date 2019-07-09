@@ -11,10 +11,11 @@ class PFValuesUtils {
 
 	/**
 	 * Helper function to handle getPropertyValues().
+	 *
 	 * @param Store $store
 	 * @param Title $subject
 	 * @param string $propID
-	 * @param array $requestOptions
+	 * @param array|null $requestOptions
 	 * @return array
 	 */
 	public static function getSMWPropertyValues( $store, $subject, $propID, $requestOptions = null ) {
@@ -50,28 +51,46 @@ class PFValuesUtils {
 
 	/**
 	 * Helper function - gets names of categories for a page;
-	 * based on Title::getParentCategories(), but simpler
-	 * - this function doubles as a function to get all categories on
-	 * the site, if no article is specified
+	 * based on Title::getParentCategories(), but simpler.
+	 *
 	 * @param Title $title
 	 * @return array
 	 */
-	public static function getCategoriesForPage( $title = null ) {
+	public static function getCategoriesForPage( $title ) {
 		$categories = array();
 		$db = wfGetDB( DB_SLAVE );
-		$conditions = null;
-		if ( !is_null( $title ) ) {
-			$titlekey = $title->getArticleID();
-			if ( $titlekey == 0 ) {
-				// Something's wrong - exit
-				return $categories;
-			}
-			$conditions['cat_id'] = $titlekey;
+		$titlekey = $title->getArticleID();
+		if ( $titlekey == 0 ) {
+			// Something's wrong - exit
+			return $categories;
 		}
+		$conditions['cl_from'] = $titlekey;
+		$res = $db->select(
+			'categorylinks',
+			'DISTINCT cl_to',
+			$conditions,
+			__METHOD__
+		);
+		if ( $db->numRows( $res ) > 0 ) {
+			while ( $row = $db->fetchRow( $res ) ) {
+				$categories[] = $row['cl_to'];
+			}
+		}
+		$db->freeResult( $res );
+		return $categories;
+	}
+
+	/**
+	 * Helper function - returns names of all the categories.
+	 * @return array
+	 */
+	public static function getAllCategories() {
+		$categories = array();
+		$db = wfGetDB( DB_SLAVE );
 		$res = $db->select(
 			'category',
 			'cat_title',
-			$conditions,
+			 null,
 			__METHOD__
 		);
 		if ( $db->numRows( $res ) > 0 ) {
@@ -88,6 +107,7 @@ class PFValuesUtils {
 	 * because it uses the SMW data store, which can't perform
 	 * case-insensitive queries; for queries with a substring, the
 	 * function PFAutocompleteAPI::getAllValuesForProperty() exists.
+	 *
 	 * @param string $property_name
 	 * @return array
 	 */
@@ -106,7 +126,7 @@ class PFValuesUtils {
 	}
 
 	/**
-	 * Used with the Cargo extension
+	 * Used with the Cargo extension.
 	 * @param string $tableName
 	 * @param string $fieldName
 	 * @return array
@@ -116,7 +136,7 @@ class PFValuesUtils {
 	}
 
 	/**
-	 * Used with the Cargo extension
+	 * Used with the Cargo extension.
 	 * @param string $tableName
 	 * @param string $fieldName
 	 * @param string|null $whereStr
@@ -133,7 +153,7 @@ class PFValuesUtils {
 		$limitStr = max( 100, $wgPageFormsMaxLocalAutocompleteValues + 10 );
 
 		try {
-			$sqlQuery = CargoSQLQuery::newFromValues( $tableName, $fieldName, $whereStr, $joinOnStr = null, $fieldName, $havingStr = null, $fieldName, $limitStr );
+			$sqlQuery = CargoSQLQuery::newFromValues( $tableName, $fieldName, $whereStr, $joinOnStr = null, $fieldName, $havingStr = null, $fieldName, $limitStr, $offsetStr = 0 );
 		} catch ( Exception $e ) {
 			return array();
 		}
@@ -157,7 +177,8 @@ class PFValuesUtils {
 	/**
 	 * Get all the pages that belong to a category and all its
 	 * subcategories, down a certain number of levels - heavily based on
-	 * SMW's SMWInlineQuery::includeSubcategories()
+	 * SMW's SMWInlineQuery::includeSubcategories().
+	 *
 	 * @param string $top_category
 	 * @param int $num_levels
 	 * @param string|null $substring
@@ -293,7 +314,7 @@ class PFValuesUtils {
 
 		// Escape if there's no such concept.
 		if ( $conceptTitle == null || !$conceptTitle->exists() ) {
-			return wfMessage( 'pf-missingconcept', wfEscapeWikiText( $conceptName ) );
+			throw new MWException( wfMessage( 'pf-missingconcept', wfEscapeWikiText( $conceptName ) ) );
 		}
 
 		global $wgPageFormsUseDisplayTitle;
@@ -377,46 +398,64 @@ class PFValuesUtils {
 		return $pages;
 	}
 
-	public static function getAllPagesForNamespace( $namespace_name, $substring = null ) {
+	public static function getAllPagesForNamespace( $namespaceStr, $substring = null ) {
 		global $wgContLang, $wgLanguageCode, $wgPageFormsUseDisplayTitle;
 
-		// Cycle through all the namespace names for this language, and
-		// if one matches the namespace specified in the form, get the
-		// names of all the pages in that namespace.
+		$namespaceNames = explode( ',', $namespaceStr );
 
-		// Switch to blank for the string 'Main'.
-		if ( $namespace_name == 'Main' || $namespace_name == 'main' ) {
-			$namespace_name = '';
-		}
-		$matchingNamespaceCode = null;
-		$namespaces = $wgContLang->getNamespaces();
-		foreach ( $namespaces as $curNSCode => $curNSName ) {
-			if ( $curNSName == $namespace_name ) {
-				$matchingNamespaceCode = $curNSCode;
-			}
-		}
+		$allNamespaces = $wgContLang->getNamespaces();
 
-		// If that didn't find anything, and we're in a language
-		// other than English, check English as well.
-		if ( is_null( $matchingNamespaceCode ) && $wgLanguageCode != 'en' ) {
+		if ( $wgLanguageCode != 'en' ) {
 			$englishLang = Language::factory( 'en' );
-			$namespaces = $englishLang->getNamespaces();
-			foreach ( $namespaces as $curNSCode => $curNSName ) {
+			$allEnglishNamespaces = $englishLang->getNamespaces();
+		}
+
+		$queriedNamespaces = array();
+		$namespaceConditions = array();
+
+		foreach ( $namespaceNames as $namespace_name ) {
+
+			// Cycle through all the namespace names for this language, and
+			// if one matches the namespace specified in the form, get the
+			// names of all the pages in that namespace.
+
+			// Switch to blank for the string 'Main'.
+			if ( $namespace_name == 'Main' || $namespace_name == 'main' ) {
+				$namespace_name = '';
+			}
+			$matchingNamespaceCode = null;
+			foreach ( $allNamespaces as $curNSCode => $curNSName ) {
 				if ( $curNSName == $namespace_name ) {
 					$matchingNamespaceCode = $curNSCode;
 				}
 			}
-		}
 
-		if ( is_null( $matchingNamespaceCode ) ) {
-			return wfMessage( 'pf-missingnamespace', wfEscapeWikiText( $namespace_name ) );
+			// If that didn't find anything, and we're in a language
+			// other than English, check English as well.
+			if ( is_null( $matchingNamespaceCode ) && $wgLanguageCode != 'en' ) {
+				foreach ( $allEnglishNamespaces as $curNSCode => $curNSName ) {
+					if ( $curNSName == $namespace_name ) {
+						$matchingNamespaceCode = $curNSCode;
+					}
+				}
+			}
+
+			if ( is_null( $matchingNamespaceCode ) ) {
+				throw new MWException( wfMessage( 'pf-missingnamespace', wfEscapeWikiText( $namespace_name ) ) );
+			}
+
+			$queriedNamespaces[] = $matchingNamespaceCode;
+			$namespaceConditions[] = "page_namespace = $matchingNamespaceCode";
 		}
 
 		$db = wfGetDB( DB_SLAVE );
+		$conditions = array();
+		$conditions[] = implode( ' OR ', $namespaceConditions );
 		$tables = array( 'page' );
 		$columns = array( 'page_title' );
-		$conditions = array();
-		$conditions['page_namespace'] = $matchingNamespaceCode;
+		if ( count( $namespaceNames ) > 1 ) {
+			$columns[] = 'page_namespace';
+		}
 		if ( $wgPageFormsUseDisplayTitle ) {
 			$tables['pp_displaytitle'] = 'page_props';
 			$tables['pp_defaultsort'] = 'page_props';
@@ -437,11 +476,14 @@ class PFValuesUtils {
 				)
 			);
 			if ( $substring != null ) {
-				$conditions[] = '(pp_displaytitle.pp_value IS NULL AND (' .
+				$substringCondition = '(pp_displaytitle.pp_value IS NULL AND (' .
 					self::getSQLConditionForAutocompleteInColumn( 'page_title', $substring ) .
 					')) OR ' .
-					self::getSQLConditionForAutocompleteInColumn( 'pp_displaytitle.pp_value', $substring ) .
-					' OR page_namespace = ' . NS_CATEGORY;
+					self::getSQLConditionForAutocompleteInColumn( 'pp_displaytitle.pp_value', $substring );
+				if ( !in_array( NS_CATEGORY, $queriedNamespaces ) ) {
+					$substringCondition .= ' OR page_namespace = ' . NS_CATEGORY;
+				}
+				$conditions[] = $substringCondition;
 			}
 		} else {
 			$join = array();
@@ -449,18 +491,19 @@ class PFValuesUtils {
 				$conditions[] = self::getSQLConditionForAutocompleteInColumn( 'page_title', $substring );
 			}
 		}
-		$res = $db->select(
-			$tables,
-			$columns,
-			$conditions,
-			__METHOD__,
-			$options = array(),
-			$join );
+		$res = $db->select( $tables, $columns, $conditions, __METHOD__, $options = array(), $join );
 
 		$pages = array();
 		$sortkeys = array();
 		while ( $row = $db->fetchRow( $res ) ) {
-			$title = str_replace( '_', ' ', $row[0] );
+			// If there's more than one namespace, include the
+			// namespace prefix in the results - otherwise, don't.
+			if ( array_key_exists( 'page_namespace', $row ) ) {
+				$actualTitle = Title::newFromText( $row['page_title'], $row['page_namespace'] );
+				$title = $actualTitle->getPrefixedText();
+			} else {
+				$title = str_replace( '_', ' ', $row['page_title'] );
+			}
 			if ( array_key_exists( 'pp_displaytitle_value', $row ) &&
 				!is_null( $row[ 'pp_displaytitle_value' ] ) &&
 				trim( str_replace( '&#160;', '', strip_tags( $row[ 'pp_displaytitle_value' ] ) ) ) !== '' ) {
@@ -484,17 +527,18 @@ class PFValuesUtils {
 	/**
 	 * Creates an array of values that match the specified source name and
 	 * type, for use by both Javascript autocompletion and comboboxes.
+	 *
 	 * @param string|null $source_name
 	 * @param string $source_type
-	 * @return string|null
+	 * @return string[]
 	 */
 	public static function getAutocompleteValues( $source_name, $source_type ) {
-		if ( $source_name == null ) {
-			return null;
+		if ( $source_name === null ) {
+			return array();
 		}
 
-		// The query depends on whether this is a property, category,
-		// concept or namespace.
+		// The query depends on whether this is a Cargo field, SMW
+		// property, category, SMW concept or namespace.
 		if ( $source_type == 'cargo field' ) {
 			list( $table_name, $field_name ) = explode( '|', $source_name, 2 );
 			$names_array = self::getAllValuesForCargoField( $table_name, $field_name );
@@ -506,6 +550,8 @@ class PFValuesUtils {
 			$names_array = self::getAllPagesForCategory( $source_name, 10 );
 		} elseif ( $source_type == 'concept' ) {
 			$names_array = self::getAllPagesForConcept( $source_name );
+		} elseif ( $source_type == 'query' ) {
+			$names_array = self::getAllPagesForQuery( $source_name, 10 );
 		} else { // i.e., $source_type == 'namespace'
 			$names_array = self::getAllPagesForNamespace( $source_name );
 		}
@@ -514,7 +560,8 @@ class PFValuesUtils {
 
 	/**
 	 * Helper function to get an array of values out of what may be either
-	 * an array or a delimited string
+	 * an array or a delimited string.
+	 *
 	 * @param string[]|string $value
 	 * @param string $delimiter
 	 * @return string[]
@@ -523,7 +570,7 @@ class PFValuesUtils {
 		if ( is_array( $value ) ) {
 			return $value;
 		} else {
-			// remove extra spaces
+			// Remove extra spaces.
 			return array_map( 'trim', explode( $delimiter, $value ) );
 		}
 	}
@@ -593,9 +640,10 @@ class PFValuesUtils {
 	}
 
 	/**
-	 * returns an array of pages that are result of the semantic query
+	 * Returns an array of the names of pages that are the result of an SMW query.
+	 *
 	 * @param string $rawQuery the query string like [[Category:Trees]][[age::>1000]]
-	 * @return SMWDIWikiPage[] SMWDIWikiPage objects representing the result
+	 * @return array
 	 */
 	public static function getAllPagesForQuery( $rawQuery ) {
 		$rawQueryArray = array( $rawQuery );
@@ -606,11 +654,24 @@ class PFValuesUtils {
 			$processedParams,
 			SMWQueryProcessor::SPECIAL_PAGE, '', $printouts );
 		$res = PFUtils::getSMWStore()->getQueryResult( $queryObj );
-		$pages = $res->getResults();
+		$rows = $res->getResults();
+		$pages = array();
+		foreach ( $rows as $row ) {
+			$pages[] = $row->getDbKey();
+		}
 
 		return $pages;
 	}
 
+	/**
+	 * Doing "mapping" on values can potentially lead to more than one
+	 * value having the same "label". To avoid this, we find duplicate
+	 * labels, if there are any, add on the real value, in parentheses,
+	 * to all of them.
+	 *
+	 * @param array $labels
+	 * @return array
+	 */
 	public static function disambiguateLabels( $labels ) {
 		asort( $labels );
 		if ( count( $labels ) == count( array_unique( $labels ) ) ) {
@@ -632,6 +693,8 @@ class PFValuesUtils {
 		if ( count( $fixed_labels ) == count( array_unique( $fixed_labels ) ) ) {
 			return $fixed_labels;
 		}
+		// If that didn't work, just add on " (value)" to *all* the
+		// labels. @TODO - is this necessary?
 		foreach ( $labels as $value => $label ) {
 			$labels[$value] .= ' (' . $value . ')';
 		}

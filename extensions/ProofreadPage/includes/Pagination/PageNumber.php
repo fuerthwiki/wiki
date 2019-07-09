@@ -6,7 +6,7 @@ use InvalidArgumentException;
 use Language;
 
 /**
- * @licence GNU GPL v2+
+ * @license GPL-2.0-or-later
  */
 class PageNumber {
 
@@ -32,13 +32,13 @@ class PageNumber {
 
 	/**
 	 * @param string $number the page number
-	 * @param string  $displayMode the display mode (one of the DISPLAY_* constant)
-	 * @param boolean $isEmpty
+	 * @param string $displayMode the display mode (one of the DISPLAY_* constant)
+	 * @param bool $isEmpty
 	 * @throws InvalidArgumentException
 	 */
 	public function __construct( $number, $displayMode = self::DISPLAY_NORMAL, $isEmpty = false ) {
 		if ( !in_array( $displayMode, self::getDisplayModes() ) ) {
-			throw new InvalidArgumentException('$displayMode in invalid');
+			throw new InvalidArgumentException( '$displayMode in invalid' );
 		}
 		$this->number = $number;
 		$this->displayMode = $displayMode;
@@ -69,7 +69,7 @@ class PageNumber {
 	}
 
 	/**
-	 * @return boolean
+	 * @return bool
 	 */
 	public function isEmpty() {
 		return $this->isEmpty;
@@ -93,10 +93,10 @@ class PageNumber {
 	 * @return array
 	 */
 	public static function getDisplayModes() {
-		return array(
+		return [
 			self::DISPLAY_NORMAL,
 			self::DISPLAY_ROMAN,
 			self::DISPLAY_HIGHROMAN
-		);
+		];
 	}
 }

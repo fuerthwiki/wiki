@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\MediaWiki\Specials\Admin;
 
-use SMW\Tests\TestEnvironment;
 use SMW\MediaWiki\Specials\Admin\DataRefreshJobTaskHandler;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\MediaWiki\Specials\Admin\DataRefreshJobTaskHandler
@@ -17,27 +17,14 @@ use SMW\MediaWiki\Specials\Admin\DataRefreshJobTaskHandler;
 class DataRefreshJobTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 
 	private $testEnvironment;
-	private $connection;
 	private $htmlFormRenderer;
 	private $outputFormatter;
+	private $jobQueue;
 
 	protected function setUp() {
 		parent::setUp();
 
 		$this->testEnvironment = new TestEnvironment();
-
-		$this->connection = $this->getMockBuilder( '\SMW\MediaWiki\Database' )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$this->store = $this->getMockBuilder( '\SMW\Store' )
-			->disableOriginalConstructor()
-			->setMethods( array( 'getConnection' ) )
-			->getMockForAbstractClass();
-
-		$this->store->expects( $this->any() )
-			->method( 'getConnection' )
-			->will( $this->returnValue( $this->connection ) );
 
 		$this->htmlFormRenderer = $this->getMockBuilder( '\SMW\MediaWiki\Renderer\HtmlFormRenderer' )
 			->disableOriginalConstructor()
@@ -47,7 +34,11 @@ class DataRefreshJobTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->testEnvironment->registerObject( 'Store', $this->store );
+		$this->jobQueue = $this->getMockBuilder( '\SMW\MediaWiki\JobQueue' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->testEnvironment->registerObject( 'JobQueue', $this->jobQueue );
 	}
 
 	protected function tearDown() {
@@ -59,20 +50,20 @@ class DataRefreshJobTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertInstanceOf(
 			'\SMW\MediaWiki\Specials\Admin\DataRefreshJobTaskHandler',
-			new DataRefreshJobTaskHandler( $this->store, $this->htmlFormRenderer, $this->outputFormatter )
+			new DataRefreshJobTaskHandler( $this->htmlFormRenderer, $this->outputFormatter )
 		);
 	}
 
 	public function testGetHtml() {
 
-		$methods = array(
+		$methods = [
 			'setName',
 			'setMethod',
 			'addHiddenField',
 			'addHeader',
 			'addParagraph',
 			'addSubmitButton'
-		);
+		];
 
 		foreach ( $methods as $method ) {
 			$this->htmlFormRenderer->expects( $this->any() )
@@ -84,7 +75,6 @@ class DataRefreshJobTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getForm' );
 
 		$instance = new DataRefreshJobTaskHandler(
-			$this->store,
 			$this->htmlFormRenderer,
 			$this->outputFormatter
 		);
@@ -98,7 +88,17 @@ class DataRefreshJobTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$jobFactory = $this->getMockBuilder( '\SMW\MediaWiki\Jobs\JobFactory' )
+		$this->jobQueue->expects( $this->atLeastOnce() )
+			->method( 'hasPendingJob' )
+			->with( $this->equalTo( 'SMW\RefreshJob' ) )
+			->will( $this->returnValue( true ) );
+
+		$this->jobQueue->expects( $this->atLeastOnce() )
+			->method( 'pop' )
+			->with( $this->equalTo( 'SMW\RefreshJob' ) )
+			->will( $this->returnValue( false ) );
+
+		$jobFactory = $this->getMockBuilder( '\SMW\MediaWiki\JobFactory' )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -107,12 +107,6 @@ class DataRefreshJobTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 			->will( $this->returnValue( $refreshJob ) );
 
 		$this->testEnvironment->registerObject( 'JobFactory', $jobFactory );
-
-		$jobQueueLookup = $this->getMockBuilder( '\SMW\MediaWiki\JobQueueLookup' )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$this->testEnvironment->registerObject( 'JobQueueLookup', $jobQueueLookup );
 
 		$webRequest = $this->getMockBuilder( '\WebRequest' )
 			->disableOriginalConstructor()
@@ -123,7 +117,6 @@ class DataRefreshJobTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 			->will( $this->returnValue( 'yes' ) );
 
 		$instance = new DataRefreshJobTaskHandler(
-			$this->store,
 			$this->htmlFormRenderer,
 			$this->outputFormatter
 		);
@@ -134,11 +127,9 @@ class DataRefreshJobTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 
 	public function testDoRefreshOn_Stop() {
 
-		$jobQueueLookup = $this->getMockBuilder( '\SMW\MediaWiki\JobQueueLookup' )
-			->disableOriginalConstructor()
-			->getMock();
-
-		$this->testEnvironment->registerObject( 'JobQueueLookup', $jobQueueLookup );
+		$this->jobQueue->expects( $this->once() )
+			->method( 'delete' )
+			->with( $this->equalTo( 'SMW\RefreshJob' ) );
 
 		$webRequest = $this->getMockBuilder( '\WebRequest' )
 			->disableOriginalConstructor()
@@ -148,11 +139,7 @@ class DataRefreshJobTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 			->method( 'getText' )
 			->will( $this->returnValue( 'stop' ) );
 
-		$this->connection->expects( $this->atLeastOnce() )
-			->method( 'delete' );
-
 		$instance = new DataRefreshJobTaskHandler(
-			$this->store,
 			$this->htmlFormRenderer,
 			$this->outputFormatter
 		);

@@ -1,7 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"CERminator"
+			"CERminator",
+			"Codbih",
+			"Srdjan m"
 		]
 	},
 	"indexpages": "Spisak stranica indeksa",
@@ -12,13 +14,9 @@
 	"proofreadpage_index_expected": "Greška: očekivan indeks",
 	"proofreadpage_nosuch_index": "Greška: nema takvog indeksa",
 	"proofreadpage_nosuch_file": "Greška: nema takve datoteke",
-	"proofreadpage_badpage": "Pogrešan Format",
-	"proofreadpage_badpagetext": "Format stranice koju pokušavate spremiti nije validan.",
-	"proofreadpage_indexdupe": "Duplicirani link",
 	"proofreadpage_indexdupetext": "Stranice ne mogu biti prikazane više od jednog puta na stranici indeksa.",
 	"proofreadpage_nologin": "Niste prijavljeni",
 	"proofreadpage_nologintext": "Morate biti [[Special:UserLogin|prijavljeni]] da biste mogli mijenati status lektorisanja stranica.",
-	"proofreadpage_notallowed": "Izmjene nisu dopuštene",
 	"proofreadpage_notallowedtext": "Nije Vam dopušteno da mijenjate status lektorisanja ove stranice.",
 	"proofreadpage_number_expected": "Greška: očekivana brojna vrijednost",
 	"proofreadpage_interval_too_large": "Greška: interval je prevelik",
@@ -28,7 +26,7 @@
 	"proofreadpage_header": "Zaglavlje (bez uključivanja):",
 	"proofreadpage_body": "Tijelo stranice (koje će biti uključeno):",
 	"proofreadpage_footer": "Podnožje (neuključuje):",
-	"proofreadpage_toggleheaders": "pokaži/sakrij vidljivost sekcija koje se ne uključuju",
+	"proofreadpage_toggleheaders": "promijeni vidljivost odlomaka s \"noinclude\"",
 	"proofreadpage_quality0_category": "Bez teksta",
 	"proofreadpage_quality1_category": "Nije provjerena",
 	"proofreadpage_quality2_category": "Problematično",
@@ -44,9 +42,10 @@
 	"proofreadpage_page_status": "Status stranice",
 	"proofreadpage_js_attributes": "Autor Naslov Godina Izdavač",
 	"proofreadpage_index_attributes": "Autor\nNaslov\nGodina|Godina izdavanja\nIzdavač\nIzvor\nSlika|Naslovna slika\nStranica||20\nNapomene||10",
-	"proofreadpage_pages": "{{PLURAL:$1|stranica|stranice|stranica}}",
+	"proofreadpage_pages": "$2 {{PLURAL:$1|stranica|stranice|stranica}}",
 	"proofreadpage_specialpage_legend": "Ptretraga indeksnih stranica",
 	"proofreadpage_source": "Izvor",
 	"proofreadpage_source_message": "Skenirana varijanta korištena za nastanak ovog teksta",
-	"right-pagequality": "Izmijeni zastavu kvalitete stranice"
+	"right-pagequality": "Izmijeni zastavu kvalitete stranice",
+	"proofreadpage-visualeditor-node-pages-inspector-tooltip": "Stranice"
 }

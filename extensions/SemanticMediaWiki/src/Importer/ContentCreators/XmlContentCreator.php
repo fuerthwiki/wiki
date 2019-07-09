@@ -3,9 +3,9 @@
 namespace SMW\Importer\ContentCreators;
 
 use Onoi\MessageReporter\MessageReporter;
-use SMW\Services\ImporterServiceFactory;
-use SMW\Importer\ImportContents;
 use SMW\Importer\ContentCreator;
+use SMW\Importer\ImportContents;
+use SMW\Services\ImporterServiceFactory;
 
 /**
  * @license GNU GPL v2+
@@ -59,7 +59,7 @@ class XmlContentCreator implements ContentCreator {
 	 *
 	 * @param ImportContents $importContents
 	 */
-	public function doCreateFrom( ImportContents $importContents ) {
+	public function create( ImportContents $importContents ) {
 
 		$indent = '   ...';
 

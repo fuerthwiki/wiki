@@ -5,14 +5,15 @@ namespace ParamProcessor\Tests;
 use ParamProcessor\Options;
 use ParamProcessor\Param;
 use ParamProcessor\ParamDefinition;
+use PHPUnit\Framework\TestCase;
 
 /**
- * @covers ParamProcessor\Param
+ * @covers \ParamProcessor\Param
  *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
-class ParamTest extends \PHPUnit_Framework_TestCase {
+class ParamTest extends TestCase {
 
 	public function testListParamProcessingWithEmptyListAsDefault() {
 		$definition = new ParamDefinition( 'string', 'something', [] );

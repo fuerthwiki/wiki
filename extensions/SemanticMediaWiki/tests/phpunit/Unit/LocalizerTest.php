@@ -227,18 +227,18 @@ class LocalizerTest extends \PHPUnit_Framework_TestCase {
 		);
 	}
 
-	public function testExtraneousLanguage() {
+	public function testLang() {
 
 		$instance = Localizer::getInstance();
 
 		$this->assertInstanceOf(
-			'\SMW\ExtraneousLanguage\ExtraneousLanguage',
-			$instance->getExtraneousLanguage()
+			'\SMW\Lang\Lang',
+			$instance->getLang()
 		);
 
 		$this->assertInstanceOf(
-			'\SMW\ExtraneousLanguage\ExtraneousLanguage',
-			$instance->getExtraneousLanguage( 'en' )
+			'\SMW\Lang\Lang',
+			$instance->getLang( 'en' )
 		);
 
 		$language = $this->getMockBuilder( '\Language' )
@@ -250,8 +250,8 @@ class LocalizerTest extends \PHPUnit_Framework_TestCase {
 			->will( $this->returnValue( 'en' ) );
 
 		$this->assertInstanceOf(
-			'\SMW\ExtraneousLanguage\ExtraneousLanguage',
-			$instance->getExtraneousLanguage( $language )
+			'\SMW\Lang\Lang',
+			$instance->getLang( $language )
 		);
 	}
 
@@ -284,7 +284,7 @@ class LocalizerTest extends \PHPUnit_Framework_TestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$language->expects( $this->exactly( 2 ) )
+		$language->expects( $this->exactly( 3 ) )
 			->method( 'getNsText' )
 			->will( $this->returnValue( 'Spécial' ) );
 
@@ -298,6 +298,11 @@ class LocalizerTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals(
 			'http://example.org/wiki/Special:URIResolver/Property-3AHas_query',
 			$instance->getCanonicalizedUrlByNamespace( NS_SPECIAL, 'http://example.org/wiki/Spécial:URIResolver/Property-3AHas_query' )
+		);
+
+		$this->assertEquals(
+			'http://example.org/index.php?title=Special:URIResolver&Property-3AHas_query',
+			$instance->getCanonicalizedUrlByNamespace( NS_SPECIAL, 'http://example.org/index.php?title=Spécial:URIResolver&Property-3AHas_query' )
 		);
 	}
 
@@ -317,6 +322,50 @@ class LocalizerTest extends \PHPUnit_Framework_TestCase {
 		$this->assertEquals(
 			'Help',
 			$instance->getCanonicalNamespaceTextById( NS_HELP )
+		);
+	}
+
+	public function testHasLocalTimeOffsetPreference() {
+
+		$user = $this->getMockBuilder( '\User' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$user->expects( $this->once() )
+			->method( 'getOption' )
+			->with( $this->equalTo( 'smw-prefs-general-options-time-correction' ) )
+			->will( $this->returnValue( true ) );
+
+		$language = $this->getMockBuilder( '\Language' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$instance = new Localizer( $language );
+
+		$this->assertTrue(
+			$instance->hasLocalTimeOffsetPreference( $user )
+		);
+	}
+
+	public function testGetLocalTime() {
+
+		$dataTime = $this->getMockBuilder( '\DateTime' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$user = $this->getMockBuilder( '\User' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$language = $this->getMockBuilder( '\Language' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$instance = new Localizer( $language );
+
+		$this->assertInstanceOf(
+			'DateTime',
+			$instance->getLocalTime( $dataTime, $user )
 		);
 	}
 

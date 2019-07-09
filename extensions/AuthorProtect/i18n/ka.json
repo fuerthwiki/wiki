@@ -12,7 +12,6 @@
 	"authorprotect-move": "გადატანა შეუძლიათ მხოლოდ ავტორებს",
 	"authorprotect-intro": "გამოიყენეთ ეს ფორმა, რათა დაიცვათ გვერდი მომხმარებლებისაგან, რომლების არ არიან ავტორები",
 	"authorprotect-success": "დაცვა წარმატებით დაყენდა!",
-	"authorprotect-failure": "დაცვის დაყენება ვერ მოხერხდა",
 	"protect-level-author": "დაცვა არა-ავტორებისაგან",
 	"restriction-level-author": "საავტორო დაცვა",
 	"right-authorprotect": "საავტორო გვერდების დაცვა",

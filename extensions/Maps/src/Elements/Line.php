@@ -15,7 +15,7 @@ use InvalidArgumentException;
  * @author Kim Eik < kim@heldig.org >
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
-class Line extends \MapsBaseStrokableElement {
+class Line extends \Maps\Elements\BaseStrokableElement {
 
 	/**
 	 * @since 3.0
@@ -39,8 +39,6 @@ class Line extends \MapsBaseStrokableElement {
 		}
 
 		$this->coordinates = $coordinates;
-
-		parent::__construct();
 	}
 
 	/**
@@ -52,28 +50,20 @@ class Line extends \MapsBaseStrokableElement {
 		return $this->coordinates;
 	}
 
-	/**
-	 * @since 3.0
-	 *
-	 * @param string $defText
-	 * @param string $defTitle
-	 *
-	 * @return array
-	 */
-	public function getJSONObject( $defText = '' , $defTitle = '' ) {
-		$parentArray = parent::getJSONObject( $defText , $defTitle );
+	public function getJSONObject( string $defText = '', string $defTitle = '' ): array {
+		$parentArray = parent::getJSONObject( $defText, $defTitle );
 		$posArray = [];
 
 		foreach ( $this->coordinates as $mapLocation ) {
 			$posArray[] = [
-				'lat' => $mapLocation->getLatitude() ,
+				'lat' => $mapLocation->getLatitude(),
 				'lon' => $mapLocation->getLongitude()
 			];
 		}
 
 		$posArray = [ 'pos' => $posArray ];
 
-		return array_merge( $parentArray , $posArray );
+		return array_merge( $parentArray, $posArray );
 	}
 
 }

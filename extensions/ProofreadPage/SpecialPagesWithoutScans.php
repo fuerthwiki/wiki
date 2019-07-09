@@ -23,69 +23,71 @@
  * Special page that lists the texts that have no transclusions
  * Pages in MediaWiki:Proofreadpage_notnaked_category are excluded.
  */
-class PagesWithoutScans extends QueryPage {
-	function __construct( $name = 'PagesWithoutScans' ) {
+class SpecialPagesWithoutScans extends QueryPage {
+	public function __construct( $name = 'PagesWithoutScans' ) {
 		parent::__construct( $name );
 	}
 
-	function isExpensive() {
+	public function isExpensive() {
 		return true;
 	}
 
-	function isSyndicated() {
+	public function isSyndicated() {
 		return false;
 	}
 
 	/**
 	 * Return a clause with the list of disambiguation templates.
 	 * This function was copied verbatim from specials/SpecialDisambiguations.php
-	 * @param $dbr DatabaseBase
+	 * @param \Wikimedia\Rdbms\IDatabase $dbr
 	 * @return mixed
 	 */
-	function disambiguation_templates( $dbr ) {
+	public function getDisambiguationTemplates( $dbr ) {
 		$dMsgText = wfMessage( 'proofreadpage-disambiguationspage' )->inContentLanguage()->text();
 
 		$linkBatch = new LinkBatch;
 
 		# If the text can be treated as a title, use it verbatim.
 		# Otherwise, pull the titles from the links table
-		$dp = Title::newFromText($dMsgText);
-		if( $dp ) {
-			if($dp->getNamespace() != NS_TEMPLATE) {
+		$dp = Title::newFromText( $dMsgText );
+		if ( $dp ) {
+			if ( $dp->getNamespace() != NS_TEMPLATE ) {
 				# FIXME we assume the disambiguation message is a template but
 				# the page can potentially be from another namespace :/
-				wfDebug("Mediawiki:proofreadpage-disambiguationspage message does not refer to a template!\n");
+				wfDebug( "Mediawiki:proofreadpage-disambiguationspage message " .
+					"does not refer to a template!\n" );
 			}
 			$linkBatch->addObj( $dp );
 		} else {
 			# Get all the templates linked from the Mediawiki:Disambiguationspage
 			$disPageObj = Title::makeTitleSafe( NS_MEDIAWIKI, 'disambiguationspage' );
 			$res = $dbr->select(
-				array('pagelinks', 'page'),
+				[ 'pagelinks', 'page' ],
 				'pl_title',
-				array('page_id = pl_from', 'pl_namespace' => NS_TEMPLATE,
-					'page_namespace' => $disPageObj->getNamespace(), 'page_title' => $disPageObj->getDBkey()),
+				[ 'page_id = pl_from', 'pl_namespace' => NS_TEMPLATE,
+					'page_namespace' => $disPageObj->getNamespace(),
+					'page_title' => $disPageObj->getDBkey() ],
 				__METHOD__ );
 
 			foreach ( $res as $row ) {
-				$linkBatch->addObj( Title::makeTitle( NS_TEMPLATE, $row->pl_title ));
+				$linkBatch->addObj( Title::makeTitle( NS_TEMPLATE, $row->pl_title ) );
 			}
 		}
 		return $linkBatch->constructSet( 'tl', $dbr );
 	}
 
-	function getQueryInfo() {
-		$dbr = wfGetDB( DB_SLAVE );
+	public function getQueryInfo() {
+		$dbr = wfGetDB( DB_REPLICA );
 
 		// Construct subqueries
 		$pagesWithScansSubquery = $dbr->selectSQLText(
-			array( 'templatelinks', 'page' ),
+			[ 'templatelinks', 'page' ],
 			'DISTINCT tl_from',
-			array(
+			[
 				'page_id=tl_from',
 				'tl_namespace' => ProofreadPage::getPageNamespaceId(),
 				'page_namespace' => NS_MAIN
-			)
+			]
 		);
 
 		// Exclude disambiguation pages too
@@ -94,50 +96,51 @@ class PagesWithoutScans extends QueryPage {
 		// May want to verify that wikis using ProofreadPage have implemented
 		// the __DISAMBIG__ magic word for their disambiguation pages before
 		// changing this.
-		$dt = $this->disambiguation_templates( $dbr );
+		$dt = $this->getDisambiguationTemplates( $dbr );
 		$disambigPagesSubquery = $dbr->selectSQLText(
-			array( 'page', 'templatelinks' ),
+			[ 'page', 'templatelinks' ],
 			'page_id',
-			array(
+			[
 				'page_id=tl_from',
 				'page_namespace' => NS_MAIN,
 				$dt
-			)
+			]
 		);
 
-		return array(
+		return [
 			'tables' => 'page',
-			'fields' => array(
+			'fields' => [
 				"'PagesWithoutScans' AS type",
 				'page_namespace AS namespace',
 				'page_title AS title',
-				'page_len AS value' ),
-			'conds' => array(
+				'page_len AS value' ],
+			'conds' => [
 				'page_namespace' => NS_MAIN,
 				'page_is_redirect' => 0,
 				"page_id NOT IN ($pagesWithScansSubquery)",
-				"page_id NOT IN ($disambigPagesSubquery)" ),
-			'options' => array( 'USE INDEX' => 'page_len' )
-		);
+				"page_id NOT IN ($disambigPagesSubquery)" ],
+			'options' => [ 'USE INDEX' => 'page_len' ]
+		];
 	}
 
-	function sortDescending() {
+	public function sortDescending() {
 		return true;
 	}
 
-	function formatResult( $skin, $result ) {
+	public function formatResult( $skin, $result ) {
 		global $wgContLang;
 		$dm = $wgContLang->getDirMark();
 
 		$title = Title::makeTitleSafe( $result->namespace, $result->title );
 		if ( !$title ) {
-			return '<!-- Invalid title ' .  htmlspecialchars( "{$result->namespace}:{$result->title}" ) . '-->';
+			return '<!-- Invalid title ' .
+				htmlspecialchars( "{$result->namespace}:{$result->title}" ) . '-->';
 		}
 		$hlink = Linker::linkKnown(
 			$title,
 			$this->msg( 'hist' )->escaped(),
-			array(),
-			array( 'action' => 'history' )
+			[],
+			[ 'action' => 'history' ]
 		);
 		$plink = $this->isCached() ? Linker::link( $title ) : Linker::linkKnown( $title );
 		$size = $this->msg( 'nbytes', $result->value )->escaped();

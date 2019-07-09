@@ -1,12 +1,12 @@
 <?php
 
-namespace Maps\Tests\Elements;
+namespace Maps\Tests\Unit\Elements;
 
 use DataValues\Geo\Values\LatLongValue;
 use Maps\Elements\Line;
 
 /**
- * @covers Maps\Elements\Line
+ * @covers \Maps\Elements\Line
  *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
@@ -53,6 +53,7 @@ class LineTest extends BaseElementTest {
 
 	/**
 	 * @dataProvider instanceProvider
+	 *
 	 * @param Line $line
 	 * @param array $arguments
 	 */

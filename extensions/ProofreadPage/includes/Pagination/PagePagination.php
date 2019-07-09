@@ -3,37 +3,35 @@ namespace ProofreadPage\Pagination;
 
 use InvalidArgumentException;
 use OutOfBoundsException;
-use ProofreadIndexPage;
-use ProofreadPagePage;
+use Title;
 
 /**
- * @licence GNU GPL v2+
+ * @license GPL-2.0-or-later
  *
  * Pagination of a book based on a set of independants pages
  */
 class PagePagination extends Pagination {
 
 	/**
-	 * @var ProofreadPagePage[]
+	 * @var Title[]
 	 */
-	private $pages = array();
+	private $pages = [];
 
 	/**
 	 * @var PageNumber[]
 	 */
-	private $pageNumbers = array();
+	private $pageNumbers = [];
 
 	/**
-	 * @param ProofreadIndexPage $index
-	 * @param ProofreadPagePage[] $pages the ordered pages
+	 * @param Title[] $pages the ordered pages
 	 * @param PageNumber[] $pageNumbers with $pageNumbers[i] the page number of the page $pages[i]
 	 * @throws InvalidArgumentException
 	 */
-	public function __construct( ProofreadIndexPage $index, array $pages, array $pageNumbers ) {
-		parent::__construct( $index );
-
+	public function __construct( array $pages, array $pageNumbers ) {
 		if ( count( $pages ) !== count( $pageNumbers ) ) {
-			throw new InvalidArgumentException( 'The number of page numbers is not the same as the number of pages' );
+			throw new InvalidArgumentException(
+				'The number of page numbers is not the same as the number of pages'
+			);
 		}
 
 		$this->pages = $pages;
@@ -41,11 +39,11 @@ class PagePagination extends Pagination {
 	}
 
 	/**
-	 * @see ProofreadPagination::getPageNumber
+	 * @inheritDoc
 	 */
-	public function getPageNumber( ProofreadPagePage $page ) {
-		foreach ( $this->pages as $i => $page2 ) {
-			if ( $page->equals( $page2 ) ) {
+	public function getPageNumber( Title $pageTitle ) {
+		foreach ( $this->pages as $i => $pageTitle2 ) {
+			if ( $pageTitle->equals( $pageTitle2 ) ) {
 				return $i + 1;
 			}
 		}
@@ -53,34 +51,38 @@ class PagePagination extends Pagination {
 	}
 
 	/**
-	 * @see ProofreadPagination::getDisplayedPageNumber
+	 * @inheritDoc
 	 */
 	public function getDisplayedPageNumber( $pageNumber ) {
 		if ( !$this->pageNumberExists( $pageNumber ) ) {
-			throw new OutOfBoundsException( 'There is no page number ' . $pageNumber . ' in the pagination.' );
+			throw new OutOfBoundsException(
+				'There is no page number ' . $pageNumber . ' in the pagination.'
+			);
 		}
 		return $this->pageNumbers[$pageNumber - 1];
 	}
 
 	/**
-	 * @see ProofreadPagination::getNumberOfPages
+	 * @inheritDoc
 	 */
 	public function getNumberOfPages() {
 		return count( $this->pages );
 	}
 
 	/**
-	 * @see ProofreadPagination::getPage
+	 * @inheritDoc
 	 */
-	public function getPage( $pageNumber ) {
+	public function getPageTitle( $pageNumber ) {
 		if ( !$this->pageNumberExists( $pageNumber ) ) {
-			throw new OutOfBoundsException( 'There is no page number ' . $pageNumber . ' in the pagination.' );
+			throw new OutOfBoundsException(
+				'There is no page number ' . $pageNumber . ' in the pagination.'
+			);
 		}
 		return $this->pages[$pageNumber - 1];
 	}
 
 	/**
-	 * @see ProofreadPagination::pageNumExists
+	 * @inheritDoc
 	 */
 	protected function pageNumberExists( $pageNumber ) {
 		return array_key_exists( $pageNumber - 1, $this->pages );

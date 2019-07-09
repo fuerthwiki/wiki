@@ -24,8 +24,31 @@ use SRF\Formats\Tree\TreeResultPrinter;
  */
 class TreeTest extends QueryPrinterRegistryTestCase {
 
+	private $parser;
+	private $title;
+
+	private static $initial_parser;
+	private static $initial_title;
+
+	/**
+	 * Keep the global state and restore it on tearDown to avoid influencing
+	 * other tests in case this one fails in between.
+	 */
+	public static function setUpBeforeClass() {
+		self::$initial_parser = $GLOBALS['wgParser'];
+		self::$initial_title = $GLOBALS['wgTitle'];
+	}
+
+	protected function tearDown() {
+		$GLOBALS['wgParser'] = self::$initial_parser;
+		$GLOBALS['wgTitle'] = self::$initial_title;
+
+		parent::tearDown();
+	}
+
 	/**
 	 * Returns the names of the formats being tested.
+	 *
 	 * @return string[]
 	 */
 	public function getFormats() {
@@ -34,6 +57,7 @@ class TreeTest extends QueryPrinterRegistryTestCase {
 
 	/**
 	 * Returns the name of the class being tested.
+	 *
 	 * @return string
 	 */
 	public function getClass() {
@@ -41,7 +65,6 @@ class TreeTest extends QueryPrinterRegistryTestCase {
 	}
 
 	/**
-	 * @covers \SRF\Formats\Tree\TreeResultPrinter::getResult()
 	 */
 	public function testGetResult_NoParentProperty() {
 
@@ -61,12 +84,23 @@ class TreeTest extends QueryPrinterRegistryTestCase {
 
 		$testObject = new TreeResultPrinter( 'tree' );
 
-		$this->assertEquals( '', $testObject->getResult( $queryResult, $params, SMW_OUTPUT_HTML ), 'Result should be empty.' );
+		$this->assertEquals(
+			'',
+			$testObject->getResult( $queryResult, $params, SMW_OUTPUT_HTML ),
+			'Result should be empty.'
+		);
 
-
+		// Restore GLOBAL state to ensure that preceding tests do not use a
+		// mocked instance
+		$GLOBALS['wgParser'] = $this->parser;
+		$GLOBALS['wgTitle'] = $this->title;
 	}
 
 	protected function prepareGlobalState() {
+
+		// Store current state
+		$this->parser = $GLOBALS['wgParser'];
+		$this->title = $GLOBALS['wgTitle'];
 
 		$parserOutput = $this->getMockBuilder( '\ParserOutput' )
 			->disableOriginalConstructor()
@@ -88,9 +122,9 @@ class TreeTest extends QueryPrinterRegistryTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$GLOBALS[ 'wgParser' ] = $parser;
-		$GLOBALS[ 'wgTitle' ] = $title;
-
+		// Careful!!
+		$GLOBALS['wgParser'] = $parser;
+		$GLOBALS['wgTitle'] = $title;
 	}
 
 	/**
@@ -112,19 +146,23 @@ class TreeTest extends QueryPrinterRegistryTestCase {
 		/** @var array(SMWResultArray[]|false) $resultSet */
 		$resultSet[] = false;
 
-		$queryResult = $mockBuilder->newObject( 'QueryResult', [
-			'getCount' => 1,
-		] );
+		$queryResult = $mockBuilder->newObject(
+			'QueryResult',
+			[
+				'getCount' => 1,
+			]
+		);
 
 		$queryResult->expects( $this->any() )
 			->method( 'getNext' )
 			->will( call_user_func( [ $this, 'onConsecutiveCalls' ], $resultSet ) );
 
-
-		$queryResult = $mockBuilder->newObject( 'QueryResult', [
-			'getCount' => 1,
-		] );
-
+		$queryResult = $mockBuilder->newObject(
+			'QueryResult',
+			[
+				'getCount' => 1,
+			]
+		);
 
 		$params = SMWQueryProcessor::getProcessedParams( [ 'format' => 'tree' ], [] );
 

@@ -2,9 +2,6 @@
 
 namespace SMW\Parser;
 
-use SMW\Parser\Obfuscator;
-use SMW\InTextAnnotationParser;
-
 /**
  * @license GNU GPL v2+
  * @since 2.5
@@ -36,7 +33,7 @@ class SemanticLinksParser {
 	 */
 	public function parse( $text ) {
 
-		$matches = array();
+		$matches = [];
 
 		preg_match(
 			$this->linksProcessor->getRegexpPattern(),
@@ -44,20 +41,20 @@ class SemanticLinksParser {
 			$matches
 		);
 
-		if ( $matches === array() ) {
-			return array();
+		if ( $matches === [] ) {
+			return [];
 		}
 
 		$semanticLinks = $this->linksProcessor->preprocess( $matches );
 
 		if ( is_string( $semanticLinks ) ) {
-			return array();
+			return [];
 		}
 
 		$semanticLinks = $this->linksProcessor->process( $semanticLinks );
 
 		if ( is_string( $semanticLinks ) ) {
-			return array();
+			return [];
 		}
 
 		return $semanticLinks;

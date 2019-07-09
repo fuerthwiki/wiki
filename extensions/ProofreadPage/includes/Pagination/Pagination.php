@@ -4,20 +4,14 @@ namespace ProofreadPage\Pagination;
 
 use Iterator;
 use OutOfBoundsException;
-use ProofreadIndexPage;
-use ProofreadPagePage;
+use Title;
 
 /**
- * @licence GNU GPL v2+
+ * @license GPL-2.0-or-later
  *
  * Pagination of a book
  */
 abstract class Pagination implements Iterator {
-
-	/**
-	 * @var ProofreadIndexPage
-	 */
-	protected $index;
 
 	/**
 	 * @var integer position of the iterator
@@ -25,95 +19,79 @@ abstract class Pagination implements Iterator {
 	private $position = 1;
 
 	/**
-	 * @param ProofreadIndexPage $index
-	 */
-	public function __construct( ProofreadIndexPage $index ) {
-		$this->index = $index;
-	}
-
-	/**
-	 * Returns the index page
-	 *
-	 * @return ProofreadIndexPage
-	 */
-	public function getIndex() {
-		return $this->index;
-	}
-
-	/**
 	 * Returns the internal page number
 	 *
-	 * @param ProofreadPagePage $page
+	 * @param Title $pageTitle
 	 * @return integer
 	 * @throws PageNotInPaginationException
 	 */
-	public abstract function getPageNumber( ProofreadPagePage $page );
+	abstract public function getPageNumber( Title $pageTitle );
 
 	/**
 	 * Returns the page number as it should be displayed from an internal page number
 	 *
-	 * @param integer $pageNumber
+	 * @param int $pageNumber
 	 * @return PageNumber
 	 * @throws OutOfBoundsException
 	 */
-	public abstract function getDisplayedPageNumber( $pageNumber );
+	abstract public function getDisplayedPageNumber( $pageNumber );
 
 	/**
 	 * Returns the number of pages
 	 *
 	 * @return integer
 	 */
-	public abstract function getNumberOfPages();
+	abstract public function getNumberOfPages();
 
 	/**
 	 * Returns the page number $pageNumber of the book
 	 *
-	 * @param integer $pageNumber page number
-	 * @return ProofreadPagePage
+	 * @param int $pageNumber page number
+	 * @return Title
 	 * @throws OutOfBoundsException
 	 */
-	public abstract function getPage( $pageNumber );
+	abstract public function getPageTitle( $pageNumber );
 
 	/**
 	 * Returns if a page number $pageNumber exits
 	 *
-	 * @param integer $pageNumber page number
+	 * @param int $pageNumber page number
 	 * @return boolean
 	 */
-	protected abstract function pageNumberExists( $pageNumber );
+	abstract protected function pageNumberExists( $pageNumber );
 
 	/**
-	 * @see Iterator::rewind
+	 * @inheritDoc
 	 */
 	public function rewind() {
-		$this->position = 1; //pages numbers starts with 1
+		$this->position = 1; // pages numbers starts with 1
 	}
 
 	/**
-	 * @see Iterator::key
+	 * @inheritDoc
 	 */
 	public function key() {
 		return $this->position;
 	}
 
 	/**
-	 * @see Iterator::next
+	 * @inheritDoc
 	 */
 	public function next() {
 		$this->position++;
 	}
 
 	/**
-	 * @see Iterator::current
+	 * @inheritDoc
 	 *
-	 * @return ProofreadPagePage
+	 * @return Title
 	 */
 	public function current() {
-		return $this->getPage( $this->position );
+		return $this->getPageTitle( $this->position );
 	}
 
 	/**
-	 * @see Iterator::valid
+	 * @inheritDoc
 	 */
 	public function valid() {
 		return $this->pageNumberExists( $this->position );

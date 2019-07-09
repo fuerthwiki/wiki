@@ -3,6 +3,7 @@
 namespace SMW\Maintenance;
 
 use SMW\ApplicationFactory;
+use SMW\Setup;
 
 $basePath = getenv( 'MW_INSTALL_PATH' ) !== false ? getenv( 'MW_INSTALL_PATH' ) : __DIR__ . '/../../..';
 
@@ -26,12 +27,26 @@ class RebuildPropertyStatistics extends \Maintenance {
 	}
 
 	/**
+	 * @see Maintenance::addDefaultParams
+	 *
+	 * @since 1.9
+	 */
+	protected function addDefaultParams() {
+		parent::addDefaultParams();
+	}
+
+	/**
 	 * @see Maintenance::execute
 	 */
 	public function execute() {
 
-		if ( !defined( 'SMW_VERSION' ) || !$GLOBALS['smwgSemanticsEnabled'] ) {
-			$this->output( "\nYou need to have SMW enabled in order to use this maintenance script!\n" );
+		if ( !Setup::isEnabled() ) {
+			$this->output( "You need to have SMW enabled in order to use this maintenance script!\n\n" );
+			exit;
+		}
+
+		if ( !Setup::isValid( true ) ) {
+			$this->reportMessage( "\nYou need to run `update.php` or `setupStore.php` first before continuing\nwith any maintenance tasks!\n" );
 			exit;
 		}
 
@@ -42,8 +57,8 @@ class RebuildPropertyStatistics extends \Maintenance {
 		$maintenanceHelper->initRuntimeValues();
 
 		$statisticsRebuilder = $maintenanceFactory->newPropertyStatisticsRebuilder(
-			$applicationFactory->getStore(),
-			array( $this, 'reportMessage' )
+			$applicationFactory->getStore( 'SMW\SQLStore\SQLStore' ),
+			[ $this, 'reportMessage' ]
 		);
 
 		$statisticsRebuilder->rebuild();

@@ -8,9 +8,12 @@
 			"Okras",
 			"Sergey kudryavtsev",
 			"Александр Сигачёв",
-			"Гизатуллина"
+			"Гизатуллина",
+			"Ole Yves",
+			"Kareyac"
 		]
 	},
+	"nstab-page": "Страница",
 	"indexpages": "Список индексных страниц",
 	"pageswithoutscans": "Страницы без сканов",
 	"proofreadpage_desc": "Позволяет в удобном виде сравнивать текст и отсканированное изображение оригинала",
@@ -19,13 +22,9 @@
 	"proofreadpage_index_expected": "Ошибка. Индекс не обнаружен.",
 	"proofreadpage_nosuch_index": "Ошибка. Нет такого индекса.",
 	"proofreadpage_nosuch_file": "Ошибка: нет такого файла",
-	"proofreadpage_badpage": "Неправильный формат",
-	"proofreadpage_badpagetext": "Ошибочный формат записываемой страницы.",
-	"proofreadpage_indexdupe": "Ссылка-дубликат",
 	"proofreadpage_indexdupetext": "Страницы не могут быть перечислены на индексной странице более одного раза.",
 	"proofreadpage_nologin": "Не выполнен вход",
 	"proofreadpage_nologintext": "Вы должны [[Special:UserLogin|представиться системе]] для изменения статуса вычитки страниц.",
-	"proofreadpage_notallowed": "Изменение не допускается",
 	"proofreadpage_notallowedtext": "Вы не можете изменить статус вычитки этой страницы.",
 	"proofreadpage_dataconfig_badformatted": "Ошибка в данных конфигурации",
 	"proofreadpage_dataconfig_badformattedtext": "Страница [[Mediawiki:Proofreadpage index data config]] не в корректном JSON-формате.",
@@ -82,8 +81,16 @@
 	"proofreadpage-indexoai-error-schemanotfound": "Схема не найдена",
 	"proofreadpage-indexoai-error-schemanotfound-text": "Схема $1 не была найдена.",
 	"proofreadpage-disambiguationspage": "Template:неоднозначность",
-	"content-model-proofread-page": "Страница: страница",
-	"proofreadpage-visualeditor-node-pages-inspector-title": " Биттәрҙе юҡ итеү",
-	"proofreadpage-visualeditor-node-pages-inspector-description": " $1 тапшырыу",
-	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "Юҡ"
+	"proofreadpage-indexquality-alt": "$1 {{PLURAL:$1|проверенная страница|проверенные страницы|проверенных страниц}}, $2 {{PLURAL:$2|вычитанная страница|вычитанные страницы|вычитанных страниц}} и $3 {{PLURAL:$3|невычитанная страница|невычитанные страницы|невычитанных страниц}}.",
+	"content-model-proofread-page": "Страница книги",
+	"apihelp-query+proofread-description": "Возвращает информацию о текущем статусе вычитки данных страниц.",
+	"apihelp-query+proofread-example-1": "Вернуть информацию о вычитке для страниц в пространстве имён 250",
+	"apihelp-query+proofreadinfo-description": "Вернуть информацию о настройках расширения ProofreadPage.",
+	"apihelp-query+proofreadinfo-example-1": "Вернуть информацию по умолчанию",
+	"apihelp-query+proofreadinfo-example-3": "Вернуть информацию о пространстве имён",
+	"proofreadpage-visualeditor-node-pages-inspector-title": "Выбор страницы",
+	"proofreadpage-visualeditor-node-pages-inspector-tooltip": "Страницы",
+	"proofreadpage-visualeditor-node-pages-inspector-description": "Включение $1",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-yes": "Да",
+	"proofreadpage-visualeditor-node-pages-inspector-indexselector-no": "нет"
 }

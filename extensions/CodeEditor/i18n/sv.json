@@ -14,5 +14,10 @@
 	"codeeditor-lineWrapping-toggle": "Slå på/av radbrytning",
 	"codeeditor-searchReplace-toggle": "Slå på/av sök- och ersättsdialogen",
 	"codeeditor-gotoline": "Gå till radnummer...",
-	"codeeditor-indent": "Indentera"
+	"codeeditor-gotoline-placeholder": "rad[:kolumn]",
+	"codeeditor-gotoline-prompt": "Ange ett radnummer",
+	"codeeditor-indent": "Indentera",
+	"codeeditor-outdent": "Utdrag",
+	"codeeditor-error-title": "Beroende misslyckades",
+	"codeeditor-error-message": "CodeEditor kräver att WikiEditor är inläst."
 }

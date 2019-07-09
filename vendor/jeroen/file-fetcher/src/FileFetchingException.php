@@ -1,18 +1,20 @@
 <?php
 
+declare( strict_types = 1 );
+
 namespace FileFetcher;
 
 /**
  * @since 3.0
  *
- * @licence GNU GPL v2+
+ * @licence BSD-3-Clause
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
 class FileFetchingException extends \RuntimeException {
 
 	private $fileUrl;
 
-	public function __construct( $fileUrl, $message = null, \Exception $previous = null ) {
+	public function __construct( string $fileUrl, string $message = null, \Exception $previous = null ) {
 		$this->fileUrl = $fileUrl;
 
 		parent::__construct(
@@ -22,10 +24,7 @@ class FileFetchingException extends \RuntimeException {
 		);
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getFileUrl() {
+	public function getFileUrl(): string {
 		return $this->fileUrl;
 	}
 

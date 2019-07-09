@@ -17,7 +17,7 @@ class PFUploadWindow extends UnlistedSpecialPage {
 	/**
 	 * Constructor : initialise object
 	 * Get data POSTed through the form and assign them to the object
-	 * @param WebRequest $request Data posted.
+	 * @param WebRequest|null $request Data posted.
 	 */
 	public function __construct( $request = null ) {
 		parent::__construct( 'UploadWindow', 'upload' );
@@ -203,7 +203,7 @@ class PFUploadWindow extends UnlistedSpecialPage {
 			'pfInputID' => $this->mInputID,
 			'pfDelimiter' => $this->mDelimiter,
 		) );
-		$form->setTitle( $this->getTitle() );
+		$form->setTitle( $this->getPageTitle() );
 
 		# Check the token, but only if necessary
 		if ( !$this->mTokenOk && !$this->mCancelUpload
@@ -268,6 +268,7 @@ class PFUploadWindow extends UnlistedSpecialPage {
 		$form->setSubmitText( wfMessage( 'upload-tryagain' )->text() );
 		$this->showUploadForm( $form );
 	}
+
 	/**
 	 * Stashes the upload, shows the main form, but adds an "continue anyway button"
 	 *
@@ -436,7 +437,7 @@ END;
 END;
 		}
 		$output .= <<<END
-		parent.jQuery.fancybox.close();
+		parent.jQuery.fancybox.close( true );
 	</script>
 
 END;
@@ -578,7 +579,11 @@ END;
 		}
 		$success = $this->mUpload->unsaveUploadedFile();
 		if ( ! $success ) {
-			$this->getOutput()->showFileDeleteError( $this->mUpload->getTempPath() );
+			$this->getOutput()->showFatalError(
+				$this->msg( 'filedeleteerror' )
+					->params( $this->mUpload->getTempPath() )
+					->escaped()
+			);
 			return false;
 		} else {
 			return true;

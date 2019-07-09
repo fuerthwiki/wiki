@@ -2,10 +2,10 @@
 
 namespace SMW\Tests\MediaWiki\Hooks;
 
+use SMW\DataItemFactory;
 use SMW\MediaWiki\Hooks\ArticleProtectComplete;
 use SMW\PropertyAnnotators\EditProtectedPropertyAnnotator;
 use SMW\Tests\TestEnvironment;
-use SMW\DataItemFactory;
 
 /**
  * @covers \SMW\MediaWiki\Hooks\ArticleProtectComplete
@@ -77,7 +77,7 @@ class ArticleProtectCompleteTest extends \PHPUnit_Framework_TestCase {
 
 		$instance->setLogger( $this->spyLogger );
 
-		$protections = array();
+		$protections = [];
 		$reason = \SMW\Message::get( 'smw-edit-protection-auto-update' );
 
 		$instance->process( $protections, $reason );
@@ -120,9 +120,14 @@ class ArticleProtectCompleteTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$instance->setLogger( $this->spyLogger );
-		$instance->setEditProtectionRight( 'Foo' );
 
-		$protections = array( 'edit' => 'Foo' );
+		$instance->setOptions(
+			[
+				'smwgEditProtectionRight' => 'Foo'
+			]
+		);
+
+		$protections = [ 'edit' => 'Foo' ];
 		$reason = '';
 
 		$instance->process( $protections, $reason );
@@ -181,9 +186,14 @@ class ArticleProtectCompleteTest extends \PHPUnit_Framework_TestCase {
 		);
 
 		$instance->setLogger( $this->spyLogger );
-		$instance->setEditProtectionRight( 'Foo2' );
 
-		$protections = array( 'edit' => 'Foo' );
+		$instance->setOptions(
+			[
+				'smwgEditProtectionRight' => 'Foo2'
+			]
+		);
+
+		$protections = [ 'edit' => 'Foo' ];
 		$reason = '';
 
 		$instance->process( $protections, $reason );

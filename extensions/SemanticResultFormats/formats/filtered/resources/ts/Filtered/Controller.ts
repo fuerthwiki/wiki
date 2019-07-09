@@ -1,3 +1,5 @@
+/// <reference types="jquery" />
+
 import { Options, ResultData } from "../types";
 declare let srf: any;
 
@@ -6,6 +8,7 @@ import { Filter } from "./Filter/Filter";
 
 export class Controller {
 	private target: JQuery = undefined;
+	private filterSpinner: JQuery = undefined;
 
 	private views: { [key: string]: View } = {};
 	private filters: { [key: string]: Filter } = {};
@@ -15,6 +18,11 @@ export class Controller {
 
 	public constructor( target: JQuery, data: ResultData, printRequests: Options ) {
 		this.target = target;
+
+		if ( this.target !== undefined ) {
+			this.filterSpinner = this.target.find( 'div.filtered-filter-spinner' );
+		}
+
 		this.data = data;
 		this.printRequests = printRequests;
 
@@ -22,7 +30,6 @@ export class Controller {
 			if ( !this.data[ rowId ].hasOwnProperty( 'visible' ) ) {
 				this.data[ rowId ].visible = {};
 			}
-
 		}
 	}
 
@@ -56,13 +63,14 @@ export class Controller {
 		return this.views[ viewId ];
 	}
 
-	public attachFilter( filter: Filter ) {
+	public attachFilter( filter: Filter ): JQueryPromise< void > {
 		let filterId = filter.getId();
 
 		this.filters[ filterId ] = filter;
-		this.onFilterUpdated( filterId );
 
-		return this;
+		filter.init();
+
+		return this.onFilterUpdated( filterId );
 	}
 
 	public getFilter( filterId: string ): Filter {
@@ -71,7 +79,8 @@ export class Controller {
 
 	public show() {
 		this.initializeFilters();
-		this.target.show();
+		this.target.children( '.filtered-spinner' ).remove();
+		this.target.children().show();
 		this.switchToView( this.currentView );
 	}
 
@@ -95,7 +104,7 @@ export class Controller {
 
 		for ( let rowId in this.data ) {
 			for ( let filterId in this.filters ) {
-				this.data[ rowId ].visible[ filterId ] = this.filters[ filterId ].isVisible( rowId );
+				this.data[ rowId ].visible[ filterId ] = this.filters[ filterId ].isDisabled() || this.filters[ filterId ].isVisible( rowId );
 			}
 			if ( this.isVisible( rowId ) ) {
 				toShow.push( rowId );
@@ -112,30 +121,36 @@ export class Controller {
 		this.switchToView( this.views[ viewID ] );
 	}
 
-	public onFilterUpdated( filterId: string ) {
-		let toShow: string[] = [];
-		let toHide: string[] = [];
+	public onFilterUpdated( filterId: string ): JQueryPromise< void > {
 
-		for ( let rowId in this.data ) {
-			let oldVisible: boolean = this.data[ rowId ].visible[ filterId ];
-			let newVisible: boolean = this.filters[ filterId ].isVisible( rowId );
+		return this.showSpinner()
+		.then(() => {
 
-			if ( oldVisible !== newVisible ) {
+			let toShow: string[] = [];
+			let toHide: string[] = [];
 
-				this.data[ rowId ].visible[ filterId ] = newVisible;
+			let disabled = this.filters[ filterId ].isDisabled();
 
-				if ( newVisible && this.isVisible( rowId ) ) {
-					toShow.push( rowId );
-					// controller.showRow( rowId );
-				} else {
-					toHide.push( rowId );
-					// controller.hideRow( rowId );
+			for ( let rowId in this.data ) {
+
+				let newVisible: boolean = disabled || this.filters[ filterId ].isVisible( rowId );
+
+				if ( this.data[ rowId ].visible[ filterId ] !== newVisible ) {
+
+					this.data[ rowId ].visible[ filterId ] = newVisible;
+
+					if ( newVisible && this.isVisible( rowId ) ) {
+						toShow.push( rowId );
+					} else {
+						toHide.push( rowId );
+					}
 				}
 			}
-		}
 
-		this.hideRows( toHide );
-		this.showRows( toShow );
+			this.hideRows( toHide );
+			this.showRows( toShow );
+		})
+		.then( () => { this.hideSpinner() } );
 	}
 
 	public isVisible( rowId: any ) {
@@ -164,4 +179,26 @@ export class Controller {
 			this.views[ viewId ].showRows( rowIds );
 		}
 	}
+
+	private showSpinner(): JQueryPromise< void > {
+		return this.animateSpinner();
+	}
+
+	private hideSpinner(): JQueryPromise< void > {
+		return this.animateSpinner( false );
+	}
+
+	private animateSpinner( show: boolean = true ): JQueryPromise< void > {
+
+		if ( this.filterSpinner === undefined ) {
+			return jQuery.when();
+		}
+
+		if ( show ) {
+			return this.filterSpinner.fadeIn( 200 ).promise();
+		}
+
+		return this.filterSpinner.fadeOut( 200 ).promise();
+	}
+
 }

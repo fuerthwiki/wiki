@@ -44,10 +44,10 @@ class PFFormEditAction extends Action {
 	 * Adds an "action" (i.e., a tab) to edit the current article with
 	 * a form
 	 * @param Title $obj
-	 * @param array &$content_actions
+	 * @param array &$links
 	 * @return true
 	 */
-	static function displayTab( $obj, &$content_actions ) {
+	static function displayTab( $obj, &$links ) {
 		if ( method_exists( $obj, 'getTitle' ) ) {
 			$title = $obj->getTitle();
 		} else {
@@ -69,8 +69,9 @@ class PFFormEditAction extends Action {
 			return true;
 		}
 
-		global $wgRequest;
 		global $wgPageFormsRenameEditTabs, $wgPageFormsRenameMainEditTab;
+
+		$content_actions = &$links['views'];
 
 		$user_can_edit = $title->userCan( 'edit' );
 		// Create the form edit tab, and apply whatever changes are
@@ -97,7 +98,7 @@ class PFFormEditAction extends Action {
 			}
 		}
 
-		$class_name = ( $wgRequest->getVal( 'action' ) == 'formedit' ) ? 'selected' : '';
+		$class_name = ( $obj->getRequest()->getVal( 'action' ) == 'formedit' ) ? 'selected' : '';
 		$form_edit_tab = array(
 			'class' => $class_name,
 			'text' => wfMessage( $form_edit_tab_msg )->text(),
@@ -129,31 +130,17 @@ class PFFormEditAction extends Action {
 		array_splice( $tab_keys, $edit_tab_location, 0, 'formedit' );
 		array_splice( $tab_values, $edit_tab_location, 0, array( $form_edit_tab ) );
 		$content_actions = array();
-		for ( $i = 0; $i < count( $tab_keys ); $i++ ) {
-			$content_actions[$tab_keys[$i]] = $tab_values[$i];
+		foreach ( $tab_keys as $i => $key ) {
+			$content_actions[$key] = $tab_values[$i];
 		}
 
-		global $wgUser;
-		if ( ! $wgUser->isAllowed( 'viewedittab' ) ) {
+		if ( ! $obj->getUser()->isAllowed( 'viewedittab' ) ) {
 			// The tab can have either of these two actions.
 			unset( $content_actions['edit'] );
 			unset( $content_actions['viewsource'] );
 		}
 
 		return true; // always return true, in order not to stop MW's hook processing!
-	}
-
-	/**
-	 * Like displayTab(), but called with a different hook - this one is
-	 * called for the 'Vector' skin, and some others.
-	 * @param Title $obj
-	 * @param array &$links
-	 * @return true
-	 */
-	static function displayTab2( $obj, &$links ) {
-		// the old '$content_actions' array is thankfully just a
-		// sub-array of this one
-		return self::displayTab( $obj, $links['views'] );
 	}
 
 	static function displayFormChooser( $output, $title ) {
@@ -272,9 +259,9 @@ class PFFormEditAction extends Action {
 
 			// Special handling for forms whose name contains a slash.
 			if ( strpos( $formName, '/' ) !== false ) {
-				$url = $fe->getTitle()->getLocalURL( array( 'form' => $formName, 'target' => $targetName ) );
+				$url = $fe->getPageTitle()->getLocalURL( array( 'form' => $formName, 'target' => $targetName ) );
 			} else {
-				$url = $fe->getTitle( "$formName/$targetName" )->getLocalURL();
+				$url = $fe->getPageTitle( "$formName/$targetName" )->getLocalURL();
 			}
 			$text .= Html::element( 'a', array( 'href' => $url ), $formName );
 		}

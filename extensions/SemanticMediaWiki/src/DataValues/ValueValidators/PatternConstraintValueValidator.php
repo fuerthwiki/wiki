@@ -2,12 +2,12 @@
 
 namespace SMW\DataValues\ValueValidators;
 
-use SMW\DataValues\ValueParsers\AllowsPatternValueParser;
 use SMW\ApplicationFactory;
+use SMW\DataValues\ValueParsers\AllowsPatternValueParser;
 use SMWDataValue as DataValue;
 
 /**
- * To suppport regular expressions in connection with the `Allows pattern`
+ * To support regular expressions in connection with the `Allows pattern`
  * property.
  *
  * @license GNU GPL v2+
@@ -75,7 +75,7 @@ class PatternConstraintValueValidator implements ConstraintValueValidator {
 
 		// Prevent a possible remote code execution vulnerability in connection
 		// with PCRE
-		$pattern = str_replace( array( '/e' ), array( '' ), trim( $content ) );
+		$pattern = str_replace( [ '/e' ], [ '' ], trim( $content ) );
 
 		$this->doPregMatch(
 			$pattern,
@@ -102,11 +102,11 @@ class PatternConstraintValueValidator implements ConstraintValueValidator {
 		// test the expression before making it available
 		if ( !@preg_match( $pattern, $dataValue->getDataItem()->getSortKey() ) ) {
 			$dataValue->addErrorMsg(
-				array(
+				[
 					'smw-datavalue-allows-pattern-mismatch',
 					$dataValue->getWikiValue(),
 					$reference
-				)
+				]
 			);
 
 			$this->hasConstraintViolation = true;

@@ -5,13 +5,16 @@ namespace SMW;
 use SMw\MediaWiki\RedirectTargetFinder;
 use SMW\PropertyAnnotators\CategoryPropertyAnnotator;
 use SMW\PropertyAnnotators\DisplayTitlePropertyAnnotator;
+use SMW\PropertyAnnotators\EditProtectedPropertyAnnotator;
 use SMW\PropertyAnnotators\MandatoryTypePropertyAnnotator;
 use SMW\PropertyAnnotators\NullPropertyAnnotator;
 use SMW\PropertyAnnotators\PredefinedPropertyAnnotator;
 use SMW\PropertyAnnotators\RedirectPropertyAnnotator;
+use SMW\PropertyAnnotators\SchemaPropertyAnnotator;
 use SMW\PropertyAnnotators\SortKeyPropertyAnnotator;
-use SMW\PropertyAnnotators\EditProtectedPropertyAnnotator;
+use SMW\PropertyAnnotators\TranslationPropertyAnnotator;
 use SMW\Store;
+use SMW\Schema\Schema;
 use Title;
 
 /**
@@ -46,6 +49,24 @@ class PropertyAnnotatorFactory {
 			$propertyAnnotator,
 			$redirectTargetFinder
 		);
+	}
+
+	/**
+	 * @since 3.0
+	 *
+	 * @param PropertyAnnotator $propertyAnnotator
+	 * @param Schema $schema
+	 *
+	 * @return SchemaPropertyAnnotator
+	 */
+	public function newSchemaPropertyAnnotator( PropertyAnnotator $propertyAnnotator, Schema $schema = null ) {
+
+		$schemaPropertyAnnotator = new SchemaPropertyAnnotator(
+			$propertyAnnotator,
+			$schema
+		);
+
+		return $schemaPropertyAnnotator;
 	}
 
 	/**
@@ -108,6 +129,28 @@ class PropertyAnnotatorFactory {
 	}
 
 	/**
+	 * @since 3.0
+	 *
+	 * @param SemanticData $semanticData
+	 * @param arrat|null $translation
+	 *
+	 * @return TranslationPropertyAnnotator
+	 */
+	public function newTranslationPropertyAnnotator( PropertyAnnotator $propertyAnnotator, $translation ) {
+
+		$translationPropertyAnnotator = new TranslationPropertyAnnotator(
+			$propertyAnnotator,
+			$translation
+		);
+
+		$translationPropertyAnnotator->setPredefinedPropertyList(
+			ApplicationFactory::getInstance()->getSettings()->get( 'smwgPageSpecialProperties' )
+		);
+
+		return $translationPropertyAnnotator;
+	}
+
+	/**
 	 * @since 2.4
 	 *
 	 * @param SemanticData $semanticData
@@ -141,21 +184,27 @@ class PropertyAnnotatorFactory {
 	 */
 	public function newCategoryPropertyAnnotator( PropertyAnnotator $propertyAnnotator, array $categories ) {
 
+		$settings = ApplicationFactory::getInstance()->getSettings();
+
 		$categoryPropertyAnnotator = new CategoryPropertyAnnotator(
 			$propertyAnnotator,
 			$categories
 		);
 
-		$categoryPropertyAnnotator->setShowHiddenCategoriesState(
-			ApplicationFactory::getInstance()->getSettings()->get( 'smwgShowHiddenCategories' )
+		$categoryPropertyAnnotator->showHiddenCategories(
+			$settings->isFlagSet( 'smwgParserFeatures', SMW_PARSER_HID_CATS )
 		);
 
-		$categoryPropertyAnnotator->setCategoryInstanceUsageState(
-			ApplicationFactory::getInstance()->getSettings()->get( 'smwgCategoriesAsInstances' )
+		$categoryPropertyAnnotator->useCategoryInstance(
+			$settings->isFlagSet( 'smwgCategoryFeatures', SMW_CAT_INSTANCE )
 		);
 
-		$categoryPropertyAnnotator->setCategoryHierarchyUsageState(
-			ApplicationFactory::getInstance()->getSettings()->get( 'smwgUseCategoryHierarchy' )
+		$categoryPropertyAnnotator->useCategoryHierarchy(
+			$settings->isFlagSet( 'smwgCategoryFeatures', SMW_CAT_HIERARCHY )
+		);
+
+		$categoryPropertyAnnotator->useCategoryRedirect(
+			$settings->isFlagSet( 'smwgCategoryFeatures', SMW_CAT_REDIRECT )
 		);
 
 		return $categoryPropertyAnnotator;

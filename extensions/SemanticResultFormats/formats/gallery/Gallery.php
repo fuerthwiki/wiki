@@ -2,16 +2,15 @@
 
 namespace SRF;
 
+use Html;
 use SMW\ResultPrinter;
-
-use SMWQueryResult;
-use SMWPrintRequest;
 use SMWDataItem;
 use SMWOutputs;
+use SMWPrintRequest;
+use SMWQueryResult;
 use SRFUtils;
-
-use Html;
 use Title;
+use TraditionalImageGallery;
 
 /**
  * Result printer that outputs query results as a image gallery.
@@ -28,7 +27,7 @@ class Gallery extends ResultPrinter {
 	 * @return string
 	 */
 	public function getName() {
-		return $this->getContext()->msg( 'srf_printername_gallery' )->text();
+		return $this->msg( 'srf_printername_gallery' )->text();
 	}
 
 	/**
@@ -43,10 +42,14 @@ class Gallery extends ResultPrinter {
 	protected function buildResult( SMWQueryResult $results ) {
 
 		// Intro/outro are not planned to work with the widget option
-		if ( ( $this->params['intro'] !== '' || $this->params['outro'] !== '' ) && $this->params['widget'] !== '' ){
-			return $results->addErrors( [
-				$this->getContext()->msg( 'srf-error-option-mix', 'widget' )->inContentLanguage()->text()
-			] );
+		if ( ( $this->params['intro'] !== '' || $this->params['outro'] !== '' ) && $this->params['widget'] !== '' ) {
+			$results->addErrors(
+				[
+					$this->msg( 'srf-error-option-mix', 'widget' )->inContentLanguage()->text()
+				]
+			);
+
+			return '';
 		};
 
 		return $this->getResultText( $results, $this->outputMode );
@@ -58,15 +61,19 @@ class Gallery extends ResultPrinter {
 	 * @param $results SMWQueryResult
 	 * @param $outputmode integer
 	 *
-	 * @return string
+	 * @return string | array
 	 */
 	public function getResultText( SMWQueryResult $results, $outputmode ) {
 
-		// #224
-		$ig = class_exists( '\TraditionalImageGallery' ) ? new \TraditionalImageGallery() : new \ImageGallery();
+		$ig = new TraditionalImageGallery();
 
 		$ig->setShowBytes( false );
 		$ig->setShowFilename( false );
+
+		if ( method_exists( $ig, 'setShowDimensions' ) ) {
+			$ig->setShowDimensions( false );
+		}
+
 		$ig->setCaption( $this->mIntro ); // set caption to IQ header
 
 		// No need for a special page to use the parser but for the "normal" page
@@ -75,10 +82,8 @@ class Gallery extends ResultPrinter {
 			$ig->setParser( $GLOBALS['wgParser'] );
 		}
 
-		// Initialize
-		static $statNr = 0;
-		$html          = '';
-		$processing    = '';
+		$html = '';
+		$processing = '';
 
 		if ( $this->params['widget'] == 'carousel' ) {
 			// Carousel widget
@@ -99,7 +104,7 @@ class Gallery extends ResultPrinter {
 
 		// Only use redirects where the overlay option is not used and redirect
 		// thumb images towards a different target
-		if ( $this->params['redirects'] !== '' && !$this->params['overlay'] ){
+		if ( $this->params['redirects'] !== '' && !$this->params['overlay'] ) {
 			SMWOutputs::requireResource( 'ext.srf.gallery.redirect' );
 		}
 
@@ -126,8 +131,8 @@ class Gallery extends ResultPrinter {
 			$printReqLabels[] = $printReq->getLabel();
 
 			// Get redirect type
-			if ( $this->params['redirects'] === $printReq->getLabel() ){
-			 $redirectType = $printReq->getTypeID();
+			if ( $this->params['redirects'] === $printReq->getLabel() ) {
+				$redirectType = $printReq->getTypeID();
 			}
 		}
 
@@ -155,14 +160,14 @@ class Gallery extends ResultPrinter {
 		}
 
 		// Beautify the class selector
-		$class = $this->params['widget'] ?  '-' . $this->params['widget'] . ' ' : '';
-		$class = $this->params['redirects'] !== '' && $this->params['overlay'] === false ? $class . ' srf-redirect' . ' ': $class;
-		$class = $this->params['class'] ? $class . ' ' . $this->params['class'] : $class ;
+		$class = $this->params['widget'] ? '-' . $this->params['widget'] . ' ' : '';
+		$class = $this->params['redirects'] !== '' && $this->params['overlay'] === false ? $class . ' srf-redirect' . ' ' : $class;
+		$class = $this->params['class'] ? $class . ' ' . $this->params['class'] : $class;
 
 		// Separate content from result output
 		if ( !$ig->isEmpty() ) {
-			$attribs =  [
-				'class'  => 'srf-gallery' . $class,
+			$attribs = [
+				'class' => 'srf-gallery' . $class,
 				'data-redirect-type' => $redirectType,
 				'data-ns-text' => $this->getFileNsTextForPageLanguage()
 			];
@@ -184,22 +189,23 @@ class Gallery extends ResultPrinter {
 	 * @since 1.5.3
 	 *
 	 * @param SMWQueryResult $results
-	 * @param ImageGallery $ig
+	 * @param TraditionalImageGallery $ig
 	 * @param string $imageProperty
 	 * @param string $captionProperty
 	 * @param string $redirectProperty
 	 * @param $outputMode
 	 */
 	protected function addImageProperties( SMWQueryResult $results, &$ig, $imageProperty, $captionProperty, $redirectProperty, $outputMode ) {
-		while ( /* array of SMWResultArray */ $rows = $results->getNext() ) { // Objects (pages)
+		while ( /* array of SMWResultArray */
+		$rows = $results->getNext() ) { // Objects (pages)
 			$images = [];
 			$captions = [];
 			$redirects = [];
 
 			for ( $i = 0, $n = count( $rows ); $i < $n; $i++ ) { // Properties
 				/**
-				 * @var SMWResultArray $resultArray
-				 * @var SMWDataValue $dataValue
+				 * @var \SMWResultArray $resultArray
+				 * @var \SMWDataValue $dataValue
 				 */
 				$resultArray = $rows[$i];
 
@@ -221,8 +227,8 @@ class Gallery extends ResultPrinter {
 					while ( ( $dataValue = $resultArray->getNextDataValue() ) !== false ) { // Property values
 						if ( $dataValue->getDataItem()->getDIType() == SMWDataItem::TYPE_WIKIPAGE ) {
 							$redirects[] = $dataValue->getTitle();
-						} elseif ( $dataValue->getDataItem()->getDIType() == SMWDataItem::TYPE_URI  ) {
-						  $redirects[] = $dataValue->getURL();
+						} elseif ( $dataValue->getDataItem()->getDIType() == SMWDataItem::TYPE_URI ) {
+							$redirects[] = $dataValue->getURL();
 						}
 					}
 				}
@@ -255,18 +261,18 @@ class Gallery extends ResultPrinter {
 	 * @since 1.5.3
 	 *
 	 * @param SMWQueryResult $results
-	 * @param ImageGallery $ig
+	 * @param TraditionalImageGallery $ig
 	 */
 	protected function addImagePages( SMWQueryResult $results, &$ig ) {
 		while ( $row = $results->getNext() ) {
 			/**
-			 * @var SMWResultArray $firstField
+			 * @var \SMWResultArray $firstField
 			 */
 			$firstField = $row[0];
 			$nextObject = $firstField->getNextDataValue();
 
 			if ( $nextObject !== false ) {
-				$imgTitle = $nextObject->getTitle();
+				$imgTitle = method_exists( $nextObject, 'getTitle' ) ? $nextObject->getTitle() : null;
 
 				// Ensure the title belongs to the image namespace
 				if ( $imgTitle instanceof Title && $imgTitle->getNamespace() === NS_FILE ) {
@@ -292,7 +298,7 @@ class Gallery extends ResultPrinter {
 	 *
 	 * @since 1.5.3
 	 *
-	 * @param ImageGallery $ig The gallery to add the image to
+	 * @param TraditionalImageGallery $ig The gallery to add the image to
 	 * @param Title $imgTitle The title object of the page of the image
 	 * @param string $imgCaption An optional caption for the image
 	 * @param string $imgRedirect
@@ -300,10 +306,10 @@ class Gallery extends ResultPrinter {
 	protected function addImageToGallery( &$ig, Title $imgTitle, $imgCaption, $imgRedirect = '' ) {
 
 		if ( empty( $imgCaption ) ) {
-			if ( $this->m_params['autocaptions'] ) {
+			if ( $this->params['autocaptions'] ) {
 				$imgCaption = $imgTitle->getBaseText();
 
-				if ( !$this->m_params['fileextensions'] ) {
+				if ( !$this->params['fileextensions'] ) {
 					$imgCaption = preg_replace( '#\.[^.]+$#', '', $imgCaption );
 				}
 			} else {
@@ -315,7 +321,7 @@ class Gallery extends ResultPrinter {
 			}
 		}
 		// Use image alt as helper for either text
-		$imgAlt =  $this->params['redirects'] === '' ? $imgCaption : $imgRedirect !== '' ? $imgRedirect : '' ;
+		$imgAlt = $this->params['redirects'] === '' ? $imgCaption : $imgRedirect !== '' ? $imgRedirect : '';
 		$ig->add( $imgTitle, $imgCaption, $imgAlt );
 	}
 
@@ -340,7 +346,7 @@ class Gallery extends ResultPrinter {
 	 *
 	 * @since 1.8
 	 *
-	 * @return string
+	 * @return string[]
 	 */
 	private function getCarouselWidget() {
 
@@ -374,18 +380,17 @@ class Gallery extends ResultPrinter {
 		return $attribs;
 	}
 
-
 	/**
 	 * Init slideshow widget
 	 *
 	 * @since 1.8
 	 *
-	 * @return string
+	 * @return string[]
 	 */
 	private function getSlideshowWidget() {
 
 		$attribs = [
-			'id'    => uniqid(),
+			'id' => uniqid(),
 			'class' => $this->getImageOverlay(),
 			'style' => 'display:none;',
 			'data-nav-control' => $this->params['navigation']
@@ -485,13 +490,19 @@ class Gallery extends ResultPrinter {
 		return $params;
 	}
 
+	/**
+	 * @return bool
+	 */
 	private function isSpecialPage() {
-		$title = $this->getContext()->getTitle();
+		$title = $GLOBALS['wgTitle'];
 		return $title instanceof Title && $title->isSpecialPage();
 	}
 
+	/**
+	 * @return bool|null|string
+	 */
 	private function getFileNsTextForPageLanguage() {
-		$title = $this->getContext()->getTitle();
+		$title = $GLOBALS['wgTitle'];
 		return $title instanceof Title ? $title->getPageLanguage()->getNsText( NS_FILE ) : null;
 	}
 

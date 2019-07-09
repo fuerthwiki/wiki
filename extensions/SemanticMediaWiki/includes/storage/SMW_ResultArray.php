@@ -1,13 +1,11 @@
 <?php
 
 use SMW\DataValueFactory;
-use SMW\InTextAnnotationParser;
 use SMW\Query\PrintRequest;
-use SMW\Query\Result\InMemoryEntityProcessList;
-use SMWDataItem as DataItem;
-use SMWDIBlob as DIBlob;
-use SMW\Query\Result\ResultFieldMatchFinder;
 use SMW\Query\QueryToken;
+use SMW\Query\Result\ResolverJournal;
+use SMW\Query\Result\ResultFieldMatchFinder;
+use SMWDataItem as DataItem;
 
 /**
  * Container for the contents of a single result field of a query result,
@@ -42,9 +40,9 @@ class SMWResultArray {
 	private $mContent;
 
 	/**
-	 * @var InMemoryEntityProcessList
+	 * @var ResolverJournal
 	 */
-	private $inMemoryEntityProcessList;
+	private $resolverJournal;
 
 	/**
 	 * @var ResultFieldMatchFinder
@@ -100,10 +98,10 @@ class SMWResultArray {
 	 *
 	 * @since  2.4
 	 *
-	 * @return InMemoryEntityProcessList
+	 * @param ResolverJournal $resolverJournal
 	 */
-	public function setInMemoryEntityProcessList( InMemoryEntityProcessList $inMemoryEntityProcessList ) {
-		$this->inMemoryEntityProcessList = $inMemoryEntityProcessList;
+	public function setResolverJournal( ResolverJournal $resolverJournal ) {
+		$this->resolverJournal = $resolverJournal;
 	}
 
 	/**
@@ -137,14 +135,6 @@ class SMWResultArray {
 	}
 
 	/**
-	 * Compatibility alias for getNextDatItem().
-	 * @deprecated since 1.6. Call getNextDataValue() or getNextDataItem() directly as needed. Method will vanish before SMW 1.7.
-	 */
-	public function getNextObject() {
-		return $this->getNextDataValue();
-	}
-
-	/**
 	 * Return the next SMWDataItem object or false if no further object exists.
 	 *
 	 * @since 1.6
@@ -155,8 +145,8 @@ class SMWResultArray {
 		$this->loadContent();
 		$result = current( $this->mContent );
 
-		if ( $this->inMemoryEntityProcessList !== null && $result instanceof DataItem ) {
-			$this->inMemoryEntityProcessList->addDataItem( $result );
+		if ( $this->resolverJournal !== null && $result instanceof DataItem ) {
+			$this->resolverJournal->recordItem( $result );
 		}
 
 		next( $this->mContent );
@@ -225,9 +215,9 @@ class SMWResultArray {
 			$dataValue->setOutputFormat( $this->mPrintRequest->getOutputFormat() );
 		}
 
-		if ( $this->inMemoryEntityProcessList !== null && $dataItem instanceof DataItem ) {
-			$this->inMemoryEntityProcessList->addDataItem( $dataItem );
-			$this->inMemoryEntityProcessList->addProperty( $diProperty );
+		if ( $this->resolverJournal !== null && $dataItem instanceof DataItem ) {
+			$this->resolverJournal->recordItem( $dataItem );
+			$this->resolverJournal->recordProperty( $diProperty );
 		}
 
 		return $dataValue;

@@ -139,8 +139,9 @@ class PFTextInput extends PFFormInput {
 		return $previewImage;
 	}
 
-	public static function uploadableHTML( $input_id, $delimiter = null, $default_filename = null, $cur_value = '', $other_args = array() ) {
-		global $wgPageFormsSimpleUpload, $wgPageFormsScriptPath;
+	public static function uploadableHTML( $input_id, $delimiter = null, $default_filename = null, $cur_value = '', array $other_args = array() ) {
+		global $wgPageFormsSimpleUpload, $wgPageFormsScriptPath,
+			$wgVersion;
 		if ( $wgPageFormsSimpleUpload ) {
 			$text = "\n" . '<img class="loading" style="display:none;" src="' . $wgPageFormsScriptPath . '/skins/loading.gif"/>' . "\n";
 			$text .= Html::input( '',
@@ -163,7 +164,7 @@ class PFTextInput extends PFFormInput {
 			$text .= Html::input( '', '', 'file',
 				array(
 					'class' => 'simpleupload',
-					'style' => 'display: none;',
+					'style' => 'width: 0;height: 0;overflow: hidden;',
 					'data-id' => $input_id
 				)
 			) . "\n";
@@ -178,7 +179,7 @@ class PFTextInput extends PFFormInput {
 		if ( $default_filename != null ) {
 			$query_string .= "&wpDestFile=$default_filename";
 		}
-		$upload_window_url = $upload_window_page->getTitle()->getFullURL( $query_string );
+		$upload_window_url = $upload_window_page->getPageTitle()->getFullURL( $query_string );
 		$upload_label = wfMessage( 'upload' )->parse();
 		// We need to set the size by default.
 		$style = "width:650 height:500";
@@ -200,8 +201,12 @@ class PFTextInput extends PFFormInput {
 			// to confusion.
 			// 'title' => $upload_label,
 			'rev' => $style,
-			'data-input-id' => $input_id
+			'data-input-id' => $input_id,
 		);
+
+		if ( version_compare( $wgVersion, '1.30', '>=' ) ) {
+			$linkAttrs['data-type'] = 'iframe';
+		}
 
 		$text = "\t" . Html::element( 'a', $linkAttrs, $upload_label ) . "\n";
 
@@ -216,7 +221,7 @@ class PFTextInput extends PFFormInput {
 		return $text;
 	}
 
-	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, $other_args ) {
+	public static function getHTML( $cur_value, $input_name, $is_mandatory, $is_disabled, array $other_args ) {
 		global $wgPageFormsTabIndex, $wgPageFormsFieldNum;
 
 		$className = 'createboxInput';

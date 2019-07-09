@@ -49,16 +49,20 @@ class ChainablePropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 			$parameters['categories']
 		);
 
-		$categoryPropertyAnnotator->setShowHiddenCategoriesState(
-			$parameters['settings']['smwgShowHiddenCategories']
+		$categoryPropertyAnnotator->showHiddenCategories(
+			$parameters['settings']['showHiddenCategories']
 		);
 
-		$categoryPropertyAnnotator->setCategoryInstanceUsageState(
-			$parameters['settings']['smwgCategoriesAsInstances']
+		$categoryPropertyAnnotator->useCategoryInstance(
+			$parameters['settings']['categoriesAsInstances']
 		);
 
-		$categoryPropertyAnnotator->setCategoryHierarchyUsageState(
-			$parameters['settings']['smwgUseCategoryHierarchy']
+		$categoryPropertyAnnotator->useCategoryHierarchy(
+			$parameters['settings']['categoryHierarchy']
+		);
+
+		$categoryPropertyAnnotator->useCategoryRedirect(
+			false
 		);
 
 		$sortKeyPropertyAnnotator = new SortKeyPropertyAnnotator(
@@ -85,27 +89,27 @@ class ChainablePropertyAnnotatorTest extends \PHPUnit_Framework_TestCase {
 
 	public function annotationDataProvider() {
 
-		$provider = array();
+		$provider = [];
 
 		// #0
-		$provider[] = array(
-			array(
+		$provider[] = [
+			[
 				'modificationDate' => 1272508903,
-				'categories' => array( 'Foo', 'Bar' ),
+				'categories' => [ 'Foo', 'Bar' ],
 				'sortkey'    => 'Lala',
-				'settings'   => array(
-					'smwgUseCategoryHierarchy'  => false,
-					'smwgCategoriesAsInstances' => true,
-					'smwgShowHiddenCategories'  => true,
-					'smwgPageSpecialProperties' => array( DIProperty::TYPE_MODIFICATION_DATE )
-				)
-			),
-			array(
+				'settings'   => [
+					'categoryHierarchy'  => false,
+					'categoriesAsInstances' => true,
+					'showHiddenCategories'  => true,
+					'smwgPageSpecialProperties' => [ DIProperty::TYPE_MODIFICATION_DATE ]
+				]
+			],
+			[
 				'propertyCount'  => 3,
-				'propertyKeys'   => array( '_INST', '_MDAT', '_SKEY' ),
-				'propertyValues' => array( 'Foo',  'Bar', '2010-04-29T02:41:43', 'Lala' ),
-			)
-		);
+				'propertyKeys'   => [ '_INST', '_MDAT', '_SKEY' ],
+				'propertyValues' => [ 'Foo',  'Bar', '2010-04-29T02:41:43', 'Lala' ],
+			]
+		];
 
 		return $provider;
 	}

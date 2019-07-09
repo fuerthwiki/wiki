@@ -2,22 +2,20 @@
 
 namespace ParamProcessor\Tests;
 
+use ParamProcessor\ProcessedParam;
 use ParamProcessor\ProcessingError;
 use ParamProcessor\ProcessingResult;
 use ParamProcessor\Processor;
 use ParamProcessor\Options;
+use PHPUnit\Framework\TestCase;
 
 /**
- * @covers ParamProcessor\Processor
+ * @covers \ParamProcessor\Processor
  *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
  */
-class ProcessorTest extends \PHPUnit_Framework_TestCase {
-
-	public function testNewDefault() {
-		$this->assertInstanceOf( 'ParamProcessor\Processor', Processor::newDefault() );
-	}
+class ProcessorTest extends TestCase {
 
 	public function newFromOptionsProvider() {
 		$options = [];
@@ -44,10 +42,7 @@ class ProcessorTest extends \PHPUnit_Framework_TestCase {
 	}
 
 	public function testNewFromOptions() {
-		$options = new Options();
-		$validator = Processor::newFromOptions( clone $options );
-		$this->assertInstanceOf( '\ParamProcessor\Processor', $validator );
-		$this->assertEquals( $options, $validator->getOptions() );
+		$this->assertEquals( new Options(), Processor::newFromOptions( new Options() )->getOptions() );
 	}
 
 	/**
@@ -393,6 +388,74 @@ class ProcessorTest extends \PHPUnit_Framework_TestCase {
 		$processor->processParameters();
 
 		$this->assertEmpty( $processor->getErrors() );
+	}
+
+	public function testInvalidListElementsAreOmitted() {
+		$processor = Processor::newDefault();
+
+		$processor->setFunctionParams(
+			[
+				'some-list=1,2,3, ,4,'
+			],
+			[
+				'some-list' => [
+					'type' => 'integer',
+					'message' => 'test',
+					'islist' => true
+				],
+			]
+		);
+
+		$this->assertSame(
+			[ 1, 2, 3, 4 ],
+			$processor->processParameters()->getParameters()['some-list']->getValue()
+		);
+	}
+
+	public function testListParametersAreNotDefaultedWhenSomeElementsAreInvalid() {
+		$processor = Processor::newDefault();
+
+		$processor->setFunctionParams(
+			[
+				'some-list=1,nan'
+			],
+			[
+				'some-list' => [
+					'type' => 'integer',
+					'message' => 'test',
+					'islist' => true,
+					'default' => []
+				],
+			]
+		);
+
+		$this->assertSame(
+			[ 1 ],
+			$processor->processParameters()->getParameters()['some-list']->getValue()
+		);
+	}
+
+	public function testListParametersAreDefaultedWhenAllElementsAreInvalid() {
+		$processor = Processor::newDefault();
+
+		$processor->setFunctionParams(
+			[
+				'some-list=such,nan'
+			],
+			[
+				'some-list' => [
+					'type' => 'integer',
+					'message' => 'test',
+					'islist' => true,
+					'default' => [ 42 ]
+				],
+			]
+		);
+
+		$this->assertSame(
+			[ 42 ],
+			$processor->processParameters()->getParameters()['some-list']->getValue()
+		);
 	}
 
 }

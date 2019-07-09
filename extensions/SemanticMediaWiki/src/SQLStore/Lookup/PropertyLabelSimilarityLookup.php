@@ -3,14 +3,13 @@
 namespace SMW\SQLStore\Lookup;
 
 use Exception;
-use SMW\DataValueFactory;
 use SMW\ApplicationFactory;
+use SMW\DataValueFactory;
 use SMW\DIProperty;
+use SMW\PropertySpecificationLookup;
+use SMW\RequestOptions;
 use SMW\SQLStore\SQLStore;
 use SMW\Store;
-use SMWDIError as DIError;
-use SMW\RequestOptions;
-use SMW\PropertySpecificationLookup;
 
 /**
  * @license GNU GPL v2+
@@ -153,8 +152,8 @@ class PropertyLabelSimilarityLookup {
 
 	private function matchLabels( $propertyList, $withType ) {
 
-		$similarities = array();
-		$lookupComplete = array();
+		$similarities = [];
+		$lookupComplete = [];
 
 		foreach ( $propertyList as $first ) {
 
@@ -235,7 +234,7 @@ class PropertyLabelSimilarityLookup {
 
 	private function getHash( DIProperty $first, DIProperty $second ) {
 
-		$hashing = array();
+		$hashing = [];
 		$hashing[] = $first->getKey();
 		$hashing[] = $second->getKey();
 
@@ -246,44 +245,44 @@ class PropertyLabelSimilarityLookup {
 
 	private function getSummary( DIProperty $first, DIProperty $second, $percent, $withType ) {
 
-		$summary = array();
+		$summary = [];
 
 		if ( $withType ) {
-			$summary[] = array(
+			$summary[] = [
 				'label' => $first->getLabel(),
 				'type'  => $first->findPropertyTypeID()
-			);
+			];
 		} else {
 			$summary[] = $first->getLabel();
 		}
 
 		if ( $withType ) {
-			$summary[] = array(
+			$summary[] = [
 				'label' => $second->getLabel(),
 				'type'  => $second->findPropertyTypeID()
-			);
+			];
 		} else {
 			$summary[] = $second->getLabel();
 		}
 
-		return array(
+		return [
 			'property'   => $summary,
 			'similarity' => round( $percent, 2 )
-		);
+		];
 	}
 
 	private function getPropertyList( RequestOptions $requestOptions = null ) {
 
-		$propertyList = array();
+		$propertyList = [];
 
 		// the query needs to do the filtering of internal properties, else LIMIT is wrong
-		$options = array( 'ORDER BY' => 'smw_sortkey' );
+		$options = [ 'ORDER BY' => 'smw_sort' ];
 
-		$conditions = array(
+		$conditions = [
 			'smw_namespace' => SMW_NS_PROPERTY,
 			'smw_iw' => '',
 			'smw_subobject' => ''
-		);
+		];
 
 		if ( $requestOptions !== null && $requestOptions->getLimit() > 0 ) {
 			$options['LIMIT'] = $requestOptions->getLimit();
@@ -298,7 +297,7 @@ class PropertyLabelSimilarityLookup {
 
 		$res = $connection->select(
 			SQLStore::ID_TABLE,
-			array( 'smw_id', 'smw_title' ),
+			[ 'smw_id', 'smw_title' ],
 			$conditions,
 			__METHOD__,
 			$options

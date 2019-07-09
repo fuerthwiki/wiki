@@ -22,8 +22,8 @@
 			"subject": "Example/F0206/1a",
 			"assert-output": {
 				"to-contain": [
-					"<div class=\"smwttcontent\">A number to display ....</div>",
-					"<td data-sort-value=\"1001\" class=\"Has-number smwtype_num\">1,001</td>"
+					"<span class=\"smwttcontent\">A number to display ....</span>",
+					"<td class=\"Has-number smwtype_num\" data-sort-value=\"1001\">1,001</td>"
 				]
 			}
 		}

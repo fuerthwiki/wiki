@@ -4,7 +4,6 @@ namespace SMW\Importer;
 
 use Onoi\MessageReporter\MessageReporter;
 use Onoi\MessageReporter\MessageReporterAware;
-use RuntimeException;
 
 /**
  * @license GNU GPL v2+
@@ -28,6 +27,11 @@ class Importer implements MessageReporterAware {
 	 * @var MessageReporter
 	 */
 	private $messageReporter;
+
+	/**
+	 * @var boolean
+	 */
+	private $isEnabled = true;
 
 	/**
 	 * @var integer|boolean
@@ -57,6 +61,15 @@ class Importer implements MessageReporterAware {
 	}
 
 	/**
+	 * @since 3.0
+	 *
+	 * @param boolean $isEnabled
+	 */
+	public function isEnabled( $isEnabled ) {
+		$this->isEnabled = $isEnabled;
+	}
+
+	/**
 	 * @since 2.5
 	 *
 	 * @param integer|boolean $reqVersion
@@ -70,9 +83,15 @@ class Importer implements MessageReporterAware {
 	 */
 	public function doImport() {
 
+		if ( $this->isEnabled === false ) {
+			return $this->messageReporter->reportMessage( "\nSkipping the import process.\n" );
+		}
+
 		if ( $this->reqVersion === false ) {
 			return $this->messageReporter->reportMessage( "\nImport support not enabled, processing completed.\n" );
 		}
+
+		$import = false;
 
 		foreach ( $this->contentIterator as $key => $importContents ) {
 			$this->messageReporter->reportMessage( "\nImport of $key ...\n" );
@@ -87,29 +106,33 @@ class Importer implements MessageReporterAware {
 				$this->doImportContents( $impContents );
 			}
 
-
 			$this->messageReporter->reportMessage( "   ... done.\n" );
+			$import = true;
 		}
 
-		if ( $this->contentIterator->getErrors() !== array() ) {
+		if ( $this->contentIterator->getErrors() !== [] ) {
 			$this->messageReporter->reportMessage(
-				"\n" . 'Import failed due to "' . implode( ", ", $this->contentIterator->getErrors() ) . '"'
+				"\n" . 'Import failed on "' . implode( ", ", $this->contentIterator->getErrors() ) . '"'
 			);
 		}
 
-		$this->messageReporter->reportMessage( "\nImport processing completed.\n" );
+		if ( $import ) {
+			$this->messageReporter->reportMessage( "\nImport processing completed.\n" );
+		}
 	}
 
 	private function doImportContents( ImportContents $importContents ) {
 
 		$indent = '   ...';
 
-		if ( $importContents->getErrors() !== array() ) {
-			return $this->messageReporter->reportMessage( "$indent ... " . implode( ',', $importContents->getErrors() ) ." ...\n" );
+		if ( $importContents->getErrors() === [] ) {
+			$this->contentCreator->setMessageReporter( $this->messageReporter );
+			$this->contentCreator->create( $importContents );
 		}
 
-		$this->contentCreator->setMessageReporter( $this->messageReporter );
-		$this->contentCreator->doCreateFrom( $importContents );
+		foreach ( $importContents->getErrors() as $error ) {
+			$this->messageReporter->reportMessage( "$indent " . $error . " ...\n" );
+		}
 	}
 
 }

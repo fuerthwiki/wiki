@@ -119,10 +119,10 @@ class LinksProcessor {
 		}
 
 		if ( $caption !== false ) {
-			return array( $semanticLink[0], $semanticLink[1], $value, $caption );
+			return [ $semanticLink[0], $semanticLink[1], $value, $caption ];
 		}
 
-		return array( $semanticLink[0], $semanticLink[1], $value );
+		return [ $semanticLink[0], $semanticLink[1], $value ];
 	}
 
 	/**
@@ -141,6 +141,14 @@ class LinksProcessor {
 		$value = '';
 
 		if ( array_key_exists( 1, $semanticLink ) ) {
+
+			// Use case [[Foo::=Bar]] (:= being the legacy notation < 1.4) where
+			// the regex splits it into `Foo:` and `Bar` loosing `=` from the value.
+			// Restore the link to its previous form of `Foo::=Bar` and reapply
+			// a simple split.
+			if( strpos( $semanticLink[0], '::=' ) && substr( $semanticLink[1], -1 ) == ':' ) {
+				list( $semanticLink[1], $semanticLink[2] ) = explode( '::', $semanticLink[1] . ':=' . $semanticLink[2], 2 );
+			}
 
 			// #1252 Strict mode being disabled for support of multi property
 			// assignments (e.g. [[property1::property2::value]])
@@ -161,7 +169,7 @@ class LinksProcessor {
 			$value = $semanticLink[2];
 		}
 
-		$value = Obfuscator::removeLinkObfuscation( $value );
+		$value = LinksEncoder::removeLinkObfuscation( $value );
 
 		if ( $value === '' ) { // silently ignore empty values
 			return '';
@@ -178,7 +186,7 @@ class LinksProcessor {
 		// Extract annotations and create tooltip.
 		$properties = preg_split( '/:[=:]/u', $property );
 
-		return array( $properties, $value, $valueCaption );
+		return [ $properties, $value, $valueCaption ];
 	}
 
 	private function setAnnotation( $value ) {

@@ -2,6 +2,7 @@
 
 namespace SMW\MediaWiki\Jobs;
 
+use SMW\MediaWiki\Job;
 use SMW\ApplicationFactory;
 use Title;
 
@@ -11,7 +12,7 @@ use Title;
  *
  * @author mwjames
  */
-class PropertyStatisticsRebuildJob extends JobBase {
+class PropertyStatisticsRebuildJob extends Job {
 
 	/**
 	 * @since 2.5
@@ -19,8 +20,9 @@ class PropertyStatisticsRebuildJob extends JobBase {
 	 * @param Title $title
 	 * @param array $params job parameters
 	 */
-	public function __construct( Title $title, $params = array() ) {
-		parent::__construct( 'SMW\PropertyStatisticsRebuildJob', $title, $params );
+	public function __construct( Title $title, $params = [] ) {
+		parent::__construct( 'smw.propertyStatisticsRebuild', $title, $params );
+		$this->removeDuplicates = true;
 	}
 
 	/**
@@ -30,16 +32,35 @@ class PropertyStatisticsRebuildJob extends JobBase {
 	 */
 	public function run() {
 
+		if ( $this->waitOnCommandLineMode() ) {
+			return true;
+		}
+
+		$deferredCallableUpdate = ApplicationFactory::getInstance()->newDeferredTransactionalCallableUpdate(
+			[ $this, 'rebuild' ]
+		);
+
+		$deferredCallableUpdate->setOrigin( __METHOD__ );
+		$deferredCallableUpdate->runAsAutoCommit();
+		$deferredCallableUpdate->pushUpdate();
+
+		return true;
+	}
+
+	public function rebuild() {
+
 		$applicationFactory = ApplicationFactory::getInstance();
 		$maintenanceFactory = $applicationFactory->newMaintenanceFactory();
 
-		$statisticsRebuilder = $maintenanceFactory->newPropertyStatisticsRebuilder(
-			$applicationFactory->getStore()
+		// Use a fixed store to avoid issues like "Call to undefined method
+		// SMW\SPARQLStore\SPARQLStore::getDataItemHandlerForDIType" because
+		// the property statistics table and hereby its update is bound to
+		// the SQLStore
+		$propertyStatisticsRebuilder = $maintenanceFactory->newPropertyStatisticsRebuilder(
+			$applicationFactory->getStore( '\SMW\SQLStore\SQLStore' )
 		);
 
-		$statisticsRebuilder->rebuild();
-
-		return true;
+		$propertyStatisticsRebuilder->rebuild();
 	}
 
 }

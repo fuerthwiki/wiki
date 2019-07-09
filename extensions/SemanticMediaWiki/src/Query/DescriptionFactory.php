@@ -2,7 +2,6 @@
 
 namespace SMW\Query;
 
-use SMW\DataValues\MonolingualTextValue;
 use SMW\DIProperty;
 use SMW\DIWikiPage;
 use SMW\Query\Language\ClassDescription;
@@ -66,7 +65,7 @@ class DescriptionFactory {
 	 *
 	 * @return Disjunction
 	 */
-	public function newDisjunction( $descriptions = array() ) {
+	public function newDisjunction( $descriptions = [] ) {
 		return new Disjunction( $descriptions );
 	}
 
@@ -77,7 +76,7 @@ class DescriptionFactory {
 	 *
 	 * @return Conjunction
 	 */
-	public function newConjunction( $descriptions = array() ) {
+	public function newConjunction( $descriptions = [] ) {
 		return new Conjunction( $descriptions );
 	}
 
@@ -95,11 +94,11 @@ class DescriptionFactory {
 	/**
 	 * @since 2.4
 	 *
-	 * @param DIWikiPage $category
+	 * @param DIWikiPage|[] $category
 	 *
 	 * @return ClassDescription
 	 */
-	public function newClassDescription( DIWikiPage $category ) {
+	public function newClassDescription( $category ) {
 		return new ClassDescription( $category );
 	}
 

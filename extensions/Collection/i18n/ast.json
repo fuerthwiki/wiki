@@ -2,7 +2,8 @@
 	"@metadata": {
 		"authors": [
 			"Esbardu",
-			"Xuacu"
+			"Xuacu",
+			"Macofe"
 		]
 	},
 	"coll-desc": "[[Special:Book|Crear llibros]]",
@@ -54,7 +55,7 @@
 	"coll-revision": "Revisión: $1",
 	"coll-save_collection_title": "Guardar y compartir el so llibru",
 	"coll-save_collection_text": "Escueya un llugar pa guardar el so llibru:",
-	"coll-login_to_save": "Si quier guardar llibros pa usalos más sero, por favor, [[Special:UserLogin|anicie sesión o cree una cuenta]].",
+	"coll-login_to_save": "Si quies guardar llibros pa usalos sero, por favor, [[Special:UserLogin|anicia sesión o crea una cuenta]].",
 	"coll-personal_collection_label": "Llibru personal:",
 	"coll-community_collection_label": "Llibru de la comunidá:",
 	"coll-save_collection": "Guardar llibru",
@@ -78,7 +79,10 @@
 	"coll-rendering_page_info_text_article": "{{MediaWiki:Coll-helppage}}/Testu informativu sobro renderización de páxines",
 	"coll-rendering_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/Testu informativu sobro renderización de coleiciones",
 	"coll-rendering_finished_title": "Acabó la renderización",
-	"coll-rendering_finished_text": "<strong>Xeneróse'l ficheru del documentu.</strong>\n<strong>[$1 Descargue'l ficheru]</strong> al so ordenador.\n\nNotes:\n*¿Nun ta satisfechu col resultáu? Vea [[{{MediaWiki:Coll-helppage}}|la páxina d'ayuda sobro los llibros]] pa ver les posibilidaes d'ameyoralu.",
+	"coll-rendering_finished_text": "<strong>Xeneróse'l ficheru del documentu.</strong>\n<strong>[$1 Descargue'l ficheru]</strong> al so ordenador.",
+	"coll-rendering_finished_notes_heading": "Notes:",
+	"coll-rendering_finished_note_not_satisfied": "¿Nun tas a gustu col resultáu? Mira [[{{MediaWiki:Coll-helppage}}|na páxina d'ayuda sobro llibros]] pa ver posibles ameyoramientos.",
+	"coll-rendering_finished_note_article_rdf2latex": "Actualmente dellos documentos nun contienen tables. Una alternativa pue ser usar el $1, seleiciona «Imprimir» nel menú del navegador y usa la opción »Guardar como PDF».",
 	"coll-finished_page_info_text_article": "{{MediaWiki:Coll-helppage}}/Testu informativu sobro renderización de páxines",
 	"coll-finished_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/Testu informativu sobro renderización de coleiciones",
 	"coll-rendering_failed_title": "Falló la renderización",
@@ -174,5 +178,23 @@
 	"coll-attribution-anons": "Anónimos: $1",
 	"coll-attribution-page": "<h1>Fontes de testu ya imaxes, collaboradores, y llicencies</h1>\n<h2>Testu</h2>\n$1<h2>Imaxes</h2>\n$2\n<h2>Llicencia del conteníu</h2>\n$3",
 	"coll-article-attribution": "<b>$1</b> <i>Fonte:</i> $2 <i>Collaboradores:</i> $3",
-	"coll-image-attribution": "<b>$1</b> <i>Fonte:</i> $2 <i>Llicencia:</i> $3 <i>Collaboradores:</i> $4 <i>Artista orixinal:</i> $5"
+	"coll-image-attribution": "<b>$1</b> <i>Fonte:</i> $2 <i>Llicencia:</i> $3 <i>Collaboradores:</i> $4 <i>Artista orixinal:</i> $5",
+	"coll-warning-disable-pdf-title": "El Criador de llibros ta pasando por cambeos",
+	"coll-warning-disable-pdf-text": "Por aciu de problemes graves nel sistema esistiente, el Criador de llibros yá nun tendrá encontu pa guardar un llibru como PDF por un tiempu curtiu. Tamos trabayando intensamente pa sustituyir esti sistema y reactivar los PDF nel Criador de llibros.",
+	"coll-warning-learn-more": "Más información",
+	"coll-notice-download-pdf-title": "Descargar páxines individuales",
+	"coll-notice-download-pdf-text": "Mentanto se sustituye la xeneración de PDF del Criador de llibros, tenta «Descargar como PDF» dende la barra de ferramientes del costáu pa los artículos individuales.",
+	"coll-toc-title": "Índiz",
+	"coll-contributors-title": "Collaboradores",
+	"coll-images-title": "Imaxes",
+	"coll-images-source": "Orixe",
+	"coll-images-license": "Llicencia",
+	"coll-images-original-artist": "Artista orixinal",
+	"coll-license-title": "Llicencia del conteníu",
+	"coll-rendererror-title": "Nun pudo xenerase'l llibru",
+	"coll-rendererror-no-session": "La definición del llibru nun s'alcontró na sesión. Podría tar descartada por inactividá.",
+	"coll-rendererror-pdf": "Falló la xeneración de PDFː $1",
+	"coll-rendererror-fetch": "Falló la recuperación de $1ː $2",
+	"coll-rendererror-fetch-wrapper": "Hebo errores al tentar llograr el conteníu de la páxina: $1",
+	"coll-rendererror-no-cache": "Los datos del llibru nun s'alcontraron na caché. Probablemente ye un error del software."
 }

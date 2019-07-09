@@ -14,7 +14,6 @@
 	"authorprotect-move": "Umožnit přesouvání jen autorům",
 	"authorprotect-intro": "Tento formulář slouží k zamknutí této stránky všem uživatelům kromě autorů.",
 	"authorprotect-success": "Zamknutí proběhlo úspěšně!",
-	"authorprotect-failure": "Zamknutí neproběhlo úspěšně",
 	"protect-level-author": "Ochránit před neautorskými úpravami",
 	"restriction-level-author": "Jen pro autory",
 	"right-authorprotect": "Zamykání autorských stránek",

@@ -24,31 +24,16 @@
  * @file
  */
 
-$wgExtensionCredits['parserhook'][] = array(
-	'path'           => __FILE__,
-	'name'           => 'Tabs',
-	'author'         => 'Joeytje50',
-	'url'            => 'https://www.mediawiki.org/wiki/Extension:Tabs',
-	'descriptionmsg' => 'tabs-desc',
-	'version'        => '1.3.2',
-	'license-name'   => 'GPL-2.0+'
-);
-
-$dir = __DIR__ . '/';
-$wgAutoloadClasses['Tabs'] = $dir . 'Tabs.body.php';
-$wgExtensionMessagesFiles['Tabs'] =  $dir . 'Tabs.i18n.php';
-$wgExtensionMessagesFiles['TabsMagic'] =  $dir . 'Tabs.i18n.magic.php';
-$wgHooks['ParserFirstCallInit'][] = 'Tabs::init';
-$wgResourceModules['ext.tabs'] = array(
-	'scripts' => 'ext.tabs.js',
-	'styles' => 'ext.tabs.css',
-	'messages' => array(
-		'tabs-tab-label',
-		'tabs-toggle-open',
-		'tabs-toggle-close',
-		'tabs-dropdown-label',
-		'tabs-dropdown-bgcolor',
-	),
-	'localBasePath' => __DIR__,
-	'remoteExtPath' => 'Tabs',
-);
+ if ( function_exists( 'wfLoadExtension' ) ) {
+	wfLoadExtension( 'Tabs' );
+	// Keep i18n globals so mergeMessageFileList.php doesn't break
+	$wgMessagesDirs['Tabs'] = __DIR__ . '/i18n';
+	wfWarn(
+		'Deprecated PHP entry point used for the Tabs extension. ' .
+		'Please use wfLoadExtension instead, ' .
+		'see https://www.mediawiki.org/wiki/Extension_registration for more details.'
+	);
+	return;
+} else {
+	die( 'This version of the Tabs extension requires MediaWiki 1.29+' );
+}

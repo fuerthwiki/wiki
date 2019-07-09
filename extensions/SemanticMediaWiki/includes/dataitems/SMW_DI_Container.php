@@ -3,8 +3,8 @@
  * @ingroup SMWDataItems
  */
 
-use SMW\Exception\DataItemException;
 use SMW\DIProperty;
+use SMW\Exception\DataItemException;
 use SMWDIBlob as DIBlob;
 
 /**
@@ -99,7 +99,7 @@ class SMWDIContainer extends SMWDataItem {
 
 	private function getValueHash( $semanticData ) {
 
-		$hash = array();
+		$hash = [];
 
 		foreach ( $semanticData->getProperties() as $property ) {
 			$hash[] = $property->getKey();

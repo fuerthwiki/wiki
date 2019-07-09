@@ -7,7 +7,7 @@
 	],
 	"url": "https://www.mediawiki.org/wiki/Extension:CollapsibleVector",
 	"descriptionmsg": "collapsiblevector-desc",
-	"license-name": "GPL-2.0+",
+	"license-name": "GPL-2.0-or-later",
 	"type": "other",
 	"DefaultUserOptions": {
 		"collapsiblevector-collapsiblenav": 1,
@@ -19,7 +19,7 @@
 		]
 	},
 	"AutoloadClasses": {
-		"CollapsibleVectorHooks": "CollapsibleVector.hooks.php"
+		"CollapsibleVectorHooks": "CollapsibleVectorHooks.php"
 	},
 	"ResourceModules": {
 		"ext.collapsiblevector.collapsibleNav": {

@@ -23,7 +23,7 @@ use MediaWiki\MediaWikiServices;
  *
  * {{#forminput:form=|size=|default value=|button text=|query string=
  * |autocomplete on category=|autocomplete on namespace=
- * |...additional query string values...}}
+ * |popup|reload|...additional query string values...}}
  *
  * This function returns HTML representing a form to let the user enter the
  * name of a page to be added or edited using a Page Forms form. All
@@ -39,6 +39,8 @@ use MediaWiki\MediaWikiServices;
  * choice, using 'autocomplete on category' or 'autocomplete on namespace'
  * (you can only use one). To autcomplete on all pages in the main (blank)
  * namespace, specify "autocomplete on namespace=main".
+ * 'reload' is an optional value to be used along with 'popup', causes the page
+ * to reload with 'action=purge' after the form is submitted successfully.
  *
  * Example: to create an input to add or edit a page with a form called
  * 'User' within a namespace also called 'User', and to have the form
@@ -51,10 +53,10 @@ use MediaWiki\MediaWikiServices;
  * '#formlink' is called as:
  *
  * {{#formlink:form=|link text=|link type=|tooltip=|query string=|target=
- * |popup|...additional query string values...}}
+ * |popup|reload|...additional query string values...}}
  *
  * This function returns HTML representing a link to a form; given that
- * no page name is entered by the the user, the form must be one that
+ * no page name is entered by the user, the form must be one that
  * creates an automatic page name, or else it will display an error
  * message when the user clicks on the link.
  *
@@ -69,6 +71,8 @@ use MediaWiki\MediaWikiServices;
  * (or, in the case of 'post button', to be sent as hidden inputs).
  * 'target' is an optional value, setting the name of the page to be
  * edited by the form.
+ * 'reload' is an optional value to be used along with 'popup', causes the page
+ * to reload with 'action=purge' after the form is submitted successfully.
  *
  * Example: to create a link to add data with a form called
  * 'User' within a namespace also called 'User', and to have the form
@@ -160,14 +164,10 @@ class PFParserFunctions {
 		$curTitle = $parser->getTitle();
 
 		$params = func_get_args();
-		array_shift( $params );
-
-		// Parameters
-		if ( count( $params ) == 0 ) {
-			// Escape!
+		if ( !isset( $params[1] ) ) {
 			return true;
 		}
-		$defaultForm = $params[0];
+		$defaultForm = $params[1];
 
 		$parserOutput = $parser->getOutput();
 		$parserOutput->setProperty( 'PFDefaultForm', $defaultForm );
@@ -271,6 +271,8 @@ class PFParserFunctions {
 			} elseif ( $paramName == 'popup' ) {
 				self::loadScriptsForPopupForm( $parser );
 				$classStr .= ' popupforminput';
+			} elseif ( $paramName == 'reload' ) {
+				$classStr .= ' reload';
 			} elseif ( $paramName == 'no autofocus' ) {
 				$inAutofocus = false;
 			} else {
@@ -322,14 +324,22 @@ class PFParserFunctions {
 		// (i.e., it's in the default URL style), add in the title as a
 		// hidden value
 		$fs = SpecialPageFactory::getPage( 'FormStart' );
-		$fsURL = $fs->getTitle()->getLocalURL();
+		$fsURL = $fs->getPageTitle()->getLocalURL();
 		if ( ( $pos = strpos( $fsURL, "title=" ) ) > - 1 ) {
 			$formContents .= Html::hidden( "title", urldecode( substr( $fsURL, $pos + 6 ) ) );
 		}
+		$listOfForms = preg_split( '~(?<!\\\)' . preg_quote( ',', '~' ) . '~', $inFormName );
+		foreach ( $listOfForms as & $formName ) {
+			$formName = str_replace( "\,", ",", $formName );
+		}
+		unset( $formName );
 		if ( $inFormName == '' ) {
 			$formContents .= PFUtils::formDropdownHTML();
-		} else {
+		} elseif ( count( $listOfForms ) == 1 ) {
+			$inFormName = str_replace( '\,', ',', $inFormName );
 			$formContents .= Html::hidden( "form", $inFormName );
+		} else {
+			$formContents .= PFUtils::formDropdownHTML( $listOfForms );
 		}
 
 		// Recreate the passed-in query string as a set of hidden
@@ -395,9 +405,9 @@ class PFParserFunctions {
 		$new_delimiter = isset( $args[4] ) ? trim( $frame->expand( $args[4] ) ) : ', ';
 		# Unstrip some
 		$delimiter = $parser->mStripState->unstripNoWiki( $delimiter );
-		# let '\n' represent newlines
-		$delimiter = str_replace( '\n', "\n", $delimiter );
-		$new_delimiter = str_replace( '\n', "\n", $new_delimiter );
+		# Let '\n' represent newlines, and '\s' represent spaces.
+		$delimiter = str_replace( array( '\n', '\s' ), array( "\n", ' ' ), $delimiter );
+		$new_delimiter = str_replace( array( '\n', '\s' ), array( "\n", ' ' ), $new_delimiter );
 
 		if ( $delimiter == '' ) {
 			$values_array = preg_split( '/(.)/u', $value, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
@@ -660,6 +670,8 @@ class PFParserFunctions {
 			} elseif ( $param_name == null && $value == 'popup' ) {
 				self::loadScriptsForPopupForm( $parser );
 				$classStr = 'popupformlink';
+			} elseif ( $param_name == null && $value == 'reload' ) {
+				$classStr .= ' reload';
 			} elseif ( $param_name == null && $value == 'new window' ) {
 				$targetWindow = '_blank';
 			} elseif ( $param_name == null && $value == 'create page' ) {
@@ -716,15 +728,16 @@ class PFParserFunctions {
 		} else {
 			$formSpecialPage = SpecialPageFactory::getPage( 'FormEdit' );
 		}
+		$formSpecialPageTitle = $formSpecialPage->getPageTitle();
 
 		if ( $inFormName == '' ) {
 			$query = array( 'target' => $inTargetName );
-			$link_url = $formSpecialPage->getTitle()->getLocalURL( $query );
+			$link_url = $formSpecialPageTitle->getLocalURL( $query );
 		} elseif ( strpos( $inFormName, '/' ) == true ) {
 			$query = array( 'form' => $inFormName, 'target' => $inTargetName );
-			$link_url = $formSpecialPage->getTitle()->getLocalURL( $query );
+			$link_url = $formSpecialPageTitle->getLocalURL( $query );
 		} else {
-			$link_url = $formSpecialPage->getTitle()->getLocalURL() . "/$inFormName";
+			$link_url = $formSpecialPageTitle->getLocalURL() . "/$inFormName";
 			if ( ! empty( $inTargetName ) ) {
 				$link_url .= "/$inTargetName";
 			}

@@ -3,16 +3,13 @@
 namespace SMW\MediaWiki\Specials\SearchByProperty;
 
 use SMW\DataValueFactory;
-use SMW\Query\Language\SomeProperty;
-use SMW\Query\Language\ThingDescription;
-use SMW\Query\Language\ValueDescription;
-use SMW\Query\PrintRequest as PrintRequest;
-use SMW\Store;
 use SMW\DIWikiPage;
+use SMW\Query\DescriptionFactory;
+use SMW\Query\PrintRequest as PrintRequest;
 use SMW\SQLStore\QueryDependencyLinksStoreFactory;
+use SMW\Store;
 use SMWQuery as Query;
 use SMWRequestOptions as RequestOptions;
-use SMW\Query\DescriptionFactory;
 
 /**
  * @license GNU GPL v2+
@@ -62,15 +59,15 @@ class QueryResultLookup {
 			$requestOptions
 		);
 
-		$results = array();
+		$results = [];
 
 		$dataValueFactory = DataValueFactory::getInstance();
 
 		foreach ( $queryBacklinks as $result ) {
-			$results[] = array(
+			$results[] = [
 				$dataValueFactory->newDataValueByItem( DIWikiPage::doUnserialize( $result ), null ),
 				$pageRequestOptions->value
-			);
+			];
 		}
 
 		return $results;
@@ -97,15 +94,15 @@ class QueryResultLookup {
 			$res = $this->doQueryForExactValue( $pageRequestOptions, $requestOptions );
 		}
 
-		$results = array();
+		$results = [];
 
 		$dataValueFactory = DataValueFactory::getInstance();
 
 		foreach ( $res as $result ) {
-			$results[] = array(
+			$results[] = [
 				$dataValueFactory->newDataValueByItem( $result, null ),
 				$pageRequestOptions->value
-			);
+			];
 		}
 
 		return $results;
@@ -154,27 +151,27 @@ class QueryResultLookup {
 		$query->setLimit( $pageRequestOptions->limit );
 		$query->setOffset( $pageRequestOptions->offset );
 		$query->sort = true;
-		$query->sortkeys = array(
+		$query->sortkeys = [
 			$pageRequestOptions->property->getDataItem()->getKey() => $sortOrder
-		);
+		];
 
 		// Note: printrequests change the caption of properties they
 		// get (they expect properties to be given to them).
 		// Since we want to continue using the property for our
 		// purposes, we give a clone to the print request.
-		$printouts = array(
+		$printouts = [
 			new PrintRequest( PrintRequest::PRINT_THIS, '' ),
 			new PrintRequest( PrintRequest::PRINT_PROP, '', clone $pageRequestOptions->property )
-		);
+		];
 
 		$query->setExtraPrintouts( $printouts );
 
 		$queryResults = $this->store->getQueryResult( $query );
 
-		$result = array();
+		$result = [];
 
 		while ( $resultArrays = $queryResults->getNext() ) {
-			$r = array();
+			$r = [];
 
 			foreach ( $resultArrays as $resultArray ) {
 				$r[] = $resultArray->getNextDataValue();
@@ -202,6 +199,9 @@ class QueryResultLookup {
 	}
 
 	private function doQueryForExactValue( PageRequestOptions $pageRequestOptions, RequestOptions $requestOptions ) {
+
+		$pageRequestOptions->value->setOption( 'is.search', true );
+
 		return $this->store->getPropertySubjects(
 			$pageRequestOptions->property->getDataItem(),
 			$pageRequestOptions->value->getDataItem(),

@@ -7,7 +7,9 @@
 			"Sopho",
 			"Temuri rajavi",
 			"გიორგიმელა",
-			"Gi777ga"
+			"Gi777ga",
+			"Macofe",
+			"Otogi"
 		]
 	},
 	"coll-desc": "[[Special:Book|წიგნის შექმნა]]",
@@ -83,7 +85,10 @@
 	"coll-rendering_page_info_text_article": "{{MediaWiki:Coll-helppage}}/გვერდის შესახებ ტექსტის გადაყვანა",
 	"coll-rendering_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/კოლექციის შესახებ ტექსტის გადაყვანა",
 	"coll-rendering_finished_title": "შექმნა დასრულებულია",
-	"coll-rendering_finished_text": "<strong>დოკუმენტის ფაილი შექმნილია.</strong>\n<strong>[$1 ჩამოტვირთეთ]</strong> ფაილი კომპიუტერზე.\n\nაღნიშვნა:\n* თუ უკმაყოფილო ხართ შედეგით, გთხოვთ იხილეთ [[{{MediaWiki:Coll-helppage}}|დამხმარე გვერდი]]. შესაძლოა ამ გვერდზე აღწერილია გაუმჯობესების საშუალება.",
+	"coll-rendering_finished_text": "<strong>დოკუმენტის ფაილი შექმნილია.</strong>\n<strong>[$1 ჩამოტვირთეთ]</strong> ფაილი კომპიუტერში.",
+	"coll-rendering_finished_notes_heading": "შენიშვნები:",
+	"coll-rendering_finished_note_not_satisfied": "არ გაწყობთ შედეგი? მისი გაუმჯობესების შესაძლებლობები აღწერილია [[{{MediaWiki:Coll-helppage}}|საცნობო განყოფილებაში]].",
+	"coll-rendering_finished_note_article_rdf2latex": "ამჟამად დოკუმენტები არ შეიცავენ ცხრილს. ალტერნატივა შეიძლება იყოს $1-ის გამოყენება, არჩევა „ბეჭდვა“ ბრაუზერის მენიუში, აგრეთვე „შეინახეთ როგორც PDF“ გამოყენების ვარიანტი.",
 	"coll-finished_page_info_text_article": "{{MediaWiki:Coll-helppage}}/გვერდის ტექსტში გადაყვანა",
 	"coll-finished_collection_info_text_article": "{{MediaWiki:Coll-helppage}}/კოლექციის ტექსტში გადაყვანა",
 	"coll-rendering_failed_title": "რენდერი ჩაიშალა",
@@ -97,7 +102,7 @@
 	"coll-download_notfound_text": "ფაილი, რომლის ატვირთვასაც ცდილობს, არ არსებობს. შესაძლოა იგი წაიშალა და საჭიროა მისი აღდგენა.",
 	"coll-download_failed_title": "შეცდომა ჩაწერისას",
 	"coll-download_failed_text": "წარმოიშვა შეცდომა შემდეგ ფაილის ჩაწერისას: $1",
-	"coll-is_cached": "<ul><li>აღმოჩენილია ამ დოკუმენტის ქეშირებული ვერსია, რენდირება საჭირო არ გახდა.[$1 რენდირების მაინც გაშვება.]</li></ul>",
+	"coll-is_cached": "<ul><li>აღმოჩენილია ამ დოკუმენტის ქეშირებული ვერსია, რენდირება საჭირო არ გახდა. [$1 რენდირების გაშვება.]</li></ul>",
 	"coll-excluded-templates": "* თარგები კატეგორიიდან [[:Category:$1|$1]] ამოღებული იქნენ.",
 	"coll-blacklisted-templates": "* შავი სიის თარგები [[:$1]] ამოღებული იქნენ.",
 	"coll-book_title": "დაბეჭდელი წიგნის შეკვეთა",
@@ -179,5 +184,6 @@
 	"coll-attribution-anons": "ანონიმი: $1",
 	"coll-attribution-page": "<h1>ტექსტის და გამოსახულების წყაროები, ავტორები და ლიცენზიები</h1>\n<h2>ტექსტი</h2>\n$1<h2>გამოსახულებები</h2>\n$2\n<h2>მასალის ლიცენზია</h2>\n$3",
 	"coll-article-attribution": "<b>$1</b> <i>წყარო:</i> $2 <i>ავტორები:</i> $3",
-	"coll-image-attribution": "<b>$1</b> <i>წყარო:</i> $2 <i>ლიცენზია:</i> $3 <i>ავტორები:</i> $4 <i>მხატვარი:</i> $5"
+	"coll-image-attribution": "<b>$1</b> <i>წყარო:</i> $2 <i>ლიცენზია:</i> $3 <i>ავტორები:</i> $4 <i>მხატვარი:</i> $5",
+	"coll-warning-learn-more": "გაიგეთ მეტი"
 }

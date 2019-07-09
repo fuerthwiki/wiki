@@ -1,11 +1,11 @@
 <?php
 
-namespace Maps\Tests\Elements;
+namespace Maps\Tests\Unit\Elements;
 
 use Maps\Elements\Polygon;
 
 /**
- * @covers Maps\Elements\Polygon
+ * @covers \Maps\Elements\Polygon
  *
  * @licence GNU GPL v2+
  * @author Jeroen De Dauw < jeroendedauw@gmail.com >
@@ -25,10 +25,8 @@ class PolygonTest extends LineTest {
 
 	/**
 	 * @dataProvider instanceProvider
-	 * @param Polygon $polygon
-	 * @param array $arguments
 	 */
-	public function testSetOnlyVisibleOnHover( Polygon $polygon, array $arguments ) {
+	public function testSetOnlyVisibleOnHover( Polygon $polygon ) {
 		$this->assertFalse( $polygon->isOnlyVisibleOnHover() );
 
 		$polygon->setOnlyVisibleOnHover( true );
@@ -40,10 +38,8 @@ class PolygonTest extends LineTest {
 
 	/**
 	 * @dataProvider instanceProvider
-	 * @param Polygon $polygon
-	 * @param array $arguments
 	 */
-	public function testSetFillOpacity( Polygon $polygon, array $arguments ) {
+	public function testSetFillOpacity( Polygon $polygon ) {
 		$polygon->setFillOpacity( '0.42' );
 		$this->assertHasJsonKeyWithValue( $polygon, 'fillOpacity', '0.42' );
 	}
@@ -60,10 +56,8 @@ class PolygonTest extends LineTest {
 
 	/**
 	 * @dataProvider instanceProvider
-	 * @param Polygon $polygon
-	 * @param array $arguments
 	 */
-	public function testSetFillColor( Polygon $polygon, array $arguments ) {
+	public function testSetFillColor( Polygon $polygon ) {
 		$polygon->setFillColor( '#FFCCCC' );
 		$this->assertHasJsonKeyWithValue( $polygon, 'fillColor', '#FFCCCC' );
 	}

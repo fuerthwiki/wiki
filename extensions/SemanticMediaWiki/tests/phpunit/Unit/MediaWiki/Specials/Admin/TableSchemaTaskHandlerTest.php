@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\MediaWiki\Specials\Admin;
 
-use SMW\Tests\TestEnvironment;
 use SMW\MediaWiki\Specials\Admin\TableSchemaTaskHandler;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\MediaWiki\Specials\Admin\TableSchemaTaskHandler
@@ -56,14 +56,14 @@ class TableSchemaTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 
 	public function testGetHtml() {
 
-		$methods = array(
+		$methods = [
 			'setName',
 			'setMethod',
 			'addHiddenField',
 			'addHeader',
 			'addParagraph',
 			'addSubmitButton'
-		);
+		];
 
 		foreach ( $methods as $method ) {
 			$this->htmlFormRenderer->expects( $this->any() )
@@ -91,6 +91,10 @@ class TableSchemaTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 		$webRequest = $this->getMockBuilder( '\WebRequest' )
 			->disableOriginalConstructor()
 			->getMock();
+
+		$webRequest->expects( $this->once() )
+			->method( 'getVal' )
+			->will( $this->returnValue( 'done' ) );
 
 		$instance = new TableSchemaTaskHandler(
 			$this->store,

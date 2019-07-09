@@ -2,8 +2,8 @@
 
 namespace SMW\Tests\MediaWiki\Specials\Admin;
 
-use SMW\Tests\TestEnvironment;
 use SMW\MediaWiki\Specials\Admin\DeprecationNoticeTaskHandler;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\MediaWiki\Specials\Admin\DeprecationNoticeTaskHandler
@@ -37,7 +37,7 @@ class DeprecationNoticeTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 	public function testCanConstruct() {
 
 		$this->assertInstanceOf(
-			'\SMW\MediaWiki\Specials\Admin\DeprecationNoticeTaskHandler',
+			DeprecationNoticeTaskHandler::class,
 			new DeprecationNoticeTaskHandler( $this->outputFormatter )
 		);
 	}
@@ -60,17 +60,29 @@ class DeprecationNoticeTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 		$GLOBALS['deprecationNoticeFoobar'] = 'Foo';
 		$GLOBALS['deprecationNoticeFooFoo'] = 'Foo';
 
-		$deprecationNotice = array(
-			'notice' => array(
-				'deprecationNoticeFoo' => '...'
-			),
-			'replacement' => array(
-				'deprecationNoticeFoobar' => '...'
-			),
-			'removal' => array(
+		$deprecationNotice['smw'] = [
+			'notice' => [
+				'deprecationNoticeFoo' => '...',
+				'options' => [
+					'deprecationNoticeFoo' => [
+						'Foo',
+						'Bar'
+					]
+				]
+			],
+			'replacement' => [
+				'deprecationNoticeFoobar' => '...',
+				'options' => [
+					'deprecationNoticeFoobar' => [
+						'Foo',
+						'Bar'
+					]
+				]
+			],
+			'removal' => [
 				'deprecationNoticeFooFoo' => '...'
-			)
-		);
+			]
+		];
 
 		$instance = new DeprecationNoticeTaskHandler(
 			$this->outputFormatter,
@@ -79,6 +91,47 @@ class DeprecationNoticeTaskHandlerTest extends \PHPUnit_Framework_TestCase {
 
 		$this->assertInternalType(
 			'string',
+			$instance->getHtml()
+		);
+	}
+
+	public function testGetHtmlWithFakeDetectionArray() {
+
+		$GLOBALS['deprecationNoticeFoo'] = [ 'Bar' => false ];
+		$GLOBALS['deprecationNoticeFoobar'] = 'Foo';
+		$GLOBALS['deprecationNoticeFooFoo'] = 'Foo';
+
+		$deprecationNotice['smw'] = [
+			'notice' => [
+				'deprecationNoticeFoo' => '...',
+				'options' => [
+					'deprecationNoticeFoo' => [
+						'Foo',
+						'Bar'
+					]
+				]
+			],
+			'replacement' => [
+				'deprecationNoticeFoobar' => '...',
+				'options' => [
+					'deprecationNoticeFoobar' => [
+						'Foo',
+						'Bar'
+					]
+				]
+			],
+			'removal' => [
+				'deprecationNoticeFooFoo' => '...'
+			]
+		];
+
+		$instance = new DeprecationNoticeTaskHandler(
+			$this->outputFormatter,
+			$deprecationNotice
+		);
+
+		$this->assertContains(
+			'<div class="smw-admin-deprecation">',
 			$instance->getHtml()
 		);
 	}

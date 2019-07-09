@@ -3,10 +3,8 @@
 namespace SMW\Deserializers\DVDescriptionDeserializer;
 
 use InvalidArgumentException;
-use SMW\Query\Language\ThingDescription;
-use SMW\Query\Language\ValueDescription;
-use SMWDataValue as DataValue;
 use SMW\DIWikiPage;
+use SMWDataValue as DataValue;
 
 /**
  * @private
@@ -45,7 +43,7 @@ class SomeValueDescriptionDeserializer extends DescriptionDeserializer {
 		// Internally encode something like [[Help:>Foo*]] since &lt; and &gt;
 		// would throw off the Title validator; apply only in combination with
 		// a NS such as [[Help:>...]]
-		$value = str_replace( array( ':<', ':>' ), array( ':-3C', ':-3E' ), $value );
+		$value = str_replace( [ ':<', ':>' ], [ ':-3C', ':-3E' ], $value );
 
 		$comparator = SMW_CMP_EQ;
 		$this->prepareValue( $value, $comparator );
@@ -84,7 +82,7 @@ class SomeValueDescriptionDeserializer extends DescriptionDeserializer {
 		// Normalize a possible earlier encoded string part in order for the
 		// QueryComparator::extractComparatorFromString to work its magic
 		if ( $comparator === SMW_CMP_EQ || $comparator === SMW_CMP_NEQ ) {
-			$value = str_replace( array( '-3C', '-3E' ), array( '<', '>' ), $value );
+			$value = str_replace( [ '-3C', '-3E' ], [ '<', '>' ], $value );
 			$this->prepareValue( $value, $comparator );
 		}
 
@@ -103,10 +101,10 @@ class SomeValueDescriptionDeserializer extends DescriptionDeserializer {
 		// #1652
 		// Use [[Help:~Foo*]] as conjunctive description since the comparator
 		// is only applied on the sortkey that contains the DBKey part
-		$description = $this->descriptionFactory->newConjunction( array(
+		$description = $this->descriptionFactory->newConjunction( [
 			$this->descriptionFactory->newNamespaceDescription( $dataItem->getNamespace() ),
 			$valueDescription
-		) );
+		] );
 
 		return $description;
 	}

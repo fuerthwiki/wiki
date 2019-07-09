@@ -2,9 +2,9 @@
 
 namespace SMW\Tests\MediaWiki\Jobs;
 
-use SMW\Tests\TestEnvironment;
 use SMW\DIWikiPage;
 use SMW\MediaWiki\Jobs\FulltextSearchTableUpdateJob;
+use SMW\Tests\TestEnvironment;
 
 /**
  * @covers \SMW\MediaWiki\Jobs\FulltextSearchTableUpdateJob
@@ -66,9 +66,9 @@ class FulltextSearchTableUpdateJobTest extends \PHPUnit_Framework_TestCase {
 
 	public function parametersProvider() {
 
-		$provider[] = array(
-			'diff' => array( 1, 2 )
-		);
+		$provider[] = [
+			'diff' => [ 1, 2 ]
+		];
 
 		return $provider;
 	}
